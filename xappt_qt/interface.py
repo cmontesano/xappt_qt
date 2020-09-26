@@ -2,13 +2,16 @@ import os
 
 from typing import Optional
 
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtCore, QtGui
 
 import xappt
 from xappt import BaseTool
 
 from .gui.tool_page import ToolPage
 from .gui.ui.runner import Ui_RunDialog
+
+# noinspection PyUnresolvedReferences
+from .gui.resources import icons
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
 os.environ[xappt.INTERFACE_ENV] = "qt"
@@ -18,12 +21,23 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
+        self.placeholder.setVisible(False)
+
+        flags = QtCore.Qt.Window
+        flags |= QtCore.Qt.WindowCloseButtonHint
+        flags |= QtCore.Qt.WindowMinimizeButtonHint
+        self.setWindowFlags(flags)
+        self.setWindowIcon(QtGui.QIcon(":appicon"))
+
         self.tool_plugin: Optional[BaseTool] = None
         self.tool_widget: Optional[ToolPage] = None
 
     def clear(self):
         if self.tool_widget is not None:
-            self.gridLayout.removeWidget(self.tool_widget)
+            index = self.gridLayout.indexOf(self.tool_widget)
+            self.gridLayout.takeAt(index)
+            self.tool_widget.deleteLater()
             self.tool_widget = None
             self.tool_plugin = None
         self.btnOk.setEnabled(True)

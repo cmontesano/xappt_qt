@@ -68,8 +68,6 @@ class Ui_RunDialog(object):
 
 
         self.retranslateUi(RunDialog)
-        self.btnClose.clicked.connect(RunDialog.reject)
-        self.btnOk.clicked.connect(RunDialog.accept)
 
         QMetaObject.connectSlotsByName(RunDialog)
     # setupUi

@@ -94,38 +94,5 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>btnClose</sender>
-   <signal>clicked()</signal>
-   <receiver>RunDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>263</x>
-     <y>401</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>364</x>
-     <y>396</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnOk</sender>
-   <signal>clicked()</signal>
-   <receiver>RunDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>180</x>
-     <y>406</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>55</x>
-     <y>404</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

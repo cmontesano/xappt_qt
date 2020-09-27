@@ -17,7 +17,7 @@ class Ui_RunDialog(object):
     def setupUi(self, RunDialog):
         if not RunDialog.objectName():
             RunDialog.setObjectName(u"RunDialog")
-        RunDialog.resize(438, 434)
+        RunDialog.resize(700, 400)
         self.gridLayout_2 = QGridLayout(RunDialog)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout = QGridLayout()

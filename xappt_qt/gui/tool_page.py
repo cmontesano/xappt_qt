@@ -24,6 +24,8 @@ class ToolPage(QtWidgets.QWidget):
         self.grid = QtWidgets.QGridLayout()
         self.grid.setColumnStretch(0, 0)
         self.grid.setColumnStretch(1, 1)
+        self.grid.setHorizontalSpacing(16)
+        self.grid.setVerticalSpacing(8)
 
         self.setLayout(self.grid)
         self._load_tool_parameters()

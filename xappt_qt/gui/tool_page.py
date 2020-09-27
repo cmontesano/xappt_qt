@@ -30,10 +30,21 @@ class ToolPage(QtWidgets.QWidget):
         self.setLayout(self.grid)
         self._load_tool_parameters()
 
+    @staticmethod
+    def get_caption(param: xappt.Parameter) -> str:
+        caption_default = param.name.replace("_", " ").title()
+        caption = param.options.get("caption", caption_default)
+        return caption
+
     def _load_tool_parameters(self):
         for i, param in enumerate(self.tool.parameters()):
-            self.grid.addWidget(QtWidgets.QLabel(param.name), i, 0)
-            self.grid.addWidget(self.convert_parameter(param), i, 1)
+            label = QtWidgets.QLabel(self.get_caption(param))
+            label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            label.setToolTip(param.description)
+            widget = self.convert_parameter(param)
+            widget.setToolTip(param.description)
+            self.grid.addWidget(label, i, 0)
+            self.grid.addWidget(widget, i, 1)
 
     def convert_parameter(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         convert_fn = self.convert_dispatch.get(param.data_type)

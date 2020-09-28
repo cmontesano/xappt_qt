@@ -57,31 +57,47 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
 
 @xappt.register_plugin
 class QtInterface(xappt.BaseInterface):
+    class __QtInterfaceInner:
+        def __init__(self):
+            self.app = QtWidgets.QApplication(sys.argv)
+            self.runner = RunDialog()
+            apply_palette(self.app)
+            self._app_running = False
+
+        def exec_(self):
+            if self._app_running:
+                return
+            self.app.exec_()
+            self._app_running = True
+
+        def quit(self):
+            self.app.quit()
+
+    instance = None
+
+    def __new__(cls):
+        if not QtInterface.instance:
+            QtInterface.instance = QtInterface.__QtInterfaceInner()
+        return super().__new__(cls)
+
     def __init__(self):
         super().__init__()
-        self.app: Optional[QtWidgets.QApplication] = None
-        self.runner: Optional[RunDialog] = None
-        self.app_running = False
 
     @classmethod
     def name(cls) -> str:
         return "qt"
 
+    @property
+    def runner(self):
+        return self.instance.runner
+
     def invoke(self, plugin: BaseTool, **kwargs):
-        if self.app is None:
-            self.app = QtWidgets.QApplication(sys.argv)
-            apply_palette(self.app)
-            self.app_running = False
-        if self.runner is None:
-            self.runner = RunDialog()
-            self.runner.btnOk.clicked.connect(self.on_run)
-            self.runner.btnClose.clicked.connect(self.on_close)
+        self.runner.btnOk.clicked.connect(self.on_run)
+        self.runner.btnClose.clicked.connect(self.on_close)
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
-        if not self.app_running:
-            self.app_running = True
-            self.app.exec_()
+        self.instance.exec_()
 
     def message(self, message: str):
         QtWidgets.QMessageBox.information(self.runner, "xappt_qt", message)
@@ -104,8 +120,6 @@ class QtInterface(xappt.BaseInterface):
         self.runner.progressBar.setFormat("")
 
     def on_run(self):
-        if self.runner is None:
-            return
         try:
             self.runner.tool_plugin.validate()
         except xappt.ParameterValidationError as e:
@@ -116,6 +130,5 @@ class QtInterface(xappt.BaseInterface):
         self.runner.tool_plugin.execute()
 
     def on_close(self):
-        if self.runner is not None:
-            self.runner.hide()
-            QtWidgets.QApplication.instance().quit()
+        self.runner.hide()
+        self.instance.quit()

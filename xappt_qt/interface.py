@@ -1,77 +1,39 @@
 import os
 import sys
 
-from typing import Optional
-
-from PySide2 import QtWidgets, QtCore, QtGui
+from PySide2 import QtWidgets
 
 import xappt
 from xappt import BaseTool
 
-from .dark_palette import apply_palette
+from xappt_qt.dark_palette import apply_palette
 
-from .gui.tool_page import ToolPage
-from .gui.ui.runner import Ui_RunDialog
+from xappt_qt.gui.run_dialog import RunDialog
+
+from xappt_qt.constants import *
 
 # noinspection PyUnresolvedReferences
-from .gui.resources import icons
+from xappt_qt.gui.resources import icons
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
-os.environ[xappt.INTERFACE_ENV] = "qt"
-
-
-class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
-
-        self.placeholder.setVisible(False)
-
-        flags = QtCore.Qt.Window
-        flags |= QtCore.Qt.WindowCloseButtonHint
-        flags |= QtCore.Qt.WindowMinimizeButtonHint
-        self.setWindowFlags(flags)
-        self.setWindowIcon(QtGui.QIcon(":appicon"))
-
-        self.tool_plugin: Optional[BaseTool] = None
-        self.tool_widget: Optional[ToolPage] = None
-
-    def clear(self):
-        if self.tool_widget is not None:
-            index = self.gridLayout.indexOf(self.tool_widget)
-            self.gridLayout.takeAt(index)
-            self.tool_widget.deleteLater()
-            self.tool_widget = None
-            self.tool_plugin = None
-        self.btnOk.setEnabled(True)
-
-    def set_current_tool(self, tool_plugin: BaseTool):
-        if self.tool_widget is not None:
-            raise RuntimeError("Clear RunDialog before adding a new tool.")
-        self.tool_plugin = tool_plugin
-        self.tool_widget = ToolPage(self.tool_plugin)
-        self.gridLayout.addWidget(self.tool_widget, 0, 0)
-        self.setWindowTitle(tool_plugin.name())
-        self.tool_widget.setEnabled(True)
+os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
 
 
 @xappt.register_plugin
 class QtInterface(xappt.BaseInterface):
     class __QtInterfaceInner:
         def __init__(self):
-            self.app = QtWidgets.QApplication(sys.argv)
-            self.runner = RunDialog()
+            self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
             apply_palette(self.app)
-            self._app_running = False
 
         def exec_(self):
-            if self._app_running:
+            if self.app.property(APP_PROPERTY_RUNNING):
                 return
+            self.app.setProperty(APP_PROPERTY_RUNNING, True)
             self.app.exec_()
-            self._app_running = True
 
-        def quit(self):
-            self.app.quit()
+        def exit(self, return_code=0):
+            self.app.exit(return_code)
 
     instance = None
 
@@ -82,29 +44,26 @@ class QtInterface(xappt.BaseInterface):
 
     def __init__(self):
         super().__init__()
+        self.runner = RunDialog()
+        self.runner.btnOk.clicked.connect(self.on_run)
+        self.runner.btnClose.clicked.connect(self.on_close)
 
     @classmethod
     def name(cls) -> str:
-        return "qt"
-
-    @property
-    def runner(self):
-        return self.instance.runner
+        return APP_INTERFACE_NAME
 
     def invoke(self, plugin: BaseTool, **kwargs):
-        self.runner.btnOk.clicked.connect(self.on_run)
-        self.runner.btnClose.clicked.connect(self.on_close)
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
         self.instance.exec_()
 
     def message(self, message: str):
-        QtWidgets.QMessageBox.information(self.runner, "xappt_qt", message)
+        QtWidgets.QMessageBox.information(self.runner, APP_TITLE, message)
 
     def ask(self, message: str) -> bool:
         buttons = QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
-        ask_result = QtWidgets.QMessageBox.question(self.runner, "xappt_qt", message, buttons=buttons,
+        ask_result = QtWidgets.QMessageBox.question(self.runner, APP_TITLE, message, buttons=buttons,
                                                     defaultButton=QtWidgets.QMessageBox.No)
         return ask_result == QtWidgets.QMessageBox.Yes
 
@@ -127,8 +86,7 @@ class QtInterface(xappt.BaseInterface):
             return
         self.runner.btnOk.setEnabled(False)
         self.runner.tool_widget.setEnabled(False)
-        self.runner.tool_plugin.execute()
+        self.runner.tool_plugin.execute(interface=self)
 
     def on_close(self):
-        self.runner.hide()
-        self.instance.quit()
+        self.runner.close()

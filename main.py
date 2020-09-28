@@ -3,4 +3,5 @@ import xappt
 
 
 if __name__ == '__main__':
-    xappt.interface.invoke(xappt.get_tool_plugin("interactive1")())
+    interface = xappt.get_interface()
+    interface.invoke(xappt.get_tool_plugin("interactive1")())

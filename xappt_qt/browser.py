@@ -68,6 +68,10 @@ def main(args) -> int:
     return app.exec_()
 
 
-if __name__ == '__main__':
+def entry_point() -> int:
     os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
-    sys.exit(main(sys.argv))
+    return main(sys.argv)
+
+
+if __name__ == '__main__':
+    sys.exit(entry_point())

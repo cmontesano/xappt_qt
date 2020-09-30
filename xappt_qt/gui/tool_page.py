@@ -38,6 +38,12 @@ class ToolPage(QtWidgets.QWidget):
         caption = param.options.get("caption", caption_default)
         return caption
 
+    def update_tool_choices(self, param: xappt.Parameter, widget: QtWidgets.QWidget):
+        if not isinstance(widget, QtWidgets.QComboBox):
+            return
+        widget.clear()
+        widget.addItems(param.choices)
+
     def _load_tool_parameters(self):
         for i, param in enumerate(self.tool.parameters()):
             label = QtWidgets.QLabel(self.get_caption(param))
@@ -47,6 +53,7 @@ class ToolPage(QtWidgets.QWidget):
             widget.setToolTip(param.description)
             self.grid.addWidget(label, i, 0)
             self.grid.addWidget(widget, i, 1)
+            param.on_choices_changed.add(lambda p=param, w=widget: self.update_tool_choices(param, widget))
 
     def convert_parameter(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         convert_fn = self.convert_dispatch.get(param.data_type)

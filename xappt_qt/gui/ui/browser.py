@@ -17,7 +17,7 @@ class Ui_Browser(object):
     def setupUi(self, Browser):
         if not Browser.objectName():
             Browser.setObjectName(u"Browser")
-        Browser.resize(552, 453)
+        Browser.resize(484, 473)
         self.centralwidget = QWidget(Browser)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout = QGridLayout(self.centralwidget)
@@ -42,7 +42,7 @@ class Ui_Browser(object):
         Browser.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(Browser)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 552, 21))
+        self.menubar.setGeometry(QRect(0, 0, 484, 27))
         Browser.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(Browser)
         self.statusbar.setObjectName(u"statusbar")

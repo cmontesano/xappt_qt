@@ -37,6 +37,7 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         self.populate_tools()
         self.treeTools.setItemDelegate(TreeItemDelegate())
         self.treeTools.itemActivated.connect(self.item_activated)
+        self.treeTools.currentItemChanged.connect(self.item_changed)
         self.interfaces = []
 
     def populate_tools(self):
@@ -52,6 +53,14 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         interface = xappt.get_interface()
         self.interfaces.append(interface)
         interface.invoke(tool_class())
+
+    def item_changed(self, current_item: QtWidgets.QTreeWidgetItem, previous_item: QtWidgets.QTreeWidgetItem):
+        tool_class = current_item.data(0, self.ROLE_TOOL_CLASS)  # type: xappt.models.BaseTool
+        if tool_class.help() == "":
+            help_text = "No help text is available for this tool."
+        else:
+            help_text = f"{tool_class.name()}: {tool_class.help()}"
+        self.labelHelp.setText(help_text)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         self.interfaces.clear()

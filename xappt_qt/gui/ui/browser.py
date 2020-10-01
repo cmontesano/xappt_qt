@@ -17,7 +17,7 @@ class Ui_Browser(object):
     def setupUi(self, Browser):
         if not Browser.objectName():
             Browser.setObjectName(u"Browser")
-        Browser.resize(484, 473)
+        Browser.resize(552, 453)
         self.centralwidget = QWidget(Browser)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout = QGridLayout(self.centralwidget)
@@ -34,10 +34,15 @@ class Ui_Browser(object):
 
         self.gridLayout.addWidget(self.treeTools, 0, 0, 1, 2)
 
+        self.labelHelp = QLabel(self.centralwidget)
+        self.labelHelp.setObjectName(u"labelHelp")
+
+        self.gridLayout.addWidget(self.labelHelp, 1, 0, 1, 2)
+
         Browser.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(Browser)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 484, 27))
+        self.menubar.setGeometry(QRect(0, 0, 552, 21))
         Browser.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(Browser)
         self.statusbar.setObjectName(u"statusbar")
@@ -50,5 +55,6 @@ class Ui_Browser(object):
 
     def retranslateUi(self, Browser):
         Browser.setWindowTitle(QCoreApplication.translate("Browser", u"Xappt Browser", None))
+        self.labelHelp.setText("")
     # retranslateUi
 

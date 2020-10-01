@@ -38,11 +38,23 @@ class ToolPage(QtWidgets.QWidget):
         caption = param.options.get("caption", caption_default)
         return caption
 
-    def update_tool_choices(self, param: xappt.Parameter, widget: QtWidgets.QWidget):
+    def update_tool_choices(self, param: xappt.Parameter):
+        widget = param.metadata.get('widget')
         if not isinstance(widget, QtWidgets.QComboBox):
             return
-        widget.clear()
-        widget.addItems(param.choices)
+
+        # find and remove existing widget
+        index = self.grid.indexOf(widget)
+        row, column, *_ = self.grid.getItemPosition(index)
+        self.grid.takeAt(index)
+        widget.deleteLater()
+        param.on_choices_changed.clear()
+
+        # create a new widget to replace it
+        new_widget = self.convert_parameter(param)
+        self.grid.addWidget(new_widget, row, column)
+        param.metadata['widget'] = new_widget
+        param.on_choices_changed.add(self.update_tool_choices)
 
     def _load_tool_parameters(self):
         for i, param in enumerate(self.tool.parameters()):
@@ -53,7 +65,8 @@ class ToolPage(QtWidgets.QWidget):
             widget.setToolTip(param.description)
             self.grid.addWidget(label, i, 0)
             self.grid.addWidget(widget, i, 1)
-            param.on_choices_changed.add(lambda p=param, w=widget: self.update_tool_choices(param, widget))
+            param.metadata['widget'] = widget  # this lets us avoid lambdas
+            param.on_choices_changed.add(self.update_tool_choices)
 
     def convert_parameter(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         convert_fn = self.convert_dispatch.get(param.data_type)

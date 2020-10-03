@@ -86,7 +86,10 @@ class QtInterface(xappt.BaseInterface):
             return
         self.runner.btnOk.setEnabled(False)
         self.runner.tool_widget.setEnabled(False)
-        self.runner.tool_plugin.execute(interface=self)
+        result = self.runner.tool_plugin.execute(interface=self)
+        if result != 0:
+            self.runner.btnOk.setEnabled(True)
+            self.runner.tool_widget.setEnabled(True)
 
     def on_close(self):
         self.runner.close()

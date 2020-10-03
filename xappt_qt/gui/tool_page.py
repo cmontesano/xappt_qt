@@ -4,7 +4,8 @@ from PySide2 import QtWidgets, QtCore
 
 import xappt
 
-from .widgets import *
+from xappt_qt.gui.widgets import *
+from xappt_qt.gui.delegates import SimpleItemDelegate
 
 
 class ToolPage(QtWidgets.QWidget):
@@ -187,7 +188,9 @@ class ToolPage(QtWidgets.QWidget):
 
     def _convert_list(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         w = QtWidgets.QListWidget()
+        w.setItemDelegate(SimpleItemDelegate())
         w.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
+        w.setAlternatingRowColors(True)
         if param.choices is not None:
             w.addItems(param.choices)
         for v in (param.value, param.default):

@@ -191,6 +191,7 @@ class ToolPage(QtWidgets.QWidget):
         w.setItemDelegate(SimpleItemDelegate())
         w.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
         w.setAlternatingRowColors(True)
+        w.setSpacing(2)
         if param.choices is not None:
             w.addItems(param.choices)
         for v in (param.value, param.default):

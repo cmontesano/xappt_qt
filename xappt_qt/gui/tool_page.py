@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from PySide2 import QtWidgets, QtCore
 
@@ -16,6 +16,7 @@ class ToolPage(QtWidgets.QWidget):
             bool: self._convert_bool,
             float: self._convert_float,
             str: self._convert_str,
+            list: self._convert_list,
         }
 
         self.tool = tool
@@ -39,8 +40,12 @@ class ToolPage(QtWidgets.QWidget):
         return caption
 
     def update_tool_choices(self, param: xappt.Parameter):
+        """ Given that multiple parameter types can be updated at runtime,
+        it's easier just to remove and recreate the widget rather than
+        reimplementing a lot of the same functionality to update existing
+        widgets. """
         widget = param.metadata.get('widget')
-        if not isinstance(widget, QtWidgets.QComboBox):
+        if widget is None:
             return
 
         # find and remove existing widget
@@ -179,6 +184,33 @@ class ToolPage(QtWidgets.QWidget):
         param.value = w.value()
         w.valueChanged[float].connect(lambda x: self.update_tool_param(param.name, x))
         return w
+
+    def _convert_list(self, param: xappt.Parameter) -> QtWidgets.QWidget:
+        w = QtWidgets.QListWidget()
+        w.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
+        if param.choices is not None:
+            w.addItems(param.choices)
+        for v in (param.value, param.default):
+            if v is not None:
+                for item in v:
+                    for match in w.findItems(item, QtCore.Qt.MatchExactly):
+                        match.setSelected(True)
+                break
+        param.value = self._get_selected_list_items(w)
+        w.itemSelectionChanged.connect(lambda: self.update_list_param(param.name))
+        return w
+
+    @staticmethod
+    def _get_selected_list_items(widget: QtWidgets.QListWidget) -> List[str]:
+        return [item.text() for item in widget.selectedItems()]
+
+    def update_list_param(self, name: str):
+        param: xappt.Parameter = getattr(self.tool, name)
+        widget: QtWidgets.QListWidget = param.metadata.get('widget')
+        if widget is None:
+            return
+        selected_items = self._get_selected_list_items(widget)
+        param.value = param.validate(selected_items)
 
     def update_tool_param(self, name: str, value: Any):
         param: xappt.Parameter = getattr(self.tool, name)

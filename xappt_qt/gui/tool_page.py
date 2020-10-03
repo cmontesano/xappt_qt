@@ -1,10 +1,11 @@
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from PySide2 import QtWidgets, QtCore
 
 import xappt
 
-from .widgets import *
+from xappt_qt.gui.widgets import *
+from xappt_qt.gui.delegates import SimpleItemDelegate
 
 
 class ToolPage(QtWidgets.QWidget):
@@ -16,6 +17,7 @@ class ToolPage(QtWidgets.QWidget):
             bool: self._convert_bool,
             float: self._convert_float,
             str: self._convert_str,
+            list: self._convert_list,
         }
 
         self.tool = tool
@@ -38,6 +40,28 @@ class ToolPage(QtWidgets.QWidget):
         caption = param.options.get("caption", caption_default)
         return caption
 
+    def update_tool_choices(self, param: xappt.Parameter):
+        """ Given that multiple parameter types can be updated at runtime,
+        it's easier just to remove and recreate the widget rather than
+        reimplementing a lot of the same functionality to update existing
+        widgets. """
+        widget = param.metadata.get('widget')
+        if widget is None:
+            return
+
+        # find and remove existing widget
+        index = self.grid.indexOf(widget)
+        row, column, *_ = self.grid.getItemPosition(index)
+        self.grid.takeAt(index)
+        widget.deleteLater()
+        param.on_choices_changed.clear()
+
+        # create a new widget to replace it
+        new_widget = self.convert_parameter(param)
+        self.grid.addWidget(new_widget, row, column)
+        param.metadata['widget'] = new_widget
+        param.on_choices_changed.add(self.update_tool_choices)
+
     def _load_tool_parameters(self):
         for i, param in enumerate(self.tool.parameters()):
             label = QtWidgets.QLabel(self.get_caption(param))
@@ -47,6 +71,8 @@ class ToolPage(QtWidgets.QWidget):
             widget.setToolTip(param.description)
             self.grid.addWidget(label, i, 0)
             self.grid.addWidget(widget, i, 1)
+            param.metadata['widget'] = widget  # this lets us avoid lambdas
+            param.on_choices_changed.add(self.update_tool_choices)
 
     def convert_parameter(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         convert_fn = self.convert_dispatch.get(param.data_type)
@@ -159,6 +185,36 @@ class ToolPage(QtWidgets.QWidget):
         param.value = w.value()
         w.valueChanged[float].connect(lambda x: self.update_tool_param(param.name, x))
         return w
+
+    def _convert_list(self, param: xappt.Parameter) -> QtWidgets.QWidget:
+        w = QtWidgets.QListWidget()
+        w.setItemDelegate(SimpleItemDelegate())
+        w.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
+        w.setAlternatingRowColors(True)
+        w.setSpacing(2)
+        if param.choices is not None:
+            w.addItems(param.choices)
+        for v in (param.value, param.default):
+            if v is not None:
+                for item in v:
+                    for match in w.findItems(item, QtCore.Qt.MatchExactly):
+                        match.setSelected(True)
+                break
+        param.value = self._get_selected_list_items(w)
+        w.itemSelectionChanged.connect(lambda: self.update_list_param(param.name))
+        return w
+
+    @staticmethod
+    def _get_selected_list_items(widget: QtWidgets.QListWidget) -> List[str]:
+        return [item.text() for item in widget.selectedItems()]
+
+    def update_list_param(self, name: str):
+        param: xappt.Parameter = getattr(self.tool, name)
+        widget: QtWidgets.QListWidget = param.metadata.get('widget')
+        if widget is None:
+            return
+        selected_items = self._get_selected_list_items(widget)
+        param.value = param.validate(selected_items)
 
     def update_tool_param(self, name: str, value: Any):
         param: xappt.Parameter = getattr(self.tool, name)

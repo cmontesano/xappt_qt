@@ -7,24 +7,12 @@ from PySide2 import QtWidgets, QtGui, QtCore
 import xappt
 
 from xappt_qt.gui.ui.browser import Ui_Browser
+from xappt_qt.gui.delegates import SimpleItemDelegate
 from xappt_qt.dark_palette import apply_palette
 from xappt_qt.constants import *
 
 # noinspection PyUnresolvedReferences
 from xappt_qt.gui.resources import icons
-
-
-class TreeItemDelegate(QtWidgets.QItemDelegate):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._hint_height = None
-
-    def sizeHint(self, option, index):
-        hint = super().sizeHint(option, index)
-        if self._hint_height is None:
-            self._hint_height = int(math.ceil(hint.height() * 1.5))
-        hint.setHeight(self._hint_height)
-        return hint
 
 
 class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
@@ -35,7 +23,7 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         self.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(":appicon"))
         self.populate_tools()
-        self.treeTools.setItemDelegate(TreeItemDelegate())
+        self.treeTools.setItemDelegate(SimpleItemDelegate())
         self.treeTools.itemActivated.connect(self.item_activated)
         self.interfaces = []
 

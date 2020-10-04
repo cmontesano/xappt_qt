@@ -2,7 +2,7 @@ import os
 import sys
 
 from collections import defaultdict
-from typing import DefaultDict, List, Type
+from typing import DefaultDict, List, Optional, Type
 
 from PySide2 import QtWidgets, QtGui, QtCore
 
@@ -137,11 +137,24 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         return visible_children
 
 
+def center_window(window: QtWidgets.QMainWindow, screen: Optional[QtGui.QScreen] = None):
+    if screen is None:
+        app = QtWidgets.QApplication.instance()
+        cursor_pos = QtGui.QCursor.pos()
+        screen = app.screenAt(cursor_pos)
+
+    screen_rect = screen.availableGeometry()
+    window_rect = QtCore.QRect(QtCore.QPoint(0, 0), window.frameSize().boundedTo(screen_rect.size()))
+    window.resize(window_rect.size())
+    window.move(screen_rect.center() - window_rect.center())
+
+
 def main(args) -> int:
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(args)
     apply_palette(app)
 
     browser = XapptBrowser()
+    center_window(browser)
     browser.show()
 
     app.setProperty(APP_PROPERTY_RUNNING, True)

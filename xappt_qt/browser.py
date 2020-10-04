@@ -119,10 +119,11 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
             item_type = child.data(0, self.ROLE_ITEM_TYPE)
             if item_type == self.ITEM_TYPE_TOOL:
                 child_text = child.text(0).lower()
+                child_help = child.toolTip(0).lower()
                 visible_children += 1
                 item_hidden = False
                 for term in search_terms:
-                    if term not in child_text:
+                    if term not in child_text and term not in child_help:
                         item_hidden = True
                         break
                 child.setHidden(item_hidden)

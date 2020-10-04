@@ -35,6 +35,8 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         self.populate_plugins()
         self.connect_signals()
 
+        self.txtSearch.setFocus()
+
     def connect_signals(self):
         self.treeTools.itemActivated.connect(self.item_activated)
         self.treeTools.itemSelectionChanged.connect(self.selection_changed)

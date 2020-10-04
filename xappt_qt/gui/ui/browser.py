@@ -36,6 +36,7 @@ class Ui_Browser(object):
 
         self.labelHelp = QLabel(self.centralwidget)
         self.labelHelp.setObjectName(u"labelHelp")
+        self.labelHelp.setWordWrap(True)
 
         self.gridLayout.addWidget(self.labelHelp, 1, 0, 1, 2)
 

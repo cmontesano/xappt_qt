@@ -59,7 +59,16 @@ class QtInterface(xappt.BaseInterface):
         self.instance.exec_()
 
     def message(self, message: str):
+        xappt.log.info(message)
         QtWidgets.QMessageBox.information(self.runner, APP_TITLE, message)
+
+    def warning(self, message: str):
+        xappt.log.warning(message)
+        QtWidgets.QMessageBox.warning(self.runner, APP_TITLE, message)
+
+    def error(self, message: str):
+        xappt.log.error(message)
+        QtWidgets.QMessageBox.critical(self.runner, APP_TITLE, message)
 
     def ask(self, message: str) -> bool:
         buttons = QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No

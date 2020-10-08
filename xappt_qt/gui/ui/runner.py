@@ -17,11 +17,52 @@ class Ui_RunDialog(object):
     def setupUi(self, RunDialog):
         if not RunDialog.objectName():
             RunDialog.setObjectName(u"RunDialog")
-        RunDialog.resize(700, 400)
+        RunDialog.resize(759, 695)
         self.gridLayout_2 = QGridLayout(RunDialog)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.gridLayout = QGridLayout()
+        self.splitter = QSplitter(RunDialog)
+        self.splitter.setObjectName(u"splitter")
+        self.splitter.setOrientation(Qt.Vertical)
+        self.splitter.setHandleWidth(12)
+        self.layoutWidget = QWidget(self.splitter)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.gridLayout = QGridLayout(self.layoutWidget)
         self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout.addItem(self.verticalSpacer, 1, 0, 1, 1)
+
+        self.placeholder = QLabel(self.layoutWidget)
+        self.placeholder.setObjectName(u"placeholder")
+        sizePolicy = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.placeholder.sizePolicy().hasHeightForWidth())
+        self.placeholder.setSizePolicy(sizePolicy)
+        self.placeholder.setAlignment(Qt.AlignCenter)
+
+        self.gridLayout.addWidget(self.placeholder, 0, 0, 1, 1)
+
+        self.progressBar = QProgressBar(self.layoutWidget)
+        self.progressBar.setObjectName(u"progressBar")
+        self.progressBar.setValue(0)
+        self.progressBar.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.progressBar, 2, 0, 1, 1)
+
+        self.splitter.addWidget(self.layoutWidget)
+        self.txtOutput = QTextEdit(self.splitter)
+        self.txtOutput.setObjectName(u"txtOutput")
+        self.txtOutput.setTabChangesFocus(True)
+        self.txtOutput.setUndoRedoEnabled(False)
+        self.txtOutput.setLineWrapMode(QTextEdit.NoWrap)
+        self.txtOutput.setReadOnly(True)
+        self.txtOutput.setTabStopWidth(40)
+        self.splitter.addWidget(self.txtOutput)
+
+        self.gridLayout_2.addWidget(self.splitter, 0, 0, 1, 1)
+
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -43,32 +84,7 @@ class Ui_RunDialog(object):
         self.horizontalLayout.addItem(self.horizontalSpacer_2)
 
 
-        self.gridLayout.addLayout(self.horizontalLayout, 3, 0, 1, 1)
-
-        self.placeholder = QLabel(RunDialog)
-        self.placeholder.setObjectName(u"placeholder")
-        sizePolicy = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.placeholder.sizePolicy().hasHeightForWidth())
-        self.placeholder.setSizePolicy(sizePolicy)
-        self.placeholder.setAlignment(Qt.AlignCenter)
-
-        self.gridLayout.addWidget(self.placeholder, 0, 0, 1, 1)
-
-        self.progressBar = QProgressBar(RunDialog)
-        self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setValue(0)
-        self.progressBar.setTextVisible(True)
-
-        self.gridLayout.addWidget(self.progressBar, 2, 0, 1, 1)
-
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout.addItem(self.verticalSpacer, 1, 0, 1, 1)
-
-
-        self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 1)
+        self.gridLayout_2.addLayout(self.horizontalLayout, 1, 0, 1, 1)
 
 
         self.retranslateUi(RunDialog)
@@ -78,9 +94,14 @@ class Ui_RunDialog(object):
 
     def retranslateUi(self, RunDialog):
         RunDialog.setWindowTitle(QCoreApplication.translate("RunDialog", u"Dialog", None))
-        self.btnOk.setText(QCoreApplication.translate("RunDialog", u"Run", None))
-        self.btnClose.setText(QCoreApplication.translate("RunDialog", u"Close", None))
         self.placeholder.setText(QCoreApplication.translate("RunDialog", u"placeholder", None))
         self.progressBar.setFormat("")
+        self.txtOutput.setHtml(QCoreApplication.translate("RunDialog", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;\" bgcolor=\"#000000\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
+        self.btnOk.setText(QCoreApplication.translate("RunDialog", u"Run", None))
+        self.btnClose.setText(QCoreApplication.translate("RunDialog", u"Close", None))
     # retranslateUi
 

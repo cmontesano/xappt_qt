@@ -16,16 +16,31 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         super().__init__()
         self.setupUi(self)
 
-        self.placeholder.setVisible(False)
+        self.set_window_attributes()
 
+        self.tool_plugin: Optional[BaseTool] = None
+        self.tool_widget: Optional[ToolPage] = None
+
+        self.setup_ui()
+
+    def set_window_attributes(self):
         flags = QtCore.Qt.Window
         flags |= QtCore.Qt.WindowCloseButtonHint
         flags |= QtCore.Qt.WindowMinimizeButtonHint
         self.setWindowFlags(flags)
         self.setWindowIcon(QtGui.QIcon(":appicon"))
 
-        self.tool_plugin: Optional[BaseTool] = None
-        self.tool_widget: Optional[ToolPage] = None
+    def init_ui(self):
+        self.placeholder.setVisible(False)
+
+        # noinspection PyArgumentList
+        font_size = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.GeneralFont).pointSizeF()
+        # noinspection PyArgumentList
+        mono_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
+        mono_font.setPointSizeF(font_size)
+        self.txtOutput.setFont(mono_font)
+
+        self.splitter.setSizes((self.height(), 0))
 
     def clear(self):
         if self.tool_widget is not None:

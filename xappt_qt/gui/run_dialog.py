@@ -21,7 +21,7 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         self.tool_plugin: Optional[BaseTool] = None
         self.tool_widget: Optional[ToolPage] = None
 
-        self.setup_ui()
+        self.init_ui()
 
     def set_window_attributes(self):
         flags = QtCore.Qt.Window

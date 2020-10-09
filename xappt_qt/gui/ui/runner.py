@@ -17,23 +17,33 @@ class Ui_RunDialog(object):
     def setupUi(self, RunDialog):
         if not RunDialog.objectName():
             RunDialog.setObjectName(u"RunDialog")
-        RunDialog.resize(759, 695)
+        RunDialog.resize(753, 645)
         self.gridLayout_2 = QGridLayout(RunDialog)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.splitter = QSplitter(RunDialog)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Vertical)
         self.splitter.setHandleWidth(12)
-        self.layoutWidget = QWidget(self.splitter)
-        self.layoutWidget.setObjectName(u"layoutWidget")
-        self.gridLayout = QGridLayout(self.layoutWidget)
+        self.widget = QWidget(self.splitter)
+        self.widget.setObjectName(u"widget")
+        self.verticalLayout_2 = QVBoxLayout(self.widget)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.scrollArea = QScrollArea(self.widget)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 731, 186))
+        self.verticalLayout = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.gridLayout.addItem(self.verticalSpacer, 1, 0, 1, 1)
 
-        self.placeholder = QLabel(self.layoutWidget)
+        self.placeholder = QLabel(self.scrollAreaWidgetContents)
         self.placeholder.setObjectName(u"placeholder")
         sizePolicy = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -44,14 +54,21 @@ class Ui_RunDialog(object):
 
         self.gridLayout.addWidget(self.placeholder, 0, 0, 1, 1)
 
-        self.progressBar = QProgressBar(self.layoutWidget)
+
+        self.verticalLayout.addLayout(self.gridLayout)
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+
+        self.verticalLayout_2.addWidget(self.scrollArea)
+
+        self.progressBar = QProgressBar(self.widget)
         self.progressBar.setObjectName(u"progressBar")
         self.progressBar.setValue(0)
         self.progressBar.setTextVisible(True)
 
-        self.gridLayout.addWidget(self.progressBar, 2, 0, 1, 1)
+        self.verticalLayout_2.addWidget(self.progressBar)
 
-        self.splitter.addWidget(self.layoutWidget)
+        self.splitter.addWidget(self.widget)
         self.txtOutput = QTextEdit(self.splitter)
         self.txtOutput.setObjectName(u"txtOutput")
         self.txtOutput.setTabChangesFocus(True)

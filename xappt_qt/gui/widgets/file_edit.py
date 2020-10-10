@@ -52,6 +52,7 @@ class FileEdit(QtWidgets.QWidget):
             self._default_path = filename
         elif os.path.isfile(filename):
             self._default_path = os.path.dirname(filename)
+        # noinspection PyUnresolvedReferences
         self.onSetFile.emit(filename)
 
     def setPlaceholderText(self, s):

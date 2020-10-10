@@ -71,8 +71,11 @@ class ToolPage(QtWidgets.QWidget):
             widget.setToolTip(param.description)
             self.grid.addWidget(label, i, 0)
             self.grid.addWidget(widget, i, 1)
+            param.metadata['label'] = label
             param.metadata['widget'] = widget  # this lets us avoid lambdas
             param.on_choices_changed.add(self.update_tool_choices)
+            param.on_value_changed.add(self.widget_value_updated)
+            param.on_options_changed.add(self.widget_options_updated)
 
     def convert_parameter(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         convert_fn = self.convert_dispatch.get(param.data_type)
@@ -102,6 +105,7 @@ class ToolPage(QtWidgets.QWidget):
         else:
             param.value = w.currentIndex()
         w.currentIndexChanged[int].connect(lambda x: self.update_tool_param(param.name, x))
+        param.metadata['ui-setter'] = w.setCurrentIndex
         return w
 
     def _convert_int_spin(self, param: xappt.Parameter) -> QtWidgets.QWidget:
@@ -117,6 +121,7 @@ class ToolPage(QtWidgets.QWidget):
         else:
             param.value = w.value()
         w.valueChanged[int].connect(lambda x: self.update_tool_param(param.name, x))
+        param.metadata['ui-setter'] = w.setValue
         return w
 
     def _convert_bool(self, param: xappt.Parameter) -> QtWidgets.QWidget:
@@ -128,6 +133,7 @@ class ToolPage(QtWidgets.QWidget):
         else:
             param.value = w.isChecked()
         w.stateChanged.connect(lambda x: self.update_tool_param(param.name, x == QtCore.Qt.Checked))
+        param.metadata['ui-setter'] = w.setChecked
         return w
 
     def _convert_str(self, param: xappt.Parameter) -> QtWidgets.QWidget:
@@ -148,6 +154,7 @@ class ToolPage(QtWidgets.QWidget):
         else:
             param.value = w.currentText()
         w.currentIndexChanged[str].connect(lambda x: self.update_tool_param(param.name, x))
+        param.metadata['ui-setter'] = lambda s, widget=w: widget.setCurrentIndex(widget.findText(s))
         return w
 
     def _convert_str_edit(self, param: xappt.Parameter) -> QtWidgets.QWidget:
@@ -171,6 +178,7 @@ class ToolPage(QtWidgets.QWidget):
                 break
         else:
             w.setText("")
+        param.metadata['ui-setter'] = w.setText
         return w
 
     # noinspection DuplicatedCode
@@ -184,6 +192,7 @@ class ToolPage(QtWidgets.QWidget):
             w.setValue(param.default)
         param.value = w.value()
         w.valueChanged[float].connect(lambda x: self.update_tool_param(param.name, x))
+        param.metadata['ui-setter'] = w.setValue
         return w
 
     def _convert_list(self, param: xappt.Parameter) -> QtWidgets.QWidget:
@@ -202,6 +211,7 @@ class ToolPage(QtWidgets.QWidget):
                 break
         param.value = self._get_selected_list_items(w)
         w.itemSelectionChanged.connect(lambda: self.update_list_param(param.name))
+        param.metadata['ui-setter'] = lambda value, widget=w: self.set_list_value(value, widget)
         return w
 
     @staticmethod
@@ -214,8 +224,38 @@ class ToolPage(QtWidgets.QWidget):
         if widget is None:
             return
         selected_items = self._get_selected_list_items(widget)
+        param.on_value_changed.paused = True
         param.value = param.validate(selected_items)
+        param.on_value_changed.paused = False
 
     def update_tool_param(self, name: str, value: Any):
         param: xappt.Parameter = getattr(self.tool, name)
         param.value = param.validate(value)
+
+    @staticmethod
+    def set_list_value(items: List[str], widget: QtWidgets.QListWidget):
+        for item in items:
+            for match in widget.findItems(item, QtCore.Qt.MatchExactly):
+                match.setSelected(True)
+
+    @staticmethod
+    def widget_value_updated(param: xappt.Parameter):
+        setter = param.metadata.get('ui-setter')
+        if setter is None:
+            return
+        setter(param.value)
+
+    @staticmethod
+    def widget_options_updated(param: xappt.Parameter):
+        label: Optional[QtWidgets.QLabel] = param.metadata.get('label')
+        widget: Optional[QtWidgets.QWidget] = param.metadata.get('widget')
+
+        visible = param.option("visible", True)
+        if label is not None:
+            label.setVisible(visible)
+        if widget is not None:
+            widget.setVisible(visible)
+
+        enabled = param.option("enabled", True)
+        if widget is not None:
+            widget.setEnabled(enabled)

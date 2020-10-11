@@ -46,6 +46,9 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         half_height = int(self.height() * 0.5)
         self.splitter.setSizes((half_height, half_height))
 
+    def clear_console(self):
+        self.txtOutput.clear()
+
     def clear(self):
         if self.tool_widget is not None:
             index = self.gridLayout.indexOf(self.tool_widget)

@@ -1,7 +1,7 @@
 import os
 import sys
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 
 import xappt
 from xappt import BaseTool
@@ -45,6 +45,8 @@ class QtInterface(xappt.BaseInterface):
     def __init__(self):
         super().__init__()
         self.runner = RunDialog()
+        self.__runner_close_event = self.runner.closeEvent
+        self.runner.closeEvent = self.close_event
         self.runner.btnOk.clicked.connect(self.on_run)
         self.runner.btnClose.clicked.connect(self.on_close)
 
@@ -117,3 +119,11 @@ class QtInterface(xappt.BaseInterface):
 
     def write_console_err(self, s: str):
         return self.runner.add_output_line(s, error=True)
+
+    def close_event(self, event: QtGui.QCloseEvent):
+        tool_plugin = self.runner.tool_plugin
+        if tool_plugin is not None:
+            if hasattr(tool_plugin, "can_close"):
+                if not tool_plugin.can_close():
+                    return event.ignore()
+        return self.__runner_close_event(event)

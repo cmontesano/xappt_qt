@@ -1,6 +1,6 @@
 from typing import Optional
 
-from PySide2 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from xappt import BaseTool
 
@@ -40,14 +40,28 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         mono_font.setPointSizeF(font_size)
         self.txtOutput.setFont(mono_font)
 
-        self.splitter.setSizes((self.height(), 0))
+        self.hide_console()
+
+    def closeEvent(self, event: QtGui.QCloseEvent):
+        self.clear()
+        return super().closeEvent(event)
 
     def show_console(self):
-        half_height = self.height() * 0.5
+        half_height = int(self.height() * 0.5)
         self.splitter.setSizes((half_height, half_height))
+
+    def hide_console(self):
+        self.splitter.setSizes((self.height(), 0))
+
+    def is_console_visible(self) -> bool:
+        return self.txtOutput.isVisible()
+
+    def clear_console(self):
+        self.txtOutput.clear()
 
     def clear(self):
         if self.tool_widget is not None:
+            self.tool_widget.disconnect()
             index = self.gridLayout.indexOf(self.tool_widget)
             self.gridLayout.takeAt(index)
             self.tool_widget.deleteLater()

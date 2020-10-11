@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, Type
 
-from PySide2 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 import xappt
 
@@ -28,6 +28,7 @@ class ToolPage(QtWidgets.QWidget):
         self.grid = QtWidgets.QGridLayout()
         self.grid.setColumnStretch(0, 0)
         self.grid.setColumnStretch(1, 1)
+        self.grid.setColumnStretch(0, 0)
         self.grid.setHorizontalSpacing(16)
         self.grid.setVerticalSpacing(8)
 
@@ -69,10 +70,13 @@ class ToolPage(QtWidgets.QWidget):
             label.setToolTip(param.description)
             widget = self.convert_parameter(param)
             widget.setToolTip(param.description)
+            error = ErrorLabel()
             self.grid.addWidget(label, i, 0)
             self.grid.addWidget(widget, i, 1)
+            self.grid.addWidget(error, i, 2)
             param.metadata['label'] = label
             param.metadata['widget'] = widget  # this lets us avoid lambdas
+            param.metadata['error'] = error
             param.on_choices_changed.add(self.update_tool_choices)
             param.on_value_changed.add(self.widget_value_updated)
             param.on_options_changed.add(self.widget_options_updated)
@@ -198,6 +202,7 @@ class ToolPage(QtWidgets.QWidget):
     def _convert_list(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         w = QtWidgets.QListWidget()
         w.setItemDelegate(SimpleItemDelegate())
+        # noinspection PyUnresolvedReferences
         w.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
         w.setAlternatingRowColors(True)
         w.setSpacing(2)
@@ -230,7 +235,13 @@ class ToolPage(QtWidgets.QWidget):
 
     def update_tool_param(self, name: str, value: Any):
         param: xappt.Parameter = getattr(self.tool, name)
-        param.value = param.validate(value)
+        error: ErrorLabel = param.metadata['error']
+        try:
+            param.value = param.validate(value)
+        except xappt.ParameterValidationError as e:
+            error.set_error(str(e))
+        else:
+            error.reset()
 
     @staticmethod
     def set_list_value(items: List[str], widget: QtWidgets.QListWidget):
@@ -249,13 +260,22 @@ class ToolPage(QtWidgets.QWidget):
     def widget_options_updated(param: xappt.Parameter):
         label: Optional[QtWidgets.QLabel] = param.metadata.get('label')
         widget: Optional[QtWidgets.QWidget] = param.metadata.get('widget')
+        error: Optional[ErrorLabel] = param.metadata.get('error')
 
         visible = param.option("visible", True)
         if label is not None:
             label.setVisible(visible)
         if widget is not None:
             widget.setVisible(visible)
+        if error is not None:
+            error.setVisible(visible)
 
         enabled = param.option("enabled", True)
         if widget is not None:
             widget.setEnabled(enabled)
+
+    def disconnect(self):
+        for param in self.tool.parameters():
+            param.on_value_changed.clear()
+            param.on_options_changed.clear()
+            param.on_choices_changed.clear()

@@ -4,7 +4,7 @@ import sys
 from collections import defaultdict
 from typing import DefaultDict, List, Optional, Type
 
-from PySide2 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 import xappt
 
@@ -81,10 +81,11 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         item_type = item.data(column, self.ROLE_ITEM_TYPE)
         if item_type != self.ITEM_TYPE_TOOL:
             return
-        tool_class = item.data(column, self.ROLE_TOOL_CLASS)
         interface = xappt.get_interface()
         self.interfaces.append(interface)
-        interface.invoke(tool_class())
+        tool_class: Type[xappt.BaseTool] = item.data(column, self.ROLE_TOOL_CLASS)
+        tool_instance = tool_class(interface=interface)
+        interface.invoke(tool_instance)
 
     def selection_changed(self):
         help_text = ""
@@ -105,6 +106,7 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
 
     def on_filter_tools(self, text: str):
         if len(text) == 0:
+            # noinspection PyTypeChecker
             iterator = QtWidgets.QTreeWidgetItemIterator(self.treeTools, QtWidgets.QTreeWidgetItemIterator.All)
             while iterator.value():
                 item = iterator.value()

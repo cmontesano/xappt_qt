@@ -1,7 +1,9 @@
 import os
 import sys
 
-from PySide2 import QtWidgets
+from typing import Optional
+
+from PyQt5 import QtWidgets, QtGui
 
 import xappt
 from xappt import BaseTool
@@ -45,8 +47,10 @@ class QtInterface(xappt.BaseInterface):
     def __init__(self):
         super().__init__()
         self.runner = RunDialog()
-        self.runner.btnOk.clicked.connect(self.on_run)
-        self.runner.btnClose.clicked.connect(self.on_close)
+        self.__runner_close_event = self.runner.closeEvent
+        self.runner.closeEvent = self.close_event
+        self.runner.btnOk.clicked.connect(self._on_run)
+        self.runner.btnClose.clicked.connect(self.close)
 
     @classmethod
     def name(cls) -> str:
@@ -66,9 +70,13 @@ class QtInterface(xappt.BaseInterface):
         xappt.log.warning(message)
         QtWidgets.QMessageBox.warning(self.runner, APP_TITLE, message)
 
-    def error(self, message: str):
-        xappt.log.error(message)
+    def error(self, message: str, *, details: Optional[str] = None):
+        xappt.log.error(message, )
         QtWidgets.QMessageBox.critical(self.runner, APP_TITLE, message)
+        if details is not None and len(details):
+            self.write_console_err(f"\n{details}\n")
+            if not self.is_console_visible():
+                self.show_console()
 
     def ask(self, message: str) -> bool:
         buttons = QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
@@ -81,7 +89,7 @@ class QtInterface(xappt.BaseInterface):
         self.instance.app.processEvents()
 
     def progress_update(self, message: str, percent_complete: float):
-        self.runner.progressBar.setValue(100.0 * percent_complete)
+        self.runner.progressBar.setValue(int(100.0 * percent_complete))
         self.runner.progressBar.setFormat(message)
         self.instance.app.processEvents()
 
@@ -90,18 +98,48 @@ class QtInterface(xappt.BaseInterface):
         self.runner.progressBar.setFormat("")
         self.instance.app.processEvents()
 
-    def on_run(self):
+    def _on_run(self):
         try:
             self.runner.tool_plugin.validate()
         except xappt.ParameterValidationError as e:
             self.message(str(e))
             return
-        self.runner.btnOk.setEnabled(False)
-        self.runner.tool_widget.setEnabled(False)
-        result = self.runner.tool_plugin.execute(interface=self)
-        if result != 0:
-            self.runner.btnOk.setEnabled(True)
-            self.runner.tool_widget.setEnabled(True)
 
-    def on_close(self):
+        self.enable_ui(False)
+        self.runner.tool_plugin.execute(interface=self)
+        self.enable_ui(True)
+
+    def enable_ui(self, enabled: bool):
+        self.runner.btnOk.setEnabled(enabled)
+        self.runner.tool_widget.setEnabled(enabled)
+
+    def close(self):
         self.runner.close()
+
+    def clear_console(self):
+        self.runner.clear_console()
+
+    def show_console(self):
+        self.runner.show_console()
+
+    def hide_console(self):
+        self.runner.hide_console()
+
+    def is_console_visible(self) -> bool:
+        return self.runner.is_console_visible()
+
+    def write_console_out(self, s: str):
+        for line in s.splitlines():
+            self.runner.add_output_line(line, error=False)
+
+    def write_console_err(self, s: str):
+        for line in s.splitlines():
+            self.runner.add_output_line(line, error=True)
+
+    def close_event(self, event: QtGui.QCloseEvent):
+        tool_plugin = self.runner.tool_plugin
+        if tool_plugin is not None:
+            if hasattr(tool_plugin, "can_close"):
+                if not tool_plugin.can_close():
+                    return event.ignore()
+        return self.__runner_close_event(event)

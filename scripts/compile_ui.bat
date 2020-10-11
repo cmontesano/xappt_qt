@@ -8,6 +8,6 @@ SET PY_PATH=%SCRIPT_PATH%\..\xappt_qt\gui\ui
 
 cd %UI_PATH%
 
-FOR %%I IN (*.ui) DO (pyside2-uic "%%I" -o "%PY_PATH%\%%~nI.py")
+FOR %%I IN (*.ui) DO (pyuic5 "%%I" -o "%PY_PATH%\%%~nI.py")
 
 cd %OLD_CWD%

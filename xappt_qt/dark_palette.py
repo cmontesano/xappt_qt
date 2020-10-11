@@ -3,8 +3,8 @@
 
 # adapted from https://gist.github.com/lschmierer/443b8e21ad93e2a2d7eb
 
-from PySide2.QtGui import QPalette, QColor
-from PySide2.QtCore import Qt
+from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtCore import Qt
 
 PRIMARY_COLOR = QColor(32, 32, 32)
 SECONDARY_COLOR = PRIMARY_COLOR.darker(150)

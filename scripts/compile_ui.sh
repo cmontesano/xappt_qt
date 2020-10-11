@@ -10,7 +10,7 @@ cd $UI_PATH
 
 for i in *.ui;
   do
-    pyside2-uic "$i" -o "$PY_PATH/${i%.*}.py";
+    pyuic5 "$i" -o "$PY_PATH/${i%.*}.py";
   done
 
 cd $OLD_CWD

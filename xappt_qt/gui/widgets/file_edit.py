@@ -1,14 +1,14 @@
 import os
 
-from PySide2 import QtWidgets
-from PySide2 import QtCore
-from PySide2 import QtGui
+from PyQt5 import QtWidgets
+from PyQt5 import QtCore
+from PyQt5 import QtGui
 
 
 # noinspection PyPep8Naming
 class FileEdit(QtWidgets.QWidget):
     # noinspection PyUnresolvedReferences
-    onSetFile = QtCore.Signal(str)
+    onSetFile = QtCore.pyqtSignal(str)
 
     MODE_OPEN_FILE = 0
     MODE_SAVE_FILE = 1
@@ -31,7 +31,7 @@ class FileEdit(QtWidgets.QWidget):
         self._btnBrowse.setText('...')
         self._btnBrowse.setAcceptDrops(False)
 
-        self._hLayout.setMargin(0)
+        self._hLayout.setContentsMargins(0, 0, 0, 0)
         self._hLayout.addWidget(self._lineEdit)
         self._hLayout.addWidget(self._btnBrowse)
 

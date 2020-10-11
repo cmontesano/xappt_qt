@@ -43,7 +43,7 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         self.splitter.setSizes((self.height(), 0))
 
     def show_console(self):
-        half_height = self.height() * 0.5
+        half_height = int(self.height() * 0.5)
         self.splitter.setSizes((half_height, half_height))
 
     def clear(self):

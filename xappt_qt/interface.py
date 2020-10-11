@@ -48,7 +48,7 @@ class QtInterface(xappt.BaseInterface):
         self.__runner_close_event = self.runner.closeEvent
         self.runner.closeEvent = self.close_event
         self.runner.btnOk.clicked.connect(self.on_run)
-        self.runner.btnClose.clicked.connect(self.on_close)
+        self.runner.btnClose.clicked.connect(self.close)
 
     @classmethod
     def name(cls) -> str:
@@ -107,7 +107,7 @@ class QtInterface(xappt.BaseInterface):
         self.runner.btnOk.setEnabled(enabled)
         self.runner.tool_widget.setEnabled(enabled)
 
-    def on_close(self):
+    def close(self):
         self.runner.close()
 
     def clear_console(self):

@@ -81,7 +81,7 @@ class QtInterface(xappt.BaseInterface):
         self.instance.app.processEvents()
 
     def progress_update(self, message: str, percent_complete: float):
-        self.runner.progressBar.setValue(100.0 * percent_complete)
+        self.runner.progressBar.setValue(int(100.0 * percent_complete))
         self.runner.progressBar.setFormat(message)
         self.instance.app.processEvents()
 

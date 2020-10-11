@@ -40,7 +40,7 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         mono_font.setPointSizeF(font_size)
         self.txtOutput.setFont(mono_font)
 
-        self.splitter.setSizes((self.height(), 0))
+        self.hide_console()
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         self.clear()
@@ -49,6 +49,12 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
     def show_console(self):
         half_height = int(self.height() * 0.5)
         self.splitter.setSizes((half_height, half_height))
+
+    def hide_console(self):
+        self.splitter.setSizes((self.height(), 0))
+
+    def is_console_visible(self) -> bool:
+        return self.txtOutput.isVisible()
 
     def clear_console(self):
         self.txtOutput.clear()

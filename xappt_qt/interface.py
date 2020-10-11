@@ -116,6 +116,12 @@ class QtInterface(xappt.BaseInterface):
     def show_console(self):
         self.runner.show_console()
 
+    def hide_console(self):
+        self.runner.hide_console()
+
+    def is_console_visible(self) -> bool:
+        return self.runner.is_console_visible()
+
     def write_console_out(self, s: str):
         return self.runner.add_output_line(s, error=False)
 

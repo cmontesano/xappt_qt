@@ -107,7 +107,11 @@ class QtInterface(xappt.BaseInterface):
 
         self.enable_ui(False)
         self.runner.tool_plugin.execute(interface=self)
-        self.enable_ui(True)
+        try:
+            self.enable_ui(True)
+        except AttributeError:
+            # this can happen if the tool asks the interface to close during execute
+            pass
 
     def enable_ui(self, enabled: bool):
         self.runner.btnOk.setEnabled(enabled)

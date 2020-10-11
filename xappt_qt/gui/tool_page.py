@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, Type
 
-from PySide2 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 import xappt
 
@@ -198,6 +198,7 @@ class ToolPage(QtWidgets.QWidget):
     def _convert_list(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         w = QtWidgets.QListWidget()
         w.setItemDelegate(SimpleItemDelegate())
+        # noinspection PyUnresolvedReferences
         w.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
         w.setAlternatingRowColors(True)
         w.setSpacing(2)

@@ -83,7 +83,7 @@ def main():
         'author': 'Christopher Montesano',
         'author_email': 'cmdev.00+xappt@gmail.com',
         'url': 'https://github.com/cmontesano/xappt_qt',
-        'description': 'Qt/PySide2 interface plugin for xappt.',
+        'description': 'Qt/PyQt5 interface plugin for xappt.',
         'long_description': long_description(),
         'long_description_content_type': 'text/markdown',
         'packages': build_package_list('xappt_qt'),

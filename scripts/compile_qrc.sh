@@ -10,7 +10,7 @@ cd $QRC_PATH
 
 for i in *.qrc;
   do
-    pyside2-rcc "$i" -o "$PY_PATH/${i%.*}.py";
+    pyrcc5 "$i" -o "$PY_PATH/${i%.*}.py";
   done
 
 cd $OLD_CWD

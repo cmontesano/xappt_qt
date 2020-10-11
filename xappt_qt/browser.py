@@ -4,7 +4,7 @@ import sys
 from collections import defaultdict
 from typing import DefaultDict, List, Optional, Type
 
-from PySide2 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 import xappt
 
@@ -105,6 +105,7 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
 
     def on_filter_tools(self, text: str):
         if len(text) == 0:
+            # noinspection PyTypeChecker
             iterator = QtWidgets.QTreeWidgetItemIterator(self.treeTools, QtWidgets.QTreeWidgetItemIterator.All)
             while iterator.value():
                 item = iterator.value()

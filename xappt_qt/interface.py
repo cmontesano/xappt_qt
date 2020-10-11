@@ -1,7 +1,7 @@
 import os
 import sys
 
-from PySide2 import QtWidgets
+from PyQt5 import QtWidgets
 
 import xappt
 from xappt import BaseTool

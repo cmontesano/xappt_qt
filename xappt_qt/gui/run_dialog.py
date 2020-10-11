@@ -1,6 +1,6 @@
 from typing import Optional
 
-from PySide2 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from xappt import BaseTool
 

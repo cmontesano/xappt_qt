@@ -47,7 +47,7 @@ class QtInterface(xappt.BaseInterface):
         self.runner = RunDialog()
         self.__runner_close_event = self.runner.closeEvent
         self.runner.closeEvent = self.close_event
-        self.runner.btnOk.clicked.connect(self.on_run)
+        self.runner.btnOk.clicked.connect(self._on_run)
         self.runner.btnClose.clicked.connect(self.close)
 
     @classmethod
@@ -92,7 +92,7 @@ class QtInterface(xappt.BaseInterface):
         self.runner.progressBar.setFormat("")
         self.instance.app.processEvents()
 
-    def on_run(self):
+    def _on_run(self):
         try:
             self.runner.tool_plugin.validate()
         except xappt.ParameterValidationError as e:

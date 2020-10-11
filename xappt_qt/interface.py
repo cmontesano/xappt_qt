@@ -1,6 +1,8 @@
 import os
 import sys
 
+from typing import Optional
+
 from PyQt5 import QtWidgets, QtGui
 
 import xappt
@@ -68,9 +70,13 @@ class QtInterface(xappt.BaseInterface):
         xappt.log.warning(message)
         QtWidgets.QMessageBox.warning(self.runner, APP_TITLE, message)
 
-    def error(self, message: str):
-        xappt.log.error(message)
+    def error(self, message: str, *, details: Optional[str] = None):
+        xappt.log.error(message, )
         QtWidgets.QMessageBox.critical(self.runner, APP_TITLE, message)
+        if details is not None and len(details):
+            self.write_console_err(f"\n{details}\n")
+            if not self.is_console_visible():
+                self.show_console()
 
     def ask(self, message: str) -> bool:
         buttons = QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No

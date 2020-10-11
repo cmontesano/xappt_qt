@@ -98,13 +98,14 @@ class QtInterface(xappt.BaseInterface):
         except xappt.ParameterValidationError as e:
             self.message(str(e))
             return
-        self.runner.btnOk.setEnabled(False)
-        self.runner.tool_widget.setEnabled(False)
 
+        self.enable_ui(False)
         self.runner.tool_plugin.execute(interface=self)
+        self.enable_ui(True)
 
-        self.runner.btnOk.setEnabled(True)
-        self.runner.tool_widget.setEnabled(True)
+    def enable_ui(self, enabled: bool):
+        self.runner.btnOk.setEnabled(enabled)
+        self.runner.tool_widget.setEnabled(enabled)
 
     def on_close(self):
         self.runner.close()

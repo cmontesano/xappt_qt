@@ -105,3 +105,15 @@ class QtInterface(xappt.BaseInterface):
 
     def on_close(self):
         self.runner.close()
+
+    def clear_console(self):
+        self.runner.clear_console()
+
+    def show_console(self):
+        self.runner.show_console()
+
+    def write_console_out(self, s: str):
+        return self.runner.add_output_line(s, error=False)
+
+    def write_console_err(self, s: str):
+        return self.runner.add_output_line(s, error=True)

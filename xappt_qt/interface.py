@@ -123,10 +123,12 @@ class QtInterface(xappt.BaseInterface):
         return self.runner.is_console_visible()
 
     def write_console_out(self, s: str):
-        return self.runner.add_output_line(s, error=False)
+        for line in s.splitlines():
+            self.runner.add_output_line(line, error=False)
 
     def write_console_err(self, s: str):
-        return self.runner.add_output_line(s, error=True)
+        for line in s.splitlines():
+            self.runner.add_output_line(line, error=True)
 
     def close_event(self, event: QtGui.QCloseEvent):
         tool_plugin = self.runner.tool_plugin

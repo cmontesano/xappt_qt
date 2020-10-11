@@ -231,7 +231,10 @@ class ToolPage(QtWidgets.QWidget):
 
     def update_tool_param(self, name: str, value: Any):
         param: xappt.Parameter = getattr(self.tool, name)
-        param.value = param.validate(value)
+        try:
+            param.value = param.validate(value)
+        except xappt.ParameterValidationError as e:
+            print(e)
 
     @staticmethod
     def set_list_value(items: List[str], widget: QtWidgets.QListWidget):

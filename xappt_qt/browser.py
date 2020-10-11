@@ -84,7 +84,7 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         tool_class = item.data(column, self.ROLE_TOOL_CLASS)
         interface = xappt.get_interface()
         self.interfaces.append(interface)
-        interface.invoke(tool_class())
+        interface.invoke(tool_class(interface=interface))
 
     def selection_changed(self):
         help_text = ""

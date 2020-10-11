@@ -51,6 +51,7 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
 
     def clear(self):
         if self.tool_widget is not None:
+            self.tool_widget.disconnect()
             index = self.gridLayout.indexOf(self.tool_widget)
             self.gridLayout.takeAt(index)
             self.tool_widget.deleteLater()

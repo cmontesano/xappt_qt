@@ -260,3 +260,9 @@ class ToolPage(QtWidgets.QWidget):
         enabled = param.option("enabled", True)
         if widget is not None:
             widget.setEnabled(enabled)
+
+    def disconnect(self):
+        for param in self.tool.parameters():
+            param.on_value_changed.clear()
+            param.on_options_changed.clear()
+            param.on_choices_changed.clear()

@@ -68,15 +68,18 @@ class ToolPage(QtWidgets.QWidget):
             label = QtWidgets.QLabel(self.get_caption(param))
             label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             label.setToolTip(param.description)
+            param.metadata['label'] = label
+            self.grid.addWidget(label, i, 0)
+
+            error = ErrorLabel()
+            param.metadata['error'] = error
+            self.grid.addWidget(error, i, 2)
+
             widget = self.convert_parameter(param)
             widget.setToolTip(param.description)
-            error = ErrorLabel()
-            self.grid.addWidget(label, i, 0)
-            self.grid.addWidget(widget, i, 1)
-            self.grid.addWidget(error, i, 2)
-            param.metadata['label'] = label
             param.metadata['widget'] = widget  # this lets us avoid lambdas
-            param.metadata['error'] = error
+            self.grid.addWidget(widget, i, 1)
+
             param.on_choices_changed.add(self.update_tool_choices)
             param.on_value_changed.add(self.widget_value_updated)
             param.on_options_changed.add(self.widget_options_updated)

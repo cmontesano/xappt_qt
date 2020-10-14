@@ -105,7 +105,10 @@ def main():
             'Programming Language :: Python :: 3.9',
         ],
         'entry_points': {
-            'console_scripts': ['xappt-browser=xappt_qt.browser:entry_point'],
+            'console_scripts': [
+                'xappt-browser=xappt_qt.browser:entry_point',
+                'xappt-launcher=xappt_qt.launcher:entry_point',
+            ],
         },
     }
 

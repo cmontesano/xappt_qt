@@ -8,6 +8,8 @@ def default_config() -> ConfigParser:
     config = ConfigParser()
     config['browser'] = {
         'launch-new-process': 'true',
+        'width': '350',
+        'height': '600',
     }
     return config
 

@@ -42,11 +42,18 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
 
     def load_settings(self):
         config = read_config()
-        self.chkLaunchNewProcess.setChecked(config.getboolean('browser', 'launch-new-process'))
+        # noinspection PyBroadException
+        try:
+            self.chkLaunchNewProcess.setChecked(config.getboolean('browser', 'launch-new-process'))
+            self.setGeometry(0, 0, config.getint('browser', 'width'), config.getint('browser', 'height'))
+        except BaseException:
+            pass
 
     def save_settings(self):
         config = default_config()
         config['browser']['launch-new-process'] = str(self.chkLaunchNewProcess.isChecked())
+        config['browser']['width'] = str(self.width())
+        config['browser']['height'] = str(self.height())
         write_config(config)
 
     def connect_signals(self):

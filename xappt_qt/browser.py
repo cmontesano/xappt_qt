@@ -1,8 +1,10 @@
 import os
+import platform
+import subprocess
 import sys
 
 from collections import defaultdict
-from typing import DefaultDict, List, Optional, Type
+from typing import DefaultDict, List, Optional, Tuple, Type
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -81,11 +83,21 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         item_type = item.data(column, self.ROLE_ITEM_TYPE)
         if item_type != self.ITEM_TYPE_TOOL:
             return
-        interface = xappt.get_interface()
-        self.interfaces.append(interface)
         tool_class: Type[xappt.BaseTool] = item.data(column, self.ROLE_TOOL_CLASS)
-        tool_instance = tool_class(interface=interface)
-        interface.invoke(tool_instance)
+        self.launch_tool(tool_class)
+
+    @staticmethod
+    def launch_command(tool_name: str) -> Tuple:
+        return sys.executable, "-m", "xappt_qt.launcher", tool_name
+
+    def launch_tool(self, tool_class: Type[xappt.BaseTool]):
+        tool_name = tool_class.name()
+        launch_command = self.launch_command(tool_name)
+        if platform.system() == "Windows":
+            proc = subprocess.Popen(launch_command, creationflags=subprocess.CREATE_NEW_CONSOLE)
+        else:
+            proc = subprocess.Popen(launch_command)
+        print(f"Launched process {proc.pid}")
 
     def selection_changed(self):
         help_text = ""

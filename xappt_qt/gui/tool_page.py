@@ -80,6 +80,8 @@ class ToolPage(QtWidgets.QWidget):
             param.metadata['widget'] = widget  # this lets us avoid lambdas
             self.grid.addWidget(widget, i, 1)
 
+            self.widget_options_updated(param)
+
             param.on_choices_changed.add(self.update_tool_choices)
             param.on_value_changed.add(self.widget_value_updated)
             param.on_options_changed.add(self.widget_options_updated)

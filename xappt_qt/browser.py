@@ -38,7 +38,7 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
 
         self.txtSearch.setFocus()
 
-        self.settings_file_path = os.path.join(APP_CONFIG_PATH, "browser.cfg")
+        self.config_path = APP_CONFIG_PATH.joinpath("browser.cfg")
         self.init_config()
         self.load_config()
 

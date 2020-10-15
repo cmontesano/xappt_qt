@@ -52,7 +52,7 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
                              loader=lambda x: self.setGeometry(0, 0, *x),
                              default=(350, 600))
         self.add_config_item('window-position',
-                             saver=lambda: (self.x(), self.y()),
+                             saver=lambda: (self.geometry().x(), self.geometry().y()),
                              loader=lambda x: self.set_window_position(*x),
                              default=(-1, -1))
 

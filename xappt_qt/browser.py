@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 from collections import defaultdict
-from typing import DefaultDict, List, Optional, Tuple, Type
+from typing import DefaultDict, List, Tuple, Type
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -14,13 +14,12 @@ from xappt_qt.gui.ui.browser import Ui_Browser
 from xappt_qt.gui.delegates import SimpleItemDelegate
 from xappt_qt.dark_palette import apply_palette
 from xappt_qt.constants import *
-from xappt_qt.config import default_config, read_config, write_config
 
 # noinspection PyUnresolvedReferences
 from xappt_qt.gui.resources import icons
 
 
-class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
+class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
     ROLE_TOOL_CLASS = QtCore.Qt.UserRole + 1
     ROLE_ITEM_TYPE = QtCore.Qt.UserRole + 2
 
@@ -29,6 +28,7 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
 
     def __init__(self):
         super().__init__()
+
         self.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(":appicon"))
         self.treeTools.setItemDelegate(SimpleItemDelegate())
@@ -38,23 +38,36 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
 
         self.txtSearch.setFocus()
 
-        self.load_settings()
+        self.settings_file_path = os.path.join(APP_CONFIG_PATH, "browser.cfg")
+        self.init_config()
+        self.load_config()
 
-    def load_settings(self):
-        config = read_config()
-        # noinspection PyBroadException
-        try:
-            self.chkLaunchNewProcess.setChecked(config.getboolean('browser', 'launch-new-process'))
-            self.setGeometry(0, 0, config.getint('browser', 'width'), config.getint('browser', 'height'))
-        except BaseException:
-            pass
+    def init_config(self):
+        self.add_config_item('launch-new-process',
+                             saver=self.chkLaunchNewProcess.isChecked,
+                             loader=self.chkLaunchNewProcess.setChecked,
+                             default=True)
+        self.add_config_item('window-size',
+                             saver=lambda: (self.width(), self.height()),
+                             loader=lambda x: self.setGeometry(0, 0, *x),
+                             default=(350, 600))
+        self.add_config_item('window-position',
+                             saver=lambda: (self.x(), self.y()),
+                             loader=lambda x: self.set_window_position(*x),
+                             default=(-1, -1))
 
-    def save_settings(self):
-        config = default_config()
-        config['browser']['launch-new-process'] = str(self.chkLaunchNewProcess.isChecked())
-        config['browser']['width'] = str(self.width())
-        config['browser']['height'] = str(self.height())
-        write_config(config)
+    def set_window_position(self, x: int, y: int):
+        if x < 0 or y < 0:
+            app = QtWidgets.QApplication.instance()
+            cursor_pos = QtGui.QCursor.pos()
+            screen = app.screenAt(cursor_pos)
+
+            screen_rect = screen.availableGeometry()
+            window_rect = QtCore.QRect(QtCore.QPoint(0, 0), self.frameSize().boundedTo(screen_rect.size()))
+            self.resize(window_rect.size())
+            self.move(screen_rect.center() - window_rect.center())
+        else:
+            self.move(x, y)
 
     def connect_signals(self):
         self.treeTools.itemActivated.connect(self.item_activated)
@@ -134,7 +147,7 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         self.labelHelp.setText(help_text)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
-        self.save_settings()
+        self.save_config()
         super().closeEvent(event)
         QtWidgets.QApplication.instance().quit()
 
@@ -180,24 +193,11 @@ class XapptBrowser(QtWidgets.QMainWindow, Ui_Browser):
         return visible_children
 
 
-def center_window(window: QtWidgets.QMainWindow, screen: Optional[QtGui.QScreen] = None):
-    if screen is None:
-        app = QtWidgets.QApplication.instance()
-        cursor_pos = QtGui.QCursor.pos()
-        screen = app.screenAt(cursor_pos)
-
-    screen_rect = screen.availableGeometry()
-    window_rect = QtCore.QRect(QtCore.QPoint(0, 0), window.frameSize().boundedTo(screen_rect.size()))
-    window.resize(window_rect.size())
-    window.move(screen_rect.center() - window_rect.center())
-
-
 def main(args) -> int:
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(args)
     apply_palette(app)
 
     browser = XapptBrowser()
-    center_window(browser)
     browser.show()
 
     app.setProperty(APP_PROPERTY_RUNNING, True)

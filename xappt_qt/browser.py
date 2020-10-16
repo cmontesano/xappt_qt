@@ -16,12 +16,6 @@ from xappt_qt.gui.resources import icons
 
 
 class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
-    ROLE_TOOL_CLASS = QtCore.Qt.UserRole + 1
-    ROLE_ITEM_TYPE = QtCore.Qt.UserRole + 2
-
-    ITEM_TYPE_COLLECTION = 0
-    ITEM_TYPE_TOOL = 1
-
     def __init__(self):
         super().__init__()
 

@@ -10,6 +10,7 @@ from xappt_qt.gui.ui.browser import Ui_Browser
 from xappt_qt.dark_palette import apply_palette
 from xappt_qt.constants import *
 from xappt_qt.gui.tab_pages import ToolsTabPage, OptionsTabPage, AboutTabPage
+import xappt_qt.config
 
 # noinspection PyUnresolvedReferences
 from xappt_qt.gui.resources import icons
@@ -37,8 +38,8 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
 
     def init_config(self):
         self.add_config_item('launch-new-process',
-                             saver=self.chkLaunchNewProcess.isChecked,
-                             loader=self.chkLaunchNewProcess.setChecked,
+                             saver=lambda: xappt_qt.config.launch_new_process,
+                             loader=self.options.chkLaunchNewProcess.setChecked,
                              default=True)
         self.add_config_item('window-size',
                              saver=lambda: (self.width(), self.height()),

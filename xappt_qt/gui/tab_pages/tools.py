@@ -10,19 +10,21 @@ from typing import DefaultDict, List, Tuple, Type
 import xappt
 
 import xappt_qt.config
+from xappt_qt.constants import APP_TITLE
 from xappt_qt.gui.ui.browser_tab_tools import Ui_tabTools
 from xappt_qt.gui.delegates import SimpleItemDelegate
+from xappt_qt.gui.tab_pages.base import BaseTabPage
 
 
-class ToolsTabPage(QtWidgets.QWidget, Ui_tabTools):
+class ToolsTabPage(BaseTabPage, Ui_tabTools):
     ROLE_TOOL_CLASS = QtCore.Qt.UserRole + 1
     ROLE_ITEM_TYPE = QtCore.Qt.UserRole + 2
 
     ITEM_TYPE_COLLECTION = 0
     ITEM_TYPE_TOOL = 1
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.setupUi(self)
         self.treeTools.setItemDelegate(SimpleItemDelegate())
         self.populate_plugins()
@@ -95,7 +97,7 @@ class ToolsTabPage(QtWidgets.QWidget, Ui_tabTools):
             proc = subprocess.Popen(launch_command, creationflags=subprocess.CREATE_NEW_CONSOLE)
         else:
             proc = subprocess.Popen(launch_command)
-        print(f"Launched process {proc.pid}")
+        self.information(APP_TITLE, f"Launched {tool_name} (pid {proc.pid})")
 
     def selection_changed(self):
         help_text = ""

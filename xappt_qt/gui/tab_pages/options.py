@@ -1,12 +1,13 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtCore
 
 from xappt_qt.gui.ui.browser_tab_options import Ui_tabOptions
+from xappt_qt.gui.tab_pages.base import BaseTabPage
 import xappt_qt.config
 
 
-class OptionsTabPage(QtWidgets.QWidget, Ui_tabOptions):
-    def __init__(self):
-        super().__init__()
+class OptionsTabPage(BaseTabPage, Ui_tabOptions):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.setupUi(self)
         self.chkLaunchNewProcess.stateChanged.connect(self.on_launch_new_process_changed)
         self.chkMinimizeToTray.stateChanged.connect(self.on_minimize_to_tray_changed)

@@ -46,9 +46,10 @@ class TrayIcon(QtCore.QObject):
                  delay: int = 10000):
         if not self.tray_available:
             return
-        if not self.messages_available:
-            return
-        self.tray_icon.showMessage(title, message, icon, delay)
+        if self.messages_available:
+            self.tray_icon.showMessage(title, message, icon, delay)
+        else:
+            print(f"{title}: {message}")
 
     def info(self, title: str, message: str, delay: int = 10000):
         self._message(title, message, QSystemTrayIcon.Information, delay)

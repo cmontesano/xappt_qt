@@ -24,7 +24,12 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(":appicon"))
 
-        self.tools = ToolsTabPage()
+        self.tray_icon = TrayIcon(self, QtGui.QIcon(":appicon"))
+        self.init_tray_menu()
+        self.tray_icon.show()
+
+        self.tools = ToolsTabPage(on_info=self.tray_icon.info, on_warn=self.tray_icon.warn,
+                                  on_error=self.tray_icon.critical)
         self.options = OptionsTabPage()
         self.about = AboutTabPage()
 
@@ -32,10 +37,6 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.tabWidget.addTab(self.options, self.options.windowTitle())
         self.tabWidget.addTab(self.about, self.about.windowTitle())
         self.tabWidget.setCurrentIndex(0)
-
-        self.tray_icon = TrayIcon(self, QtGui.QIcon(":appicon"))
-        self.init_tray_menu()
-        self.tray_icon.show()
 
         self.config_path = APP_CONFIG_PATH.joinpath("browser.cfg")
         self.init_config()

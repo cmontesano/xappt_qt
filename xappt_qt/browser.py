@@ -8,7 +8,7 @@ import xappt
 
 import xappt_qt.config
 from xappt_qt.gui.ui.browser import Ui_Browser
-from xappt_qt.dark_palette import apply_palette
+from xappt_qt.gui.utilities.dark_palette import apply_palette
 from xappt_qt.constants import *
 from xappt_qt.gui.tab_pages import ToolsTabPage, OptionsTabPage, AboutTabPage
 

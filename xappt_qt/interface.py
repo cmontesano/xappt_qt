@@ -8,7 +8,7 @@ from PyQt5 import QtWidgets, QtGui
 import xappt
 from xappt import BaseTool
 
-from xappt_qt.dark_palette import apply_palette
+from xappt_qt.gui.utilities.dark_palette import apply_palette
 
 from xappt_qt.gui.dialogs import RunDialog
 

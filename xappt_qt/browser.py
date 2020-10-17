@@ -9,6 +9,7 @@ import xappt
 import xappt_qt.config
 from xappt_qt.gui.ui.browser import Ui_Browser
 from xappt_qt.gui.utilities.dark_palette import apply_palette
+from xappt_qt.gui.utilities.tray_icon import TrayIcon
 from xappt_qt.constants import *
 from xappt_qt.gui.tab_pages import ToolsTabPage, OptionsTabPage, AboutTabPage
 
@@ -32,6 +33,10 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.tabWidget.addTab(self.about, self.about.windowTitle())
         self.tabWidget.setCurrentIndex(0)
 
+        self.tray_icon = TrayIcon(self, QtGui.QIcon(":appicon"))
+        self.init_tray_menu()
+        self.tray_icon.show()
+
         self.config_path = APP_CONFIG_PATH.joinpath("browser.cfg")
         self.init_config()
         self.load_config()
@@ -54,6 +59,12 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
                              loader=lambda x: self.set_window_position(*x),
                              default=(-1, -1))
 
+    def init_tray_menu(self):
+        self.tray_icon.add_menu_item("Show", self.show, self.isHidden)
+        self.tray_icon.add_menu_item("Hide", self.hide, self.isVisible)
+        self.tray_icon.add_menu_item(None, None, None)
+        self.tray_icon.add_menu_item("Quit", self.on_quit, None)
+
     def set_window_position(self, x: int, y: int):
         if x < 0 or y < 0:
             app = QtWidgets.QApplication.instance()
@@ -68,8 +79,15 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
             self.move(x, y)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
+        if xappt_qt.config.minimize_to_tray and self.tray_icon.tray_available:
+            event.ignore()
+            self.hide()
+        else:
+            self.on_quit()
+
+    def on_quit(self):
+        self.tray_icon.destroy()
         self.save_config()
-        super().closeEvent(event)
         QtWidgets.QApplication.instance().quit()
 
 

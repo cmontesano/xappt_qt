@@ -24,6 +24,9 @@ class Ui_tabOptions(object):
         self.chkLaunchNewProcess = QtWidgets.QCheckBox(tabOptions)
         self.chkLaunchNewProcess.setObjectName("chkLaunchNewProcess")
         self.gridLayout_3.addWidget(self.chkLaunchNewProcess, 0, 0, 1, 1)
+        self.chkMinimizeToTray = QtWidgets.QCheckBox(tabOptions)
+        self.chkMinimizeToTray.setObjectName("chkMinimizeToTray")
+        self.gridLayout_3.addWidget(self.chkMinimizeToTray, 1, 0, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout_3)
         spacerItem = QtWidgets.QSpacerItem(20, 237, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
@@ -35,3 +38,4 @@ class Ui_tabOptions(object):
         _translate = QtCore.QCoreApplication.translate
         tabOptions.setWindowTitle(_translate("tabOptions", "Options"))
         self.chkLaunchNewProcess.setText(_translate("tabOptions", "Launch tools in new process"))
+        self.chkMinimizeToTray.setText(_translate("tabOptions", "Minimize to system tray"))

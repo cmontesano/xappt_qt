@@ -41,6 +41,10 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
                              saver=lambda: xappt_qt.config.launch_new_process,
                              loader=self.options.chkLaunchNewProcess.setChecked,
                              default=True)
+        self.add_config_item('minimize-to-tray',
+                             saver=lambda: xappt_qt.config.minimize_to_tray,
+                             loader=self.options.chkMinimizeToTray.setChecked,
+                             default=True)
         self.add_config_item('window-size',
                              saver=lambda: (self.width(), self.height()),
                              loader=lambda x: self.setGeometry(0, 0, *x),

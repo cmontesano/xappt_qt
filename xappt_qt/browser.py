@@ -79,6 +79,13 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         else:
             self.move(x, y)
 
+    def changeEvent(self, event: QtCore.QEvent):
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            if self.windowState() == QtCore.Qt.WindowMinimized:
+                if xappt_qt.config.minimize_to_tray and self.tray_icon.tray_available:
+                    self.hide()
+        super().changeEvent(event)
+
     def closeEvent(self, event: QtGui.QCloseEvent):
         if xappt_qt.config.minimize_to_tray and self.tray_icon.tray_available:
             event.ignore()

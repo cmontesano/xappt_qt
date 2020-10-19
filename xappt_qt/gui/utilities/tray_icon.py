@@ -19,6 +19,9 @@ class TrayIcon(QtCore.QObject):
 
         self.context_menu = QtWidgets.QMenu()
 
+        self.tray_available = QSystemTrayIcon.isSystemTrayAvailable()
+        self.messages_available = QSystemTrayIcon.supportsMessages()
+
         self.tray_icon = QSystemTrayIcon(widget)
         self.tray_icon.setIcon(icon)
         self.tray_icon.setContextMenu(self.context_menu)

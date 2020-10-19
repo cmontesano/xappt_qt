@@ -19,3 +19,11 @@ class OptionsTabPage(BaseTabPage, Ui_tabOptions):
     @staticmethod
     def on_minimize_to_tray_changed(new_state: int):
         xappt_qt.config.minimize_to_tray = new_state == QtCore.Qt.Checked
+
+    def apply_settings(self):
+        self.chkLaunchNewProcess.setChecked(xappt_qt.config.launch_new_process)
+        self.chkMinimizeToTray.setChecked(xappt_qt.config.minimize_to_tray)
+
+    def showEvent(self, event: QtGui.QShowEvent):
+        super().showEvent(event)
+        self.apply_settings()

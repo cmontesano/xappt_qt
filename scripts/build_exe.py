@@ -75,6 +75,25 @@ class Builder:
         return self.cmd.run(git_command, silent=False).result == 0
 
 
+def get_version(version_path: str) -> str:
+    with open(version_path, "r") as fp:
+        version_contents = fp.read()
+
+    loc = locals()
+    exec(version_contents, {}, loc)
+    __version__ = loc['__version__']
+    assert __version__ is not None
+
+    return __version__
+
+
+def update_build(version_path: str, new_build: str):
+    version = get_version(version_path)
+    with open(version_path, "w") as fp:
+        fp.write(f'__version__ = "{version}"\n')
+        fp.write(f'__build__ = "{new_build}"\n')
+
+
 def main(args) -> int:
     check_build_requirements()
 
@@ -98,14 +117,18 @@ def main(args) -> int:
         if not builder.install_python_requirements(req_path):
             raise SystemExit(f"Error installing requirements {req_path}")
 
+        version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')
+        commit_id = xappt.git_tools.commit_id(repo_path, short=True)
+        update_build(version_path, commit_id)
+
         nuitka_package = "nuitka==0.6.9.2"
         if not builder.install_python_package(nuitka_package):
             raise SystemExit(f"Error installing {nuitka_package}")
 
-        nuitka_command = ("python", "-m", "nuitka", "--standalone", "--recurse-all", "--plugin-enable=qt-plugins",
+        nuitka_command = ("python", "-m", "nuitka", "--standalone", "--recurse-all",
+                          "--plugin-enable=qt-plugins", f"--output-dir={output_path}",
                           os.path.join(tmp, "xappt_qt/main.py"), "--exe")
         builder.cmd.run(nuitka_command, silent=False)
-        shutil.copytree(os.path.join(tmp, 'browser.dist'), output_path)
 
     return 0
 

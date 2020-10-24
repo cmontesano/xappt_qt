@@ -3,12 +3,19 @@
 import argparse
 import os
 import platform
+import re
 import shutil
 import sys
 
 from distutils import sysconfig
+from typing import Optional
 
 import xappt
+
+SSH_REGEX = re.compile(r"^(?P<user>[^:]+?)(?::(?P<pass>[^/].*?))?@(?P<host>.*?):(?:(?P<port>\d+)/)?"
+                       r"(?P<path>.*?/.*?)$", re.I)
+URL_REGEX = re.compile(r"^(?P<protocol>.*?)://(?:(?P<user>.*?)(?::(?P<pass>.*?))?@)?"
+                       r"(?P<domain>.*?)(?::(?P<port>\d+))?/(?P<path>.*)$", re.I)
 
 if platform.system() == "Windows":
     VENV_BIN = "Scripts"
@@ -24,6 +31,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument('source', help='A git URL to clone for the build.')
     parser.add_argument('-b', '--branch', default="master", help='The branch to check out')
     parser.add_argument('-o', '--output', help='A folder that will contain the built program.')
+    parser.add_argument('-p', '--plugins', action='append', help="Include an external xappt plugins folder or "
+                                                                 "git url in the build.")
 
     return parser
 
@@ -70,9 +79,26 @@ class Builder:
         install_command = (self.python_bin, '-m', 'pip', 'install', '-r', req_file_path, '-t', self.site_packages)
         return self.cmd.run(install_command, silent=False).result == 0
 
-    def clone_repository(self, url: str, *, branch: str, destination: str) -> bool:
-        git_command = ("git", "clone", "-b", branch, url, destination)
+    def clone_repository(self, url: str, *, destination: str,  branch: Optional[str] = None) -> bool:
+        if branch is not None:
+            git_command = ("git", "clone", "-b", branch, url, destination)
+        else:
+            git_command = ("git", "clone", url, destination)
         return self.cmd.run(git_command, silent=False).result == 0
+
+    def install_plugin(self, plugin_path: str, destination: str) -> str:
+        plugin_name = os.path.basename(plugin_path)
+        plugin_dest = os.path.join(destination, plugin_name)
+        if os.path.isdir(plugin_path):
+            shutil.copytree(plugin_path, plugin_dest)
+            return plugin_dest
+        else:
+            for regex in (SSH_REGEX, URL_REGEX):
+                match = regex.match(plugin_path)
+                if match is not None:
+                    self.clone_repository(url=plugin_path, destination=plugin_dest)
+                    return plugin_dest
+        raise NotImplementedError
 
 
 def get_version(version_path: str) -> str:
@@ -92,6 +118,24 @@ def update_build(version_path: str, new_build: str):
     with open(version_path, "w") as fp:
         fp.write(f'__version__ = "{version}"\n')
         fp.write(f'__build__ = "{new_build}"\n')
+
+
+def find_qt():
+    import PyQt5
+
+    if platform.system() == "Linux":
+        qt5_bin = "lib"
+        qt5core_lib = "libQt5Core.so.5"
+    elif platform.system() == "Windows":
+        qt5_bin = "bin"
+        qt5core_lib = "Qt5Core.dll"
+    else:
+        raise NotImplementedError
+
+    bin_path = os.path.join(os.path.dirname(PyQt5.__file__), "Qt", qt5_bin)
+    if os.path.isfile(os.path.join(bin_path, qt5core_lib)):
+        path_var = os.environ['PATH']
+        os.environ['PATH'] = bin_path + os.pathsep + path_var
 
 
 def main(args) -> int:
@@ -117,9 +161,23 @@ def main(args) -> int:
         if not builder.install_python_requirements(req_path):
             raise SystemExit(f"Error installing requirements {req_path}")
 
+        all_plugin_paths = []
+        plugins_destination = os.path.join(tmp, "plugins")
+        for plugin in options.plugins:
+            plugin_path = builder.install_plugin(plugin, destination=plugins_destination)
+            req_file = os.path.join(plugin_path, "requirements.txt")
+            if os.path.isfile(req_file):
+                builder.install_python_requirements(req_file)
+            all_plugin_paths.append(plugin_path)
+            sys.path.append(plugin_path)
+        if len(all_plugin_paths):
+            os.environ[xappt.PLUGIN_PATH_ENV] = os.pathsep.join(all_plugin_paths)
+
         version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')
         commit_id = xappt.git_tools.commit_id(repo_path, short=True)
         update_build(version_path, commit_id)
+
+        find_qt()
 
         nuitka_package = "nuitka==0.6.9.2"
         if not builder.install_python_package(nuitka_package):

@@ -183,6 +183,25 @@ def find_qt() -> str:
     raise FileNotFoundError("Could not find PyQt5's QtCore library")
 
 
+def inject_plugin_import(plugin_path: str, *, target_file: str, line_num: int):
+    with open(target_file, "r") as fp:
+        lines = fp.readlines()
+
+    prefix = "".join(lines[:line_num])
+    suffix = "".join(lines[line_num:])
+
+    plugin_name = os.path.splitext(os.path.basename(plugin_path))[0]
+
+    import_lines = ""
+    for plugin in (plugin_name, f"{plugin_name}.plugins"):
+        import_lines += f"\ntry:\n    import {plugin}\nexcept ImportError:\n    pass\n\n"
+
+    with open(target_file, "w") as fp:
+        fp.write(prefix)
+        fp.write(import_lines)
+        fp.write(suffix)
+
+
 def main(args) -> int:
     check_build_requirements()
 
@@ -208,17 +227,14 @@ def main(args) -> int:
         if not builder.install_python_requirements(req_path):
             raise SystemExit(f"Error installing requirements {req_path}")
 
-        all_plugin_paths = []
         plugins_destination = os.path.join(tmp, "plugins")
         for plugin in options.plugins:
             plugin_path = builder.install_plugin(plugin, destination=plugins_destination)
             req_file = os.path.join(plugin_path, "requirements.txt")
             if os.path.isfile(req_file):
-                builder.install_python_requirements(req_file)
-            all_plugin_paths.append(plugin_path)
-            sys.path.append(plugin_path)
-        if len(all_plugin_paths):
-            os.environ[xappt.PLUGIN_PATH_ENV] = os.pathsep.join(all_plugin_paths)
+                builder.install_python_requirements(req_file, exclude=["xappt", "xappt-qt"])
+            inject_plugin_import(plugin_path, target_file=entry_point, line_num=4)
+            builder.cmd.env_path_prepend("PYTHONPATH", plugin_path)
 
         version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')
         commit_id = xappt.git_tools.commit_id(repo_path, short=True)

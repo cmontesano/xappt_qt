@@ -158,6 +158,8 @@ def main(args) -> int:
         repo_path = os.path.join(tmp, "xappt_qt")
         if not builder.clone_repository(options.source, branch=options.branch, destination=repo_path):
             raise SystemExit(f"Error cloning {options.source}")
+        entry_point = os.path.join(tmp, "xappt_qt/main.py")
+        assert os.path.isfile(entry_point)
 
         req_path = os.path.join(repo_path, "requirements.txt")
         if not builder.install_python_requirements(req_path):
@@ -187,7 +189,7 @@ def main(args) -> int:
 
         nuitka_command = ("python", "-m", "nuitka", "--standalone", "--recurse-all",
                           "--plugin-enable=qt-plugins", f"--output-dir={output_path}",
-                          os.path.join(tmp, "xappt_qt/main.py"), "--exe")
+                          entry_point, "--exe")
         builder.cmd.run(nuitka_command, silent=False)
 
     return 0

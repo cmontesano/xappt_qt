@@ -6,6 +6,7 @@ import platform
 import re
 import shutil
 import sys
+import venv
 
 from distutils import sysconfig
 from typing import Optional
@@ -55,13 +56,14 @@ class Builder:
 
     def create_venv(self) -> bool:
         venv_path = os.path.join(self.work_path, "venv")
-        venv_command = (sys.executable, "-m", "venv", venv_path)
-        result = self.cmd.run(venv_command, silent=False)
-        if result.result != 0:
-            return False
+        venv.create(venv_path)
 
         self.python_bin = os.path.join(venv_path, VENV_BIN, 'python' + PYTHON_EXT)
         self.site_packages = sysconfig.get_python_lib(prefix=venv_path)
+
+        install_command = (sys.executable, '-m', 'pip', 'install', 'pip', '-t', self.site_packages)
+        if self.cmd.run(install_command, silent=False).result != 0:
+            raise SystemExit("Could not install pip into virtual environment")
 
         self.cmd.env_path_prepend('PATH', os.path.dirname(self.python_bin))
         self.cmd.env_path_prepend('PATH', os.path.join(self.site_packages, 'bin'))

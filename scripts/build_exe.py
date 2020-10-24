@@ -164,7 +164,7 @@ def update_build(version_path: str, new_build: str):
         fp.write(f'__build__ = "{new_build}"\n')
 
 
-def find_qt():
+def find_qt() -> str:
     import PyQt5
 
     if platform.system() == "Linux":
@@ -178,8 +178,9 @@ def find_qt():
 
     bin_path = os.path.join(os.path.dirname(PyQt5.__file__), "Qt", qt5_bin)
     if os.path.isfile(os.path.join(bin_path, qt5core_lib)):
-        path_var = os.environ['PATH']
-        os.environ['PATH'] = bin_path + os.pathsep + path_var
+        return bin_path
+
+    raise FileNotFoundError("Could not find PyQt5's QtCore library")
 
 
 def main(args) -> int:
@@ -223,7 +224,7 @@ def main(args) -> int:
         commit_id = xappt.git_tools.commit_id(repo_path, short=True)
         update_build(version_path, commit_id)
 
-        find_qt()
+        builder.cmd.env_path_prepend("PATH", find_qt())
 
         nuitka_package = "nuitka==0.6.9.2"
         if not builder.install_python_package(nuitka_package):

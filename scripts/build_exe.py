@@ -9,7 +9,7 @@ import sys
 import venv
 
 from distutils import sysconfig
-from typing import Optional
+from typing import Generator, List, Optional
 
 import xappt
 
@@ -47,6 +47,38 @@ def check_build_requirements():
         raise SystemExit("venv python module not found")
 
 
+def resolve_package_string(package_str: str, *, strip_version: bool = False) -> Optional[str]:
+    package_str = package_str.strip()
+
+    # ignore blank lines
+    if not len(package_str):
+        return None
+
+    # ignore comment lines
+    if package_str[0] == "#":
+        return None
+
+    # strip comments
+    package_str = package_str.replace("\t", " ")
+    package_str = package_str.split(" #")[0].strip()
+
+    if strip_version:
+        for op in ('~=', '==', '!=', '<=', '>=', '<', '>'):  # see PEP 440
+            package_str = package_str.split(op)[0].strip()
+
+    if len(package_str):
+        return package_str
+
+
+def packages_from_requirements(req_file_path: str) -> Generator[str, None, None]:
+    with open(req_file_path, "r") as fp:
+        packages = fp.readlines()
+    for package in packages:
+        package = resolve_package_string(package)
+        if package is not None:
+            yield package
+
+
 class Builder:
     def __init__(self, *, work_path: str):
         self.work_path = work_path
@@ -77,7 +109,17 @@ class Builder:
         install_command = (self.python_bin, '-m', 'pip', 'install', package_name, '-t', self.site_packages)
         return self.cmd.run(install_command, silent=False).result == 0
 
-    def install_python_requirements(self, req_file_path: str) -> bool:
+    def install_python_requirements(self, req_file_path: str, *, exclude: Optional[List[str]] = None) -> bool:
+        if exclude is not None:
+            for package in packages_from_requirements(req_file_path):
+                package_name = resolve_package_string(package, strip_version=True)
+                if package_name in exclude:
+                    continue
+                result = self.install_python_package(package)
+                if not result:
+                    return False
+            return True
+        # no exclusions - just a standard requirements.txt install
         install_command = (self.python_bin, '-m', 'pip', 'install', '-r', req_file_path, '-t', self.site_packages)
         return self.cmd.run(install_command, silent=False).result == 0
 

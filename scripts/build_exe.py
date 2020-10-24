@@ -233,7 +233,7 @@ def main(args) -> int:
             req_file = os.path.join(plugin_path, "requirements.txt")
             if os.path.isfile(req_file):
                 builder.install_python_requirements(req_file, exclude=["xappt", "xappt-qt"])
-            inject_plugin_import(plugin_path, target_file=entry_point, line_num=4)
+            inject_plugin_import(plugin_path, target_file=entry_point, line_num=5)
             builder.cmd.env_path_prepend("PYTHONPATH", plugin_path)
 
         version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')

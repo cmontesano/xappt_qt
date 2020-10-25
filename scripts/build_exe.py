@@ -86,7 +86,7 @@ class Builder:
         self.python_bin = None
         self.site_packages = None
 
-    def create_venv(self) -> bool:
+    def create_venv(self):
         venv_path = os.path.join(self.work_path, "venv")
         venv.create(venv_path)
 
@@ -103,45 +103,45 @@ class Builder:
         self.cmd.env_var_add('VIRTUAL_ENV', venv_path)
         self.cmd.env_var_remove('PYTHONHOME')
 
-        return True
-
-    def install_python_package(self, package_name: str) -> bool:
+    def install_python_package(self, package_name: str):
         install_command = (self.python_bin, '-m', 'pip', 'install', package_name, '-t', self.site_packages)
-        return self.cmd.run(install_command, silent=False).result == 0
+        if self.cmd.run(install_command, silent=False).result != 0:
+            raise SystemExit(f"Error installing {package_name}")
 
-    def install_python_requirements(self, req_file_path: str, *, exclude: Optional[List[str]] = None) -> bool:
+    def install_python_requirements(self, req_file_path: str, *, exclude: Optional[List[str]] = None):
         if exclude is not None:
             for package in packages_from_requirements(req_file_path):
                 package_name = resolve_package_string(package, strip_version=True)
                 if package_name in exclude:
                     continue
-                result = self.install_python_package(package)
-                if not result:
-                    return False
-            return True
-        # no exclusions - just a standard requirements.txt install
-        install_command = (self.python_bin, '-m', 'pip', 'install', '-r', req_file_path, '-t', self.site_packages)
-        return self.cmd.run(install_command, silent=False).result == 0
+                self.install_python_package(package)
+        else:
+            # no exclusions - just a standard requirements.txt install
+            install_command = (self.python_bin, '-m', 'pip', 'install', '-r', req_file_path,
+                               '-t', self.site_packages)
+            if self.cmd.run(install_command, silent=False).result != 0:
+                raise SystemExit(f"Error installing {req_file_path}")
 
-    def clone_repository(self, url: str, *, destination: str,  branch: Optional[str] = None) -> bool:
+    def clone_repository(self, url: str, *, destination: str,  branch: Optional[str] = None):
         if branch is not None:
             git_command = ("git", "clone", "-b", branch, url, destination)
         else:
             git_command = ("git", "clone", url, destination)
-        return self.cmd.run(git_command, silent=False).result == 0
+        if self.cmd.run(git_command, silent=False).result != 0:
+            raise SystemExit(f"Clone of {url} failed")
 
-    def install_plugin(self, plugin_path: str, destination: str) -> str:
-        plugin_name = os.path.basename(plugin_path)
-        plugin_dest = os.path.join(destination, plugin_name)
-        if os.path.isdir(plugin_path):
-            shutil.copytree(plugin_path, plugin_dest)
-            return plugin_dest
+    def clone_or_copy_repository(self, url: str, *, destination: str, **kwargs) -> str:
+        repo_name = os.path.basename(url)
+        repo_dest = os.path.join(destination, repo_name)
+        if os.path.isdir(url):
+            shutil.copytree(url, repo_dest)
+            return repo_dest
         else:
             for regex in (SSH_REGEX, URL_REGEX):
-                match = regex.match(plugin_path)
+                match = regex.match(url)
                 if match is not None:
-                    self.clone_repository(url=plugin_path, destination=plugin_dest)
-                    return plugin_dest
+                    self.clone_repository(url=url, destination=repo_dest, **kwargs)
+                    return repo_dest
         raise NotImplementedError
 
 
@@ -214,26 +214,22 @@ def main(args) -> int:
 
     with xappt.temp_path() as tmp:
         builder = Builder(work_path=tmp)
-        if not builder.create_venv():
-            raise SystemExit("Virtual environment creation failed")
+        builder.create_venv()
 
-        repo_path = os.path.join(tmp, "xappt_qt")
-        if not builder.clone_repository(options.source, branch=options.branch, destination=repo_path):
-            raise SystemExit(f"Error cloning {options.source}")
-        entry_point = os.path.join(tmp, "xappt_qt/main.py")
+        repo_path = builder.clone_or_copy_repository(options.source, destination=tmp, branch=options.branch)
+        entry_point = os.path.join(repo_path, "main.py")
         assert os.path.isfile(entry_point)
 
         req_path = os.path.join(repo_path, "requirements.txt")
-        if not builder.install_python_requirements(req_path):
-            raise SystemExit(f"Error installing requirements {req_path}")
+        builder.install_python_requirements(req_path)
 
         plugins_destination = os.path.join(tmp, "plugins")
         for plugin in options.plugins:
-            plugin_path = builder.install_plugin(plugin, destination=plugins_destination)
+            plugin_path = builder.clone_or_copy_repository(plugin, destination=plugins_destination)
             req_file = os.path.join(plugin_path, "requirements.txt")
             if os.path.isfile(req_file):
                 builder.install_python_requirements(req_file, exclude=["xappt", "xappt-qt"])
-            inject_plugin_import(plugin_path, target_file=entry_point, line_num=5)
+            inject_plugin_import(plugin_path, target_file=entry_point, line_num=7)
             builder.cmd.env_path_prepend("PYTHONPATH", plugin_path)
 
         version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')
@@ -243,8 +239,7 @@ def main(args) -> int:
         builder.cmd.env_path_prepend("PATH", find_qt())
 
         nuitka_package = "nuitka==0.6.9.2"
-        if not builder.install_python_package(nuitka_package):
-            raise SystemExit(f"Error installing {nuitka_package}")
+        builder.install_python_package(nuitka_package)
 
         nuitka_command = ("python", "-m", "nuitka", "--standalone", "--recurse-all",
                           f"--windows-icon={os.path.join(repo_path, 'resources', 'ico', 'appicon.ico')}",

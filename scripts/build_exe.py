@@ -247,6 +247,7 @@ def main(args) -> int:
             raise SystemExit(f"Error installing {nuitka_package}")
 
         nuitka_command = ("python", "-m", "nuitka", "--standalone", "--recurse-all",
+                          f"--windows-icon={os.path.join(repo_path, 'resources', 'ico', 'appicon.ico')}",
                           "--plugin-enable=qt-plugins", f"--output-dir={output_path}",
                           entry_point, "--exe")
         builder.cmd.run(nuitka_command, silent=False)

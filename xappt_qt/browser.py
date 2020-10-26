@@ -23,6 +23,7 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
 
         self.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(":appicon"))
+        self.setWindowTitle(APP_TITLE)
 
         self.tray_icon = TrayIcon(self, QtGui.QIcon(":appicon"))
         self.init_tray_menu()

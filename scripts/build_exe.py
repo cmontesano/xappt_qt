@@ -34,6 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument('-o', '--output', help='A folder that will contain the built program.')
     parser.add_argument('-p', '--plugins', action='append', help="Include an external xappt plugins folder or "
                                                                  "git url in the build.")
+    parser.add_argument('-t', '--title', help='A custom window title for xappt_qt')
 
     return parser
 
@@ -164,6 +165,22 @@ def update_build(version_path: str, new_build: str):
         fp.write(f'__build__ = "{new_build}"\n')
 
 
+def update_app_title(constants_path: str, *, new_title: str):
+    with open(constants_path, "r") as fp:
+        lines = fp.readlines()
+
+    with open(constants_path, "w") as fp:
+        replaced_title = False
+        for line in lines:
+            if line.startswith('APP_TITLE = '):
+                line = f'APP_TITLE = "{new_title}"\n'
+                replaced_title = True
+            fp.write(line)
+
+    if not replaced_title:
+        raise SystemExit(f"APP_TITLE declaration not fount in '{constants_path}'")
+
+
 def find_qt() -> str:
     import PyQt5
 
@@ -235,6 +252,10 @@ def main(args) -> int:
         version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')
         commit_id = xappt.git_tools.commit_id(repo_path, short=True)
         update_build(version_path, commit_id)
+
+        if options.title is not None:
+            constants_path = os.path.join(repo_path, "xappt_qt", "constants.py")
+            update_app_title(constants_path, new_title=options.title)
 
         builder.cmd.env_path_prepend("PATH", find_qt())
 

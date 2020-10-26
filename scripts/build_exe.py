@@ -29,7 +29,7 @@ else:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('source', help='A git URL to clone for the build.')
+    parser.add_argument('source', help='A git URL to clone, or folder to copy, for the build.')
     parser.add_argument('-b', '--branch', default="master", help='The branch to check out')
     parser.add_argument('-o', '--output', help='A folder that will contain the built program.')
     parser.add_argument('-p', '--plugins', action='append', help="Include an external xappt plugins folder or "

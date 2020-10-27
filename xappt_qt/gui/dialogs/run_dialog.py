@@ -1,3 +1,4 @@
+from collections import deque
 from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -6,6 +7,7 @@ from xappt import BaseTool
 
 from xappt_qt.gui.widgets import ToolPage
 from xappt_qt.gui.ui.runner import Ui_RunDialog
+from xappt_qt import config
 from xappt_qt.constants import APP_TITLE
 
 # noinspection PyUnresolvedReferences
@@ -21,6 +23,8 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
 
         self.tool_plugin: Optional[BaseTool] = None
         self.tool_widget: Optional[ToolPage] = None
+
+        self._console_lines = deque(maxlen=config.console_line_limit)
 
         self.init_ui()
 
@@ -96,14 +100,15 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
 
     def add_output_line(self, s: str, error: bool = False):
         s = self.convert_leading_whitespace(s)
-        self.txtOutput.moveCursor(QtGui.QTextCursor.End)
         if error:
-            self.txtOutput.insertHtml(f'<span style="color: #f55">{s}</span><br />\n')
+            self._console_lines.append(f'<span style="color: #f55">{s}</span>')
         else:
-            self.txtOutput.insertHtml(f'<span style="color: #ccc">{s}</span><br />\n')
+            self._console_lines.append(f'<span style="color: #ccc">{s}</span>')
+        self.txtOutput.setHtml("<br />".join(self._console_lines))
         self.txtOutput.moveCursor(QtGui.QTextCursor.End)
         max_scroll = self.txtOutput.verticalScrollBar().maximum()
         self.txtOutput.verticalScrollBar().setValue(max_scroll)
+        self.txtOutput.horizontalScrollBar().setValue(0)
         # noinspection PyArgumentList
         QtWidgets.QApplication.instance().processEvents()
 

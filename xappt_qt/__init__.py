@@ -9,3 +9,5 @@ os.environ['QT_LOGGING_RULES'] = '*.debug=false;qt.qpa.*=false'
 
 version = tuple(map(int, __version__.split('.'))) + (__build__, )
 version_str = f"{__version__}-{__build__}"
+
+executable = None

@@ -146,15 +146,16 @@ class Builder:
                     return repo_dest
         raise NotImplementedError
 
-    def patch_pyqt5(self, scripts_path: str):
-        if platform.system() != "Windows":
-            return
-        pyqt_init_path = os.path.join(self.site_packages, "PyQt5", "__init__.py")
-        assert os.path.isfile(pyqt_init_path)
-        pyqt_patch_path = os.path.join(scripts_path, "helpers", "pyqt5_init_windows.txt")
-        assert os.path.isfile(pyqt_patch_path)
-        os.rename(pyqt_init_path, f"{pyqt_init_path}.bak")
-        shutil.copy2(pyqt_patch_path, pyqt_init_path)
+
+def patch_pyqt5(scripts_path: str, *, site_packages: str):
+    if platform.system() != "Windows":
+        return
+    pyqt_init_path = os.path.join(site_packages, "PyQt5", "__init__.py")
+    assert os.path.isfile(pyqt_init_path)
+    pyqt_patch_path = os.path.join(scripts_path, "helpers", "pyqt5_init_windows.txt")
+    assert os.path.isfile(pyqt_patch_path)
+    os.rename(pyqt_init_path, f"{pyqt_init_path}.bak")
+    shutil.copy2(pyqt_patch_path, pyqt_init_path)
 
 
 def get_version(version_path: str) -> str:
@@ -269,7 +270,8 @@ def main(args) -> int:
             update_app_title(constants_path, new_title=options.title)
 
         builder.cmd.env_path_prepend("PATH", find_qt())
-        builder.patch_pyqt5(os.path.join(repo_path, "scripts"))
+
+        patch_pyqt5(os.path.join(repo_path, "scripts"), site_packages=builder.site_packages)
 
         nuitka_package = "nuitka==0.6.9.2"
         builder.install_python_package(nuitka_package)
@@ -282,6 +284,7 @@ def main(args) -> int:
             nuitka_command.append("--windows-disable-console")
 
         nuitka_command.append(entry_point)
+
         builder.cmd.run(nuitka_command, silent=False)
 
     return 0

@@ -1,11 +1,12 @@
 import sys
 
-from PyQt5 import QtWidgets, QtCore, Qt
+from PyQt5 import QtCore
 
 import xappt
 import xappt_qt
 
 from xappt_qt.gui.ui.browser_tab_about import Ui_tabAbout
+from xappt_qt.gui.tab_pages.base import BaseTabPage
 
 app_info = {
     "xappt_qt": {
@@ -27,9 +28,9 @@ app_info = {
 }
 
 
-class AboutTabPage(QtWidgets.QWidget, Ui_tabAbout):
-    def __init__(self):
-        super().__init__()
+class AboutTabPage(BaseTabPage, Ui_tabAbout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.setupUi(self)
         self.txtAbout.setHtml(self.generate_html())
 

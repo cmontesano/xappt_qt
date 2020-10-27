@@ -4,7 +4,7 @@ import sys
 from PyQt5 import QtWidgets
 import xappt
 
-from xappt_qt.dark_palette import apply_palette
+from xappt_qt.gui.utilities.dark_palette import apply_palette
 from xappt_qt.constants import *
 
 

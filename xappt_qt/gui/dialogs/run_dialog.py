@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from xappt import BaseTool
 
-from xappt_qt.gui.tool_page import ToolPage
+from xappt_qt.gui.widgets import ToolPage
 from xappt_qt.gui.ui.runner import Ui_RunDialog
 
 # noinspection PyUnresolvedReferences

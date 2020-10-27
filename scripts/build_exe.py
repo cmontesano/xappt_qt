@@ -35,6 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument('-p', '--plugins', action='append', help='Include an external xappt plugins folder or '
                                                                  'git url in the build.')
     parser.add_argument('-t', '--title', help='A custom window title for xappt_qt')
+    parser.add_argument('-c', '--console', action='store_true', help='Show the console on Windows')
 
     return parser
 
@@ -273,10 +274,14 @@ def main(args) -> int:
         nuitka_package = "nuitka==0.6.9.2"
         builder.install_python_package(nuitka_package)
 
-        nuitka_command = ("python", "-m", "nuitka", "--standalone", "--recurse-all",
+        nuitka_command = ["python", "-m", "nuitka", "--standalone", "--recurse-all",
                           f"--windows-icon={os.path.join(repo_path, 'resources', 'ico', 'appicon.ico')}",
-                          "--plugin-enable=qt-plugins", f"--output-dir={output_path}",
-                          entry_point)
+                          "--plugin-enable=qt-plugins", f"--output-dir={output_path}"]
+
+        if not options.console:
+            nuitka_command.append("--windows-disable-console")
+
+        nuitka_command.append(entry_point)
         builder.cmd.run(nuitka_command, silent=False)
 
     return 0

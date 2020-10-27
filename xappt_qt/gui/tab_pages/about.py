@@ -7,6 +7,7 @@ import xappt_qt
 
 from xappt_qt.gui.ui.browser_tab_about import Ui_tabAbout
 from xappt_qt.gui.tab_pages.base import BaseTabPage
+from xappt_qt.constants import APP_TITLE
 
 app_info = {
     "xappt_qt": {
@@ -32,6 +33,7 @@ class AboutTabPage(BaseTabPage, Ui_tabAbout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.setupUi(self)
+        self.lblTitle.setText(APP_TITLE)
         self.txtAbout.setHtml(self.generate_html())
 
     @staticmethod

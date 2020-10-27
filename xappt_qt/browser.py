@@ -1,4 +1,5 @@
 import os
+import platform
 import sys
 
 
@@ -16,6 +17,8 @@ from xappt_qt.gui.tab_pages import ToolsTabPage, OptionsTabPage, AboutTabPage
 # noinspection PyUnresolvedReferences
 from xappt_qt.gui.resources import icons
 
+DISABLE_TRAY_ICON = platform.system() == "Darwin"
+
 
 class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
     def __init__(self):
@@ -23,10 +26,10 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
 
         self.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(":appicon"))
+        self.setWindowTitle(APP_TITLE)
 
         self.tray_icon = TrayIcon(self, QtGui.QIcon(":appicon"))
-        self.init_tray_menu()
-        self.tray_icon.show()
+        self.init_tray_icon()
 
         self.tools = ToolsTabPage(on_info=self.tray_icon.info, on_warn=self.tray_icon.warn,
                                   on_error=self.tray_icon.critical)
@@ -45,11 +48,11 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
     def init_config(self):
         self.add_config_item('launch-new-process',
                              saver=lambda: xappt_qt.config.launch_new_process,
-                             loader=self.options.chkLaunchNewProcess.setChecked,
+                             loader=lambda x: setattr(xappt_qt.config, "launch_new_process", x),
                              default=True)
         self.add_config_item('minimize-to-tray',
                              saver=lambda: xappt_qt.config.minimize_to_tray,
-                             loader=self.options.chkMinimizeToTray.setChecked,
+                             loader=lambda x: setattr(xappt_qt.config, "minimize_to_tray", x),
                              default=True)
         self.add_config_item('window-size',
                              saver=lambda: (self.width(), self.height()),
@@ -59,12 +62,20 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
                              saver=lambda: (self.geometry().x(), self.geometry().y()),
                              loader=lambda x: self.set_window_position(*x),
                              default=(-1, -1))
+        if DISABLE_TRAY_ICON:
+            self.options.chkMinimizeToTray.setChecked(False)
+            self.options.chkMinimizeToTray.setEnabled(False)
+            xappt_qt.config.minimize_to_tray = False
 
-    def init_tray_menu(self):
+    def init_tray_icon(self):
+        if DISABLE_TRAY_ICON:
+            return
         self.tray_icon.add_menu_item("Show", self.show, self.isHidden)
         self.tray_icon.add_menu_item("Hide", self.hide, self.isVisible)
         self.tray_icon.add_menu_item(None, None, None)
         self.tray_icon.add_menu_item("Quit", self.on_quit, None)
+        self.tray_icon.on_trigger = self.on_activate
+        self.tray_icon.show()
 
     def set_window_position(self, x: int, y: int):
         if x < 0 or y < 0:
@@ -79,12 +90,25 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         else:
             self.move(x, y)
 
+    def changeEvent(self, event: QtCore.QEvent):
+        if not DISABLE_TRAY_ICON:
+            if event.type() == QtCore.QEvent.WindowStateChange:
+                if self.windowState() == QtCore.Qt.WindowMinimized:
+                    if xappt_qt.config.minimize_to_tray and self.tray_icon.tray_available:
+                        self.hide()
+        super().changeEvent(event)
+
     def closeEvent(self, event: QtGui.QCloseEvent):
         if xappt_qt.config.minimize_to_tray and self.tray_icon.tray_available:
             event.ignore()
             self.hide()
         else:
             self.on_quit()
+
+    def on_activate(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
 
     def on_quit(self):
         self.tray_icon.destroy()

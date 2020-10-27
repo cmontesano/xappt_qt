@@ -106,8 +106,7 @@ def main():
         ],
         'entry_points': {
             'console_scripts': [
-                'xappt-browser=xappt_qt.browser:entry_point',
-                'xappt-launcher=xappt_qt.launcher:entry_point',
+                'xappt-qt=xappt_qt.main:main',
             ],
         },
     }

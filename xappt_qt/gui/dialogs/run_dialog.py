@@ -8,7 +8,7 @@ from xappt import BaseTool
 from xappt_qt.gui.widgets import ToolPage
 from xappt_qt.gui.ui.runner import Ui_RunDialog
 from xappt_qt import config
-
+from xappt_qt.constants import APP_TITLE
 
 # noinspection PyUnresolvedReferences
 from xappt_qt.gui.resources import icons
@@ -80,7 +80,7 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         self.tool_plugin = tool_plugin
         self.tool_widget = ToolPage(self.tool_plugin)
         self.gridLayout.addWidget(self.tool_widget, 0, 0)
-        self.setWindowTitle(tool_plugin.name())
+        self.setWindowTitle(f"{tool_plugin.name()} - {APP_TITLE}")
         self.tool_widget.setEnabled(True)
 
     @staticmethod

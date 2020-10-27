@@ -12,12 +12,15 @@ class TrayIcon(QtCore.QObject):
         super().__init__()
         self.menu_actions: Dict[str, MenuAction] = {}
 
+        self.on_trigger: Optional[Callable] = kwargs.get('on_trigger')
+        self.on_double_click: Optional[Callable] = kwargs.get('on_double_click')
+        self.on_middle_click: Optional[Callable] = kwargs.get('on_middle_click')
         self.on_message_click: Optional[Callable] = kwargs.get('on_message_click')
 
         self.context_menu = QtWidgets.QMenu()
 
-        self.messages_available = QSystemTrayIcon.supportsMessages()
         self.tray_available = QSystemTrayIcon.isSystemTrayAvailable()
+        self.messages_available = QSystemTrayIcon.supportsMessages()
 
         self.tray_icon = QSystemTrayIcon(widget)
         self.tray_icon.setIcon(icon)
@@ -67,6 +70,18 @@ class TrayIcon(QtCore.QObject):
         self.context_menu.aboutToShow.connect(self._build_context_menu)
         self.context_menu.triggered.connect(self._on_context_menu_action)
         self.tray_icon.messageClicked.connect(self._on_message_clicked)
+        self.tray_icon.activated.connect(self._on_activated)
+
+    def _on_activated(self, reason: QSystemTrayIcon.ActivationReason):
+        if reason == QSystemTrayIcon.DoubleClick:
+            if self.on_double_click is not None:
+                self.on_double_click()
+        elif reason == QSystemTrayIcon.MiddleClick:
+            if self.on_middle_click is not None:
+                self.on_middle_click()
+        elif reason == QSystemTrayIcon.Trigger:
+            if self.on_trigger is not None:
+                self.on_trigger()
 
     def _on_message_clicked(self):
         if self.on_message_click is not None:

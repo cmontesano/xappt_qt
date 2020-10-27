@@ -9,6 +9,7 @@ from typing import DefaultDict, List, Tuple, Type
 
 import xappt
 
+import xappt_qt
 import xappt_qt.config
 from xappt_qt.constants import APP_TITLE
 from xappt_qt.gui.ui.browser_tab_tools import Ui_tabTools
@@ -82,6 +83,8 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
 
     @staticmethod
     def launch_command(tool_name: str) -> Tuple:
+        if xappt_qt.executable is not None:
+            return xappt_qt.executable, tool_name
         return sys.executable, "-m", "xappt_qt.launcher", tool_name
 
     @staticmethod
@@ -92,12 +95,16 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
 
     def launch_tool_new_process(self, tool_class: Type[xappt.BaseTool]):
         tool_name = tool_class.name()
-        launch_command = self.launch_command(tool_name)
-        if platform.system() == "Windows":
-            proc = subprocess.Popen(launch_command, creationflags=subprocess.CREATE_NEW_CONSOLE)
+        try:
+            launch_command = self.launch_command(tool_name)
+        except TypeError:
+            self.critical(APP_TITLE, "Could not find executable")
         else:
-            proc = subprocess.Popen(launch_command)
-        self.information(APP_TITLE, f"Launched {tool_name} (pid {proc.pid})")
+            if platform.system() == "Windows":
+                proc = subprocess.Popen(launch_command, creationflags=subprocess.CREATE_NEW_CONSOLE)
+            else:
+                proc = subprocess.Popen(launch_command)
+            self.information(APP_TITLE, f"Launched {tool_name} (pid {proc.pid})")
 
     def selection_changed(self):
         help_text = ""

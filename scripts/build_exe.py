@@ -251,7 +251,7 @@ def main(args) -> int:
         builder.install_python_requirements(req_path)
 
         plugins_destination = os.path.join(tmp, "plugins")
-        for plugin in options.plugins:
+        for plugin in options.plugins or []:  # in case options.plugins is None
             plugin_path = builder.clone_or_copy_repository(plugin, destination=plugins_destination)
             req_file = os.path.join(plugin_path, "requirements.txt")
             if os.path.isfile(req_file):

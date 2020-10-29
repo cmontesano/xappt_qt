@@ -186,7 +186,7 @@ class Builder:
 def patch_pyqt5(*, site_packages: str):
     if platform.system() != "Windows":
         return
-    pyqt_init_path = os.path.join(site_packages, "PyQt5", "__init__.py")
+    pyqt_init_path = os.path.join(site_packages, "PyQt5", "utilities/__init__.py")
     assert os.path.isfile(pyqt_init_path)
     os.rename(pyqt_init_path, f"{pyqt_init_path}.bak")
     with open(pyqt_init_path, "w") as fp:
@@ -293,7 +293,7 @@ def main(args) -> int:
             req_file = os.path.join(plugin_path, "requirements.txt")
             if os.path.isfile(req_file):
                 builder.install_python_requirements(req_file, exclude=["xappt", "xappt-qt"])
-            inject_plugin_import(plugin_path, target_file=entry_point, line_num=7)
+            inject_plugin_import(plugin_path, target_file=entry_point, line_num=8)
             builder.cmd.env_path_prepend("PYTHONPATH", plugin_path)
 
         version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')

@@ -25,6 +25,42 @@ else:
     VENV_BIN = "bin"
     PYTHON_EXT = ""
 
+PYQT5_INIT_WINDOWS = """
+__path__ = __import__('pkgutil').extend_path(__path__, __name__)
+
+
+def find_qt():
+    import os, sys
+
+    qtcore_dll = 'Qt5Core.dll'
+
+    path_var = os.environ['PATH']
+
+    for path in path_var.split(os.pathsep):
+        if os.path.isfile(os.path.join(path, qtcore_dll)):
+            os.add_dll_directory(path)
+            return
+
+    search_paths = [
+        os.getcwd(),
+        os.path.join(os.path.dirname(__file__), "Qt", "bin"),
+    ]
+
+    if sys.executable is not None:
+        python_dir = os.path.dirname(sys.executable)
+        search_paths.append(python_dir)
+
+    for path in search_paths:
+        if os.path.isfile(os.path.join(path, qtcore_dll)):
+            os.environ['PATH'] = path + os.pathsep + path_var
+            os.add_dll_directory(path)
+            return
+
+
+find_qt()
+del find_qt
+"""
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -147,15 +183,14 @@ class Builder:
         raise NotImplementedError
 
 
-def patch_pyqt5(scripts_path: str, *, site_packages: str):
+def patch_pyqt5(*, site_packages: str):
     if platform.system() != "Windows":
         return
     pyqt_init_path = os.path.join(site_packages, "PyQt5", "__init__.py")
     assert os.path.isfile(pyqt_init_path)
-    pyqt_patch_path = os.path.join(scripts_path, "helpers", "pyqt5_init_windows.txt")
-    assert os.path.isfile(pyqt_patch_path)
     os.rename(pyqt_init_path, f"{pyqt_init_path}.bak")
-    shutil.copy2(pyqt_patch_path, pyqt_init_path)
+    with open(pyqt_init_path, "w") as fp:
+        fp.write(PYQT5_INIT_WINDOWS)
 
 
 def get_version(version_path: str) -> str:
@@ -271,7 +306,7 @@ def main(args) -> int:
 
         builder.cmd.env_path_prepend("PATH", find_qt())
 
-        patch_pyqt5(os.path.join(repo_path, "scripts"), site_packages=builder.site_packages)
+        patch_pyqt5(site_packages=builder.site_packages)
 
         nuitka_package = "nuitka==0.6.9.2"
         builder.install_python_package(nuitka_package)

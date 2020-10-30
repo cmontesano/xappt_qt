@@ -293,7 +293,7 @@ def main(args) -> int:
             root_path = os.path.dirname(os.path.dirname(__file__))
             shutil.copytree(root_path, repo_path)
 
-        entry_point = os.path.join(repo_path, "xappt_qt", "browser.py")
+        entry_point = os.path.join(repo_path, "xappt_qt", "main.py")
         assert os.path.isfile(entry_point)
 
         plugins_destination = os.path.join(tmp, "plugins")

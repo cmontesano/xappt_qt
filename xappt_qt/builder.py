@@ -287,7 +287,7 @@ def main(args) -> int:
             repo_path = os.path.join(tmp, "xappt_qt")
             root_path = os.path.dirname(os.path.dirname(__file__))
             shutil.copytree(root_path, repo_path)
-        entry_point = os.path.join(repo_path, "main.py")
+        entry_point = os.path.join(repo_path, "xappt_qt", "browser.py")
         assert os.path.isfile(entry_point)
 
         req_path = os.path.join(repo_path, "requirements.txt")

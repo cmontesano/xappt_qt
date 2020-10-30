@@ -4,12 +4,13 @@
 import os
 import setuptools
 
-from typing import List
+from typing import Generator, List
 
 from xappt.utilities import git_tools
 
 REPOSITORY_PATH = os.path.dirname(os.path.abspath(__file__))
 VERSION_PATH = os.path.join(REPOSITORY_PATH, "xappt_qt", "__version__.py")
+BUILDER_PATH = os.path.join(REPOSITORY_PATH, "xappt_qt", "builder.py")
 
 os.chdir(REPOSITORY_PATH)
 
@@ -51,7 +52,7 @@ def update_build(new_build: str):
         fp.write(f'__build__ = "{new_build}"\n')
 
 
-def requirements(variation=None):
+def requirements(variation=None) -> Generator[str, None, None]:
     req_file = "requirements"
     if variation is not None:
         req_file = f"requirements-{variation}"
@@ -66,6 +67,21 @@ def requirements(variation=None):
             yield line
 
 
+def patch_builder(package_list: List):
+    with open(BUILDER_PATH, "r") as fp:
+        builder_contents = fp.readlines()
+
+    package_str = ", ".join([f"'{p}'" for p in package_list])
+
+    with open(BUILDER_PATH, "w") as fp:
+        for line in builder_contents:
+            line = line.rstrip()
+            if line.startswith('REQUIRED_PACKAGES = '):
+                line = f'REQUIRED_PACKAGES = [{package_str}]'
+            fp.write(line)
+            fp.write("\n")
+
+
 def main():
     if git_tools.is_dirty(REPOSITORY_PATH):
         print("Local repository is not clean")
@@ -77,6 +93,8 @@ def main():
             if result == "n":
                 return
             break
+
+    install_requires = list(requirements())
 
     setup_dict = {
         'name': 'xappt_qt',
@@ -93,7 +111,7 @@ def main():
         'license': 'MIT',
         'platforms': 'any',
         'python_requires': '>=3.7, <4',
-        'install_requires': list(requirements()),
+        'install_requires': install_requires,
         'classifiers': [
             'Topic :: Utilities',
             'Development Status :: 4 - Beta',
@@ -111,6 +129,8 @@ def main():
             ],
         },
     }
+
+    patch_builder(install_requires)
 
     commit_id = git_tools.commit_id(REPOSITORY_PATH, short=True)
 

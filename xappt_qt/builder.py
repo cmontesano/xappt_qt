@@ -13,6 +13,8 @@ from typing import Generator, List, Optional
 
 import xappt
 
+REQUIRED_PACKAGES = []
+
 SSH_REGEX = re.compile(r"^(?P<user>[^:]+?)(?::(?P<pass>[^/].*?))?@(?P<host>.*?):(?:(?P<port>\d+)/)?"
                        r"(?P<path>.*?/.*?)$", re.I)
 URL_REGEX = re.compile(r"^(?P<protocol>.*?)://(?:(?P<user>.*?)(?::(?P<pass>.*?))?@)?"
@@ -292,6 +294,8 @@ def main(args) -> int:
             repo_path = os.path.join(tmp, "xappt_qt")
             root_path = os.path.dirname(os.path.dirname(__file__))
             shutil.copytree(root_path, repo_path)
+            for package in REQUIRED_PACKAGES:
+                builder.install_python_package(package)
 
         entry_point = os.path.join(repo_path, "xappt_qt", "main.py")
         assert os.path.isfile(entry_point)

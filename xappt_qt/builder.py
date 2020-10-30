@@ -283,15 +283,18 @@ def main(args) -> int:
 
         if options.source is not None:
             repo_path = builder.clone_or_copy_repository(options.source, destination=tmp, branch=options.branch)
+            req_path = os.path.join(repo_path, "requirements.txt")
+            builder.install_python_requirements(req_path)
+            version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')
+            commit_id = xappt.git_tools.commit_id(repo_path, short=True)
+            update_build(version_path, commit_id)
         else:
             repo_path = os.path.join(tmp, "xappt_qt")
             root_path = os.path.dirname(os.path.dirname(__file__))
             shutil.copytree(root_path, repo_path)
+
         entry_point = os.path.join(repo_path, "xappt_qt", "browser.py")
         assert os.path.isfile(entry_point)
-
-        req_path = os.path.join(repo_path, "requirements.txt")
-        builder.install_python_requirements(req_path)
 
         plugins_destination = os.path.join(tmp, "plugins")
         for plugin in options.plugins or []:  # in case options.plugins is None
@@ -301,10 +304,6 @@ def main(args) -> int:
                 builder.install_python_requirements(req_file, exclude=["xappt", "xappt-qt"])
             inject_plugin_import(plugin_path, target_file=entry_point, line_num=8)
             builder.cmd.env_path_prepend("PYTHONPATH", plugin_path)
-
-        version_path = os.path.join(repo_path, 'xappt_qt', '__version__.py')
-        commit_id = xappt.git_tools.commit_id(repo_path, short=True)
-        update_build(version_path, commit_id)
 
         if options.title is not None:
             constants_path = os.path.join(repo_path, "xappt_qt", "constants.py")

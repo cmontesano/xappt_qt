@@ -65,8 +65,9 @@ del find_qt
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('source', help='A git URL to clone, or folder to copy, for the build.')
-    parser.add_argument('-b', '--branch', default="master", help='The branch to check out')
+    parser.add_argument('-s', '--source', help='A git URL to clone, or folder to copy, for the build. If not '
+                                               'specified the current code base will be used.')
+    parser.add_argument('-b', '--branch', default="master", help='The branch to check out, if source is a git URL')
     parser.add_argument('-o', '--output', help='A folder that will contain the built program.')
     parser.add_argument('-p', '--plugins', action='append', help='Include an external xappt plugins folder or '
                                                                  'git url in the build.')
@@ -280,7 +281,12 @@ def main(args) -> int:
         builder = Builder(work_path=tmp)
         builder.create_venv()
 
-        repo_path = builder.clone_or_copy_repository(options.source, destination=tmp, branch=options.branch)
+        if options.source is not None:
+            repo_path = builder.clone_or_copy_repository(options.source, destination=tmp, branch=options.branch)
+        else:
+            repo_path = os.path.join(tmp, "xappt_qt")
+            root_path = os.path.dirname(os.path.dirname(__file__))
+            shutil.copytree(root_path, repo_path)
         entry_point = os.path.join(repo_path, "main.py")
         assert os.path.isfile(entry_point)
 

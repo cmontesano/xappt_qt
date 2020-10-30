@@ -317,7 +317,7 @@ def main(args) -> int:
         builder.install_python_package(nuitka_package)
 
         nuitka_command = ["python", "-m", "nuitka", "--standalone", "--recurse-all",
-                          f"--windows-icon={os.path.join(repo_path, 'resources', 'icons', 'appicon.ico')}",
+                          f"--windows-icon={os.path.join(repo_path, 'xappt_qt', 'resources', 'icons', 'appicon.ico')}",
                           "--plugin-enable=qt-plugins", f"--output-dir={output_path}"]
 
         if not options.console:

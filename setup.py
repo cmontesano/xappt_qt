@@ -23,6 +23,7 @@ def build_package_list(base_pkg: str, *, exclude: List[str] = None) -> List[str]
         if pkg_name in exclude:
             continue
         packages.append(pkg_name)
+    print(packages)
     return packages
 
 

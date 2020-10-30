@@ -1,0 +1,3 @@
+include xappt_qt/resources/icons/appicon.icns
+include xappt_qt/resources/icons/appicon.ico
+include xappt_qt/resources/icons/appicon.png

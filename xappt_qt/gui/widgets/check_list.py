@@ -6,7 +6,7 @@ from xappt_qt.gui.delegates import SimpleItemDelegate
 
 
 class CheckList(QtWidgets.QListWidget):
-    itemChanged = QtCore.pyqtSignal(QtWidgets.QListWidgetItem)
+    item_changed = QtCore.pyqtSignal(QtWidgets.QListWidgetItem)
 
     def __init__(self):
         super().__init__()
@@ -97,7 +97,7 @@ class CheckList(QtWidgets.QListWidget):
             self.item(i).setCheckState(state)
 
     def _on_item_changed(self, item: QtWidgets.QListWidgetItem):
-        self.itemChanged.emit(item)
+        self.item_changed.emit(item)
 
     def _on_context_menu(self, pos: QtCore.QPoint):
         if len(self.context_menu.actions()) == 0:

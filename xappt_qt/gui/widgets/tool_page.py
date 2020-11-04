@@ -213,7 +213,7 @@ class ToolPage(QtWidgets.QWidget):
                 w.check_items(v)
                 break
         param.value = list(w.checked_items())
-        w.itemChanged.connect(lambda: self.update_list_param(param.name))
+        w.item_changed.connect(lambda: self.update_list_param(param.name))
         param.metadata['ui-setter'] = lambda value, widget=w: self.set_list_value(value, widget)
         return w
 

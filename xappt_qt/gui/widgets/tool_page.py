@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, Generator, List, Optional, Type
 
 from PyQt5 import QtWidgets, QtCore
 
@@ -205,37 +205,26 @@ class ToolPage(QtWidgets.QWidget):
         return w
 
     def _convert_list(self, param: xappt.Parameter) -> QtWidgets.QWidget:
-        w = QtWidgets.QListWidget()
-        w.setItemDelegate(SimpleItemDelegate())
-        # noinspection PyUnresolvedReferences
-        w.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
-        w.setAlternatingRowColors(True)
-        w.setSpacing(2)
+        w = CheckList()
         if param.choices is not None:
-            w.addItems(param.choices)
+            w.add_items(param.choices)
         for v in (param.value, param.default):
             if v is not None:
-                for item in v:
-                    for match in w.findItems(item, QtCore.Qt.MatchExactly):
-                        match.setSelected(True)
+                w.check_items(v)
                 break
-        param.value = self._get_selected_list_items(w)
-        w.itemSelectionChanged.connect(lambda: self.update_list_param(param.name))
+        param.value = list(w.checked_items())
+        w.itemChanged.connect(lambda: self.update_list_param(param.name))
         param.metadata['ui-setter'] = lambda value, widget=w: self.set_list_value(value, widget)
         return w
 
-    @staticmethod
-    def _get_selected_list_items(widget: QtWidgets.QListWidget) -> List[str]:
-        return [item.text() for item in widget.selectedItems()]
-
     def update_list_param(self, name: str):
         param: xappt.Parameter = getattr(self.tool, name)
-        widget: QtWidgets.QListWidget = param.metadata.get('widget')
+        widget: CheckList = param.metadata.get('widget')
         if widget is None:
             return
-        selected_items = self._get_selected_list_items(widget)
+        checked_items = list(widget.checked_items())
         param.on_value_changed.paused = True
-        param.value = param.validate(selected_items)
+        param.value = param.validate(checked_items)
         param.on_value_changed.paused = False
 
     def update_tool_param(self, name: str, value: Any):
@@ -249,10 +238,9 @@ class ToolPage(QtWidgets.QWidget):
             error.reset()
 
     @staticmethod
-    def set_list_value(items: List[str], widget: QtWidgets.QListWidget):
-        for item in items:
-            for match in widget.findItems(item, QtCore.Qt.MatchExactly):
-                match.setSelected(True)
+    def set_list_value(items: List[str], widget: CheckList):
+        widget.uncheck_all()
+        widget.check_items(items)
 
     @staticmethod
     def widget_value_updated(param: xappt.Parameter):

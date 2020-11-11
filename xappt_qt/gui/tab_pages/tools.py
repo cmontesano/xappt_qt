@@ -28,6 +28,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         super().__init__(**kwargs)
         self.setupUi(self)
         self.treeTools.setItemDelegate(SimpleItemDelegate())
+        self.loaded_plugins: DefaultDict[str, List[Type[xappt.BaseTool]]] = defaultdict(list)
         self.populate_plugins()
         self.connect_signals()
 
@@ -45,6 +46,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
             for plugin in sorted(plugin_list[collection], key=lambda x: x.name().lower()):
                 tool_item = self._create_tool_item(plugin)
                 collection_item.addChild(tool_item)
+                self.loaded_plugins[collection].append(plugin)
             collection_item.setExpanded(True)
 
     def connect_signals(self):
@@ -76,10 +78,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         if item_type != self.ITEM_TYPE_TOOL:
             return
         tool_class: Type[xappt.BaseTool] = item.data(column, self.ROLE_TOOL_CLASS)
-        if xappt_qt.config.launch_new_process:
-            self.launch_tool_new_process(tool_class)
-        else:
-            self.launch_tool(tool_class)
+        self.launch_tool(tool_class)
 
     @staticmethod
     def launch_command(tool_name: str) -> Tuple:
@@ -87,8 +86,10 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
             return xappt_qt.executable, tool_name
         return sys.executable, "-m", "xappt_qt.launcher", tool_name
 
-    @staticmethod
-    def launch_tool(tool_class: Type[xappt.BaseTool]):
+    def launch_tool(self, tool_class: Type[xappt.BaseTool]):
+        if xappt_qt.config.launch_new_process:
+            self.launch_tool_new_process(tool_class)
+            return
         interface = xappt.get_interface()
         tool_instance = tool_class(interface=interface)
         interface.invoke(tool_instance)

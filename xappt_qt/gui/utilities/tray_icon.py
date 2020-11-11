@@ -1,10 +1,10 @@
 from collections import namedtuple
-from typing import Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QSystemTrayIcon
 
-MenuAction = namedtuple('TrayIconMenuItem', ('on_activate', 'is_visible'))
+MenuAction = namedtuple('TrayIconMenuItem', ('on_activate', 'is_visible', 'data', 'group'))
 
 
 class TrayIcon(QtCore.QObject):
@@ -39,10 +39,16 @@ class TrayIcon(QtCore.QObject):
             return
         self.tray_icon.deleteLater()
 
-    def add_menu_item(self, name: Optional[str], on_activate: Optional[Callable], is_visible: Optional[Callable]):
+    def add_menu_item(self, name: Optional[str], **kwargs):
+        on_activate: Optional[Callable] = kwargs.get('on_activate')
+        is_visible: Optional[Callable] = kwargs.get('is_visible')
+        data: Optional[Any] = kwargs.get('data')
+        group: Optional[str] = kwargs.get('group')
+
         if name is None:
             name = f"--{len(self.menu_actions):02d}"
-        self.menu_actions[name] = MenuAction(on_activate, is_visible)
+
+        self.menu_actions[name] = MenuAction(on_activate, is_visible, data, group)
 
     def _message(self, title: str, message: str,
                  icon: Union[QSystemTrayIcon.MessageIcon, QtGui.QIcon] = QSystemTrayIcon.Information,
@@ -89,17 +95,30 @@ class TrayIcon(QtCore.QObject):
 
     def _build_context_menu(self):
         self.context_menu.clear()
+        submenus = {}
         for name, menu_item in self.menu_actions.items():
             if name.startswith("--"):
                 self.context_menu.addSeparator()
             else:
                 if menu_item.is_visible is None or menu_item.is_visible():
-                    self.context_menu.addAction(name)
+                    group = menu_item.group
+                    if group is not None:
+                        submenu = submenus.get(group)
+                        if submenu is None:
+                            submenu = self.context_menu.addMenu(group)
+                            submenus[group] = submenu
+                        submenu.addAction(name)
+                    else:
+                        self.context_menu.addAction(name)
 
     def _on_context_menu_action(self, action: QtWidgets.QAction):
         if action is None:
             return
         selected_command = action.text()
-        on_activate = self.menu_actions[selected_command].on_activate
+        menu_action = self.menu_actions[selected_command]
+        on_activate = menu_action.on_activate
         if on_activate is not None:
+            if menu_action.data is not None:
+                on_activate(data=menu_action.data)
+                return
             on_activate()

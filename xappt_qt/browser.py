@@ -29,7 +29,6 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.setWindowTitle(APP_TITLE)
 
         self.tray_icon = TrayIcon(self, QtGui.QIcon(":appicon"))
-        self.init_tray_icon()
 
         self.tools = ToolsTabPage(on_info=self.tray_icon.info, on_warn=self.tray_icon.warn,
                                   on_error=self.tray_icon.critical)
@@ -44,6 +43,8 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.config_path = APP_CONFIG_PATH.joinpath("browser.cfg")
         self.init_config()
         self.load_config()
+
+        self.init_tray_icon()
 
     def init_config(self):
         self.add_config_item('launch-new-process',
@@ -70,10 +71,16 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
     def init_tray_icon(self):
         if DISABLE_TRAY_ICON:
             return
-        self.tray_icon.add_menu_item("Show", self.show, self.isHidden)
-        self.tray_icon.add_menu_item("Hide", self.hide, self.isVisible)
-        self.tray_icon.add_menu_item(None, None, None)
-        self.tray_icon.add_menu_item("Quit", self.on_quit, None)
+
+        for category, plugin_list in self.tools.loaded_plugins.items():
+            for plugin in plugin_list:
+                self.tray_icon.add_menu_item(plugin.name(), on_activate=self.run_tool, data=plugin, group=category)
+
+        self.tray_icon.add_menu_item(None)
+        self.tray_icon.add_menu_item("Show", on_activate=self.show, is_visible=self.isHidden)
+        self.tray_icon.add_menu_item("Hide", on_activate=self.hide, is_visible=self.isVisible)
+        self.tray_icon.add_menu_item(None)
+        self.tray_icon.add_menu_item("Quit", on_activate=self.on_quit)
         self.tray_icon.on_trigger = self.on_activate
         self.tray_icon.show()
 
@@ -114,6 +121,13 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.tray_icon.destroy()
         self.save_config()
         QtWidgets.QApplication.instance().quit()
+
+    def run_tool(self, **kwargs):
+        plugin = kwargs.get('data')
+        if plugin is None:
+            return
+        assert issubclass(plugin, xappt.BaseTool)
+        self.tools.launch_tool(plugin)
 
 
 def main(args) -> int:

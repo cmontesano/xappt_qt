@@ -205,7 +205,7 @@ class ToolPage(QtWidgets.QWidget):
         return w
 
     def _convert_list(self, param: xappt.Parameter) -> QtWidgets.QWidget:
-        w = CheckList()
+        w = CheckList(searchable=param.options.get('searchable', False))
         if param.choices is not None:
             w.add_items(param.choices)
         for v in (param.value, param.default):

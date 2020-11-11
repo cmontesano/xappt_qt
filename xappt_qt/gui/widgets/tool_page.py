@@ -162,6 +162,16 @@ class ToolPage(QtWidgets.QWidget):
                     break
         else:
             param.value = w.currentText()
+
+        if param.options.get("searchable"):
+            w.setEditable(True)
+            w.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
+            w.lineEdit().editingFinished.connect(lambda: w.setCurrentIndex(w.findText(w.currentText())))
+            completer = w.completer()
+            completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
+            completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+            completer.setFilterMode(QtCore.Qt.MatchContains)
+
         w.currentIndexChanged[str].connect(lambda x: self.update_tool_param(param.name, x))
         param.metadata['ui-setter'] = lambda s, widget=w: widget.setCurrentIndex(widget.findText(s))
         return w

@@ -113,7 +113,7 @@ class ToolPage(QtWidgets.QWidget):
                 break
         else:
             param.value = w.currentIndex()
-        w.currentIndexChanged[int].connect(lambda x: self.update_tool_param(param.name, x))
+        w.currentIndexChanged[str].connect(lambda x: self.update_tool_param(param.name, x))
         param.metadata['ui-setter'] = w.setCurrentIndex
         return w
 

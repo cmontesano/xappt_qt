@@ -113,7 +113,11 @@ class ToolPage(QtWidgets.QWidget):
                 break
         else:
             param.value = w.currentIndex()
-        w.currentIndexChanged[int].connect(lambda x: self.update_tool_param(param.name, x))
+
+        if param.options.get("searchable"):
+            self.setup_combo_completer(w)
+
+        w.currentIndexChanged[str].connect(lambda x: self.update_tool_param(param.name, x))
         param.metadata['ui-setter'] = w.setCurrentIndex
         return w
 
@@ -162,6 +166,10 @@ class ToolPage(QtWidgets.QWidget):
                     break
         else:
             param.value = w.currentText()
+
+        if param.options.get("searchable"):
+            self.setup_combo_completer(w)
+
         w.currentIndexChanged[str].connect(lambda x: self.update_tool_param(param.name, x))
         param.metadata['ui-setter'] = lambda s, widget=w: widget.setCurrentIndex(widget.findText(s))
         return w
@@ -272,3 +280,16 @@ class ToolPage(QtWidgets.QWidget):
             param.on_value_changed.clear()
             param.on_options_changed.clear()
             param.on_choices_changed.clear()
+
+    @staticmethod
+    def setup_combo_completer(combo_widget: QtWidgets.QComboBox):
+        combo_widget.setEditable(True)
+        combo_widget.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
+        combo_widget.lineEdit().editingFinished.connect(
+            lambda: combo_widget.setCurrentIndex(combo_widget.findText(combo_widget.currentText())))
+        completer = combo_widget.completer()
+        completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
+        completer.popup().setAlternatingRowColors(True)
+        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        completer.setFilterMode(QtCore.Qt.MatchContains)
+

@@ -83,7 +83,11 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
     @staticmethod
     def launch_command(tool_name: str) -> Tuple:
         if xappt_qt.executable is not None:
+            # Nuitka
             return xappt_qt.executable, tool_name
+        elif getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+            # Pyinstaller
+            return sys.executable, tool_name
         return sys.executable, "-m", "xappt_qt.launcher", tool_name
 
     def launch_tool(self, tool_class: Type[xappt.BaseTool]):

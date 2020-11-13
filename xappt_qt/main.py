@@ -20,4 +20,6 @@ def main() -> int:
 if __name__ == '__main__':
     if getattr(xappt_qt, "__compiled__", None) is not None:
         xappt_qt.executable = os.path.abspath(sys.argv[0])
+    elif getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        xappt_qt.executable = os.path.abspath(sys.executable)
     sys.exit(main())

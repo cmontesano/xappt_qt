@@ -15,7 +15,6 @@ from xappt_qt.constants import *
 def main(argv) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('toolname', help='Specify the name of the tool to load')
-    parser.add_argument('param_defaults', nargs=argparse.REMAINDER)
 
     options, unknowns = parser.parse_known_args(args=argv)
 

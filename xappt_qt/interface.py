@@ -60,6 +60,8 @@ class QtInterface(xappt.BaseInterface):
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
+        for parameter in self.runner.tool_plugin.parameters():
+            self.runner.tool_widget.widget_value_updated(param=parameter)
         self.instance.exec_()
 
     def message(self, message: str):

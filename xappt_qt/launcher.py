@@ -17,7 +17,7 @@ def main(argv) -> int:
     parser.add_argument('toolname', help='Specify the name of the tool to load')
     parser.add_argument('param_defaults', nargs=argparse.REMAINDER)
 
-    options = parser.parse_args(args=argv)
+    options, unknowns = parser.parse_known_args(args=argv)
 
     xappt.discover_plugins()
 
@@ -31,7 +31,7 @@ def main(argv) -> int:
     app.setProperty(APP_PROPERTY_RUNNING, True)
 
     interface = xappt.get_interface()
-    params = params_from_args(tool_class=tool_class, args=options.param_defaults)
+    params = params_from_args(tool_class=tool_class, args=unknowns)
     tool_instance = tool_class(interface=interface, **params)
     interface.invoke(tool_instance)
 

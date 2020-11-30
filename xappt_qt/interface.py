@@ -56,15 +56,13 @@ class QtInterface(xappt.BaseInterface):
     def name(cls) -> str:
         return APP_INTERFACE_NAME
 
-    def invoke(self, plugin: BaseTool, auto_run=False, **kwargs):
+    def invoke(self, plugin: BaseTool, **kwargs):
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
         for parameter in self.runner.tool_plugin.parameters():
             self.runner.tool_widget.widget_value_updated(param=parameter)
         self.instance.exec_()
-        if auto_run is True:
-            self.runner.tool_plugin.execute()
 
     def message(self, message: str):
         xappt.log.info(message)

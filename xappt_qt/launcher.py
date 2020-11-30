@@ -15,7 +15,7 @@ from xappt_qt.constants import *
 def main(argv) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('toolname', help='Specify the name of the tool to load')
-    parser.add_argument('param_defaults', nargs=argparse.REMAINDER)
+    parser.add_argument('--auto-run', action='store_true', help='Automatically run the tool when it is invoked.')
 
     options, unknowns = parser.parse_known_args(args=argv)
 
@@ -33,7 +33,7 @@ def main(argv) -> int:
     interface = xappt.get_interface()
     params = params_from_args(tool_class=tool_class, args=unknowns)
     tool_instance = tool_class(interface=interface, **params)
-    interface.invoke(tool_instance)
+    interface.invoke(tool_instance, auto_run=options.auto_run)
 
     return app.exec_()
 

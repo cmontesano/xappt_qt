@@ -63,6 +63,8 @@ class QtInterface(xappt.BaseInterface):
         for parameter in self.runner.tool_plugin.parameters():
             self.runner.tool_widget.widget_value_updated(param=parameter)
         self.instance.exec_()
+        if kwargs.get('auto_run', False) is True:
+            self.runner.tool_plugin.execute()
 
     def message(self, message: str):
         xappt.log.info(message)

@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import re
 
@@ -89,9 +90,10 @@ class FileEdit(QtWidgets.QWidget):
             return
 
         if len(self._accept):
-            ext = os.path.splitext(drag_file)[1]
-            if ext.lower() in self._accept:
-                event.accept()
+            for ext in self._accept:
+                if fnmatch.fnmatch(drag_file, f"*{ext}"):
+                    event.accept()
+                    return
         else:
             event.accept()
 

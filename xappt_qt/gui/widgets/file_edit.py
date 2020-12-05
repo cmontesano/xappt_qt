@@ -80,8 +80,9 @@ class FileEdit(QtWidgets.QWidget):
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
         drag_file = event.mimeData().urls()[0].toLocalFile()
 
-        if self._mode == self.MODE_CHOOSE_DIR and os.path.isdir(drag_file):
-            event.accept()
+        if self._mode == self.MODE_CHOOSE_DIR:
+            if os.path.isdir(drag_file):
+                event.accept()
             return
 
         if not os.path.isfile(drag_file):

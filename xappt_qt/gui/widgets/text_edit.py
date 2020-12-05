@@ -21,6 +21,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
         self.setTabChangesFocus(True)
         self.textChanged.connect(self._handle_text_changed)
         self.setStyleSheet(TEXT_EDIT_STYLE_SHEET)
+        self.setLineWrapMode(self.NoWrap)
 
     def focusOutEvent(self, event):
         if self._changed:

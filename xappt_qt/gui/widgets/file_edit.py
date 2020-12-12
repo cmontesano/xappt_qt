@@ -1,8 +1,13 @@
+import fnmatch
 import os
+import re
 
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+
+FILTER_EXT_FILTER = re.compile(r"(?:\*?(?P<ext>\.[a-z0-9_.*-]+))")
+FILTER_NAME_FILTER = re.compile(r"(?P<label>.*?)(?:\s?\*?(?P<ext>\.\S+))")
 
 
 # noinspection PyPep8Naming
@@ -76,17 +81,19 @@ class FileEdit(QtWidgets.QWidget):
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
         drag_file = event.mimeData().urls()[0].toLocalFile()
 
-        if self._mode == self.MODE_CHOOSE_DIR and os.path.isdir(drag_file):
-            event.accept()
+        if self._mode == self.MODE_CHOOSE_DIR:
+            if os.path.isdir(drag_file):
+                event.accept()
             return
 
         if not os.path.isfile(drag_file):
             return
 
         if len(self._accept):
-            ext = os.path.splitext(drag_file)[1]
-            if ext.lower() in self._accept:
-                event.accept()
+            for ext in self._accept:
+                if fnmatch.fnmatch(drag_file, f"*{ext}"):
+                    event.accept()
+                    return
         else:
             event.accept()
 
@@ -139,12 +146,23 @@ class FileEdit(QtWidgets.QWidget):
         self._set_file(self._lineEdit.text())
 
     def setAccept(self, accept):
-        self._accept = accept or []
-        self._accept = list(filter(lambda x: x.count("."), self._accept))
-        self._accept = list(map(lambda x: x.lstrip("*"), self._accept))
-        self._filter = ";;".join(
-            ["{0} Files (*{1})".format(x.lstrip(".").capitalize(), x)
-             for x in self._accept])
+        self._accept = []
+        filter_list = []
+        for item in accept or []:
+            extensions = FILTER_EXT_FILTER.findall(item)
+            if len(extensions) == 0:
+                continue
+            name_match = FILTER_NAME_FILTER.match(item)
+            if name_match is None:
+                continue
+            self._accept += extensions
+            label = name_match.group('label')
+            ext = name_match.group('ext')  # first extension, if multiple
+            if len(label) == 0:
+                label = f"{ext[1:].capitalize()} Files"
+            extension_string = " ".join([f"*{ext}" for ext in extensions])
+            filter_list.append(f"{label} ({extension_string})")
+        self._filter = ";;".join(filter_list)
 
     def setBrowseButton(self, enable):
         self._btnBrowse.setVisible(enable)

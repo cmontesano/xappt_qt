@@ -185,9 +185,12 @@ class ToolPage(QtWidgets.QWidget):
         elif ui == "file-save":
             w = FileEdit(accept=param.options.get("accept"), mode=FileEdit.MODE_SAVE_FILE)
             w.onSetFile.connect(lambda x: self.update_tool_param(param.name, x))
+        elif ui == "multi-line":
+            w = TextEdit()
+            w.editingFinished.connect(lambda widget=w: self.update_tool_param(param.name, widget.text()))
         else:
             w = QtWidgets.QLineEdit()
-            w.textChanged.connect(lambda x: self.update_tool_param(param.name, x))
+            w.editingFinished.connect(lambda widget=w: self.update_tool_param(param.name, widget.text()))
 
         for v in (param.value, param.default):
             if v is not None:

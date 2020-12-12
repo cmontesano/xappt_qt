@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
+import shutil
+
 import setuptools
 
 from typing import Generator, List
@@ -11,6 +13,7 @@ from xappt.utilities import git_tools
 REPOSITORY_PATH = os.path.dirname(os.path.abspath(__file__))
 VERSION_PATH = os.path.join(REPOSITORY_PATH, "xappt_qt", "__version__.py")
 BUILDER_PATH = os.path.join(REPOSITORY_PATH, "xappt_qt", "builder.py")
+BACKUP_EXT = ".bak"
 
 os.chdir(REPOSITORY_PATH)
 
@@ -68,6 +71,7 @@ def requirements(variation=None) -> Generator[str, None, None]:
 
 
 def patch_builder(package_list: List):
+    shutil.copy2(BUILDER_PATH, BUILDER_PATH + BACKUP_EXT)
     with open(BUILDER_PATH, "r") as fp:
         builder_contents = fp.readlines()
 
@@ -80,6 +84,13 @@ def patch_builder(package_list: List):
                 line = f'REQUIRED_PACKAGES = [{package_str}]'
             fp.write(line)
             fp.write("\n")
+
+
+def unpatch_builder():
+    backup_path = BUILDER_PATH + BACKUP_EXT
+    assert os.path.isfile(backup_path)
+    os.unlink(BUILDER_PATH)
+    os.rename(backup_path, BUILDER_PATH)
 
 
 def main():
@@ -137,6 +148,8 @@ def main():
     update_build(commit_id)
     setuptools.setup(**setup_dict)
     update_build("dev")
+
+    unpatch_builder()
 
 
 if __name__ == '__main__':

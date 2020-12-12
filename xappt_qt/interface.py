@@ -3,11 +3,12 @@ import sys
 
 from typing import Optional
 
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 import xappt
 from xappt import BaseTool
 
+from xappt_qt.gui.utilities import center_widget
 from xappt_qt.gui.utilities.dark_palette import apply_palette
 
 from xappt_qt.gui.dialogs import RunDialog
@@ -51,19 +52,27 @@ class QtInterface(xappt.BaseInterface):
         self.runner.closeEvent = self.close_event
         self.runner.btnOk.clicked.connect(self._on_run)
         self.runner.btnClose.clicked.connect(self.close)
+        self.progress_dialog = None
+        self.headless = False
 
     @classmethod
     def name(cls) -> str:
         return APP_INTERFACE_NAME
 
     def invoke(self, plugin: BaseTool, **kwargs):
+        self.headless = kwargs.get('headless')
+        if self.headless:
+            center_widget(self.runner)
+            self.instance.exec_()
+            plugin.execute()
+            return
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
         for parameter in self.runner.tool_plugin.parameters():
             self.runner.tool_widget.widget_value_updated(param=parameter)
         self.instance.exec_()
-        if kwargs.get('auto_run', False) is True:
+        if kwargs.get('auto_run', False):
             self.runner.tool_plugin.execute()
 
     def message(self, message: str):
@@ -89,17 +98,36 @@ class QtInterface(xappt.BaseInterface):
         return ask_result == QtWidgets.QMessageBox.Yes
 
     def progress_start(self):
-        self.runner.progressBar.setRange(0, 100)
+        if self.headless:
+            if self.progress_dialog is None:
+                self.progress_dialog = QtWidgets.QProgressDialog(self.runner)
+            self.progress_dialog.setRange(0, 100)
+            self.progress_dialog.setLabelText("")
+            self.progress_dialog.setCancelButton(None)
+            self.progress_dialog.show()
+        else:
+            self.runner.progressBar.setRange(0, 100)
+            self.runner.progressBar.setFormat("")
         self.instance.app.processEvents()
 
     def progress_update(self, message: str, percent_complete: float):
-        self.runner.progressBar.setValue(int(100.0 * percent_complete))
-        self.runner.progressBar.setFormat(message)
+        progress_value = int(100.0 * percent_complete)
+        if self.headless:
+            self.progress_dialog.setValue(progress_value)
+            self.progress_dialog.setLabelText(message)
+        else:
+            self.runner.progressBar.setValue(progress_value)
+            self.runner.progressBar.setFormat(message)
         self.instance.app.processEvents()
 
     def progress_end(self):
-        self.runner.progressBar.setValue(0)
-        self.runner.progressBar.setFormat("")
+        if self.headless:
+            self.progress_dialog.setValue(0)
+            self.progress_dialog.setLabelText("")
+            self.progress_dialog.close()
+        else:
+            self.runner.progressBar.setValue(0)
+            self.runner.progressBar.setFormat("")
         self.instance.app.processEvents()
 
     def _on_run(self):

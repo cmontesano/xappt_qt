@@ -9,6 +9,7 @@ import xappt
 
 import xappt_qt.config
 from xappt_qt.gui.ui.browser import Ui_Browser
+from xappt_qt.gui.utilities import center_widget
 from xappt_qt.gui.utilities.dark_palette import apply_palette
 from xappt_qt.gui.utilities.tray_icon import TrayIcon
 from xappt_qt.constants import *
@@ -86,14 +87,7 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
 
     def set_window_position(self, x: int, y: int):
         if x < 0 or y < 0:
-            app = QtWidgets.QApplication.instance()
-            cursor_pos = QtGui.QCursor.pos()
-            screen = app.screenAt(cursor_pos)
-
-            screen_rect = screen.availableGeometry()
-            window_rect = QtCore.QRect(QtCore.QPoint(0, 0), self.frameSize().boundedTo(screen_rect.size()))
-            self.resize(window_rect.size())
-            self.move(screen_rect.center() - window_rect.center())
+            center_widget(self)
         else:
             self.move(x, y)
 
@@ -138,6 +132,7 @@ def main(args) -> int:
     browser.show()
 
     app.setProperty(APP_PROPERTY_RUNNING, True)
+    app.setProperty(APP_PROPERTY_LAUNCHER, False)
     return app.exec_()
 
 

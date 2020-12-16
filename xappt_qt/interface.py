@@ -3,11 +3,12 @@ import sys
 
 from typing import Optional
 
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 import xappt
 from xappt import BaseTool
 
+from xappt_qt.gui.utilities import center_widget
 from xappt_qt.gui.utilities.dark_palette import apply_palette
 
 from xappt_qt.gui.dialogs import RunDialog
@@ -23,47 +24,36 @@ os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
 
 @xappt.register_plugin
 class QtInterface(xappt.BaseInterface):
-    class __QtInterfaceInner:
-        def __init__(self):
-            self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
-            apply_palette(self.app)
-
-        def exec_(self):
-            if self.app.property(APP_PROPERTY_RUNNING):
-                return
-            self.app.setProperty(APP_PROPERTY_RUNNING, True)
-            self.app.exec_()
-
-        def exit(self, return_code=0):
-            self.app.exit(return_code)
-
-    instance = None
-
-    def __new__(cls):
-        if not QtInterface.instance:
-            QtInterface.instance = QtInterface.__QtInterfaceInner()
-        return super().__new__(cls)
-
     def __init__(self):
         super().__init__()
+        self.app = QtWidgets.QApplication.instance()
         self.runner = RunDialog()
         self.__runner_close_event = self.runner.closeEvent
         self.runner.closeEvent = self.close_event
         self.runner.btnOk.clicked.connect(self._on_run)
         self.runner.btnClose.clicked.connect(self.close)
+        self.progress_dialog = None
+        self.headless = False
 
     @classmethod
     def name(cls) -> str:
         return APP_INTERFACE_NAME
 
     def invoke(self, plugin: BaseTool, **kwargs):
+        self.headless = kwargs.get('headless')
+        if self.headless:
+            center_widget(self.runner)
+            result = plugin.execute()
+            if self.app.property(APP_PROPERTY_LAUNCHER):
+                self.app.quit()
+                sys.exit(result)
+            return
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
         for parameter in self.runner.tool_plugin.parameters():
             self.runner.tool_widget.widget_value_updated(param=parameter)
-        self.instance.exec_()
-        if kwargs.get('auto_run', False) is True:
+        if kwargs.get('auto_run', False):
             self.runner.tool_plugin.execute()
 
     def message(self, message: str):
@@ -89,18 +79,37 @@ class QtInterface(xappt.BaseInterface):
         return ask_result == QtWidgets.QMessageBox.Yes
 
     def progress_start(self):
-        self.runner.progressBar.setRange(0, 100)
-        self.instance.app.processEvents()
+        if self.headless:
+            if self.progress_dialog is None:
+                self.progress_dialog = QtWidgets.QProgressDialog(self.runner)
+            self.progress_dialog.setRange(0, 100)
+            self.progress_dialog.setLabelText("")
+            self.progress_dialog.setCancelButton(None)
+            self.progress_dialog.show()
+        else:
+            self.runner.progressBar.setRange(0, 100)
+            self.runner.progressBar.setFormat("")
+        self.app.processEvents()
 
     def progress_update(self, message: str, percent_complete: float):
-        self.runner.progressBar.setValue(int(100.0 * percent_complete))
-        self.runner.progressBar.setFormat(message)
-        self.instance.app.processEvents()
+        progress_value = int(100.0 * percent_complete)
+        if self.headless:
+            self.progress_dialog.setValue(progress_value)
+            self.progress_dialog.setLabelText(message)
+        else:
+            self.runner.progressBar.setValue(progress_value)
+            self.runner.progressBar.setFormat(message)
+        self.app.processEvents()
 
     def progress_end(self):
-        self.runner.progressBar.setValue(0)
-        self.runner.progressBar.setFormat("")
-        self.instance.app.processEvents()
+        if self.headless:
+            self.progress_dialog.setValue(0)
+            self.progress_dialog.setLabelText("")
+            self.progress_dialog.close()
+        else:
+            self.runner.progressBar.setValue(0)
+            self.runner.progressBar.setFormat("")
+        self.app.processEvents()
 
     def _on_run(self):
         try:

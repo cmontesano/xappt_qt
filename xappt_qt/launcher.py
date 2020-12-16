@@ -29,11 +29,19 @@ def main(argv) -> int:
     apply_palette(app)
 
     app.setProperty(APP_PROPERTY_RUNNING, True)
+    app.setProperty(APP_PROPERTY_LAUNCHER, True)
 
     interface = xappt.get_interface()
     params = params_from_args(tool_class=tool_class, tool_args=unknowns)
     tool_instance = tool_class(interface=interface, **params)
-    interface.invoke(tool_instance, auto_run=options.auto_run)
+    invoke_options = {
+        'auto_run': options.auto_run,
+        'headless': False,
+    }
+    if hasattr(tool_instance, "headless") and tool_instance.headless:
+        invoke_options['auto_run'] = True
+        invoke_options['headless'] = True
+    interface.invoke(tool_instance, **invoke_options)
 
     return app.exec_()
 

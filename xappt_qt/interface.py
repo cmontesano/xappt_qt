@@ -24,29 +24,9 @@ os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
 
 @xappt.register_plugin
 class QtInterface(xappt.BaseInterface):
-    class __QtInterfaceInner:
-        def __init__(self):
-            self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
-            apply_palette(self.app)
-
-        def exec_(self):
-            if self.app.property(APP_PROPERTY_RUNNING):
-                return
-            self.app.setProperty(APP_PROPERTY_RUNNING, True)
-            self.app.exec_()
-
-        def exit(self, return_code=0):
-            self.app.exit(return_code)
-
-    instance = None
-
-    def __new__(cls):
-        if not QtInterface.instance:
-            QtInterface.instance = QtInterface.__QtInterfaceInner()
-        return super().__new__(cls)
-
     def __init__(self):
         super().__init__()
+        self.app = QtWidgets.QApplication.instance()
         self.runner = RunDialog()
         self.__runner_close_event = self.runner.closeEvent
         self.runner.closeEvent = self.close_event
@@ -63,15 +43,16 @@ class QtInterface(xappt.BaseInterface):
         self.headless = kwargs.get('headless')
         if self.headless:
             center_widget(self.runner)
-            self.instance.exec_()
-            plugin.execute()
+            result = plugin.execute()
+            if self.app.property(APP_PROPERTY_LAUNCHER):
+                self.app.quit()
+                sys.exit(result)
             return
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
         for parameter in self.runner.tool_plugin.parameters():
             self.runner.tool_widget.widget_value_updated(param=parameter)
-        self.instance.exec_()
         if kwargs.get('auto_run', False):
             self.runner.tool_plugin.execute()
 
@@ -108,7 +89,7 @@ class QtInterface(xappt.BaseInterface):
         else:
             self.runner.progressBar.setRange(0, 100)
             self.runner.progressBar.setFormat("")
-        self.instance.app.processEvents()
+        self.app.processEvents()
 
     def progress_update(self, message: str, percent_complete: float):
         progress_value = int(100.0 * percent_complete)
@@ -118,7 +99,7 @@ class QtInterface(xappt.BaseInterface):
         else:
             self.runner.progressBar.setValue(progress_value)
             self.runner.progressBar.setFormat(message)
-        self.instance.app.processEvents()
+        self.app.processEvents()
 
     def progress_end(self):
         if self.headless:
@@ -128,7 +109,7 @@ class QtInterface(xappt.BaseInterface):
         else:
             self.runner.progressBar.setValue(0)
             self.runner.progressBar.setFormat("")
-        self.instance.app.processEvents()
+        self.app.processEvents()
 
     def _on_run(self):
         try:

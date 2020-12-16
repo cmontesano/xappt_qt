@@ -29,6 +29,7 @@ def main(argv) -> int:
     apply_palette(app)
 
     app.setProperty(APP_PROPERTY_RUNNING, True)
+    app.setProperty(APP_PROPERTY_LAUNCHER, True)
 
     interface = xappt.get_interface()
     params = params_from_args(tool_class=tool_class, tool_args=unknowns)

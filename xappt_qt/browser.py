@@ -132,6 +132,7 @@ def main(args) -> int:
     browser.show()
 
     app.setProperty(APP_PROPERTY_RUNNING, True)
+    app.setProperty(APP_PROPERTY_LAUNCHER, False)
     return app.exec_()
 
 

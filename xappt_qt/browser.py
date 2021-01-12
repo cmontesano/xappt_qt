@@ -18,6 +18,8 @@ from xappt_qt.gui.tab_pages import ToolsTabPage, OptionsTabPage, AboutTabPage
 # noinspection PyUnresolvedReferences
 from xappt_qt.gui.resources import icons
 
+from xappt_qt.utilities import singleton
+
 DISABLE_TRAY_ICON = platform.system() == "Darwin"
 
 
@@ -125,6 +127,11 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
 
 
 def main(args) -> int:
+    try:
+        _ = singleton.SingleInstance(flavor_id='browser')
+    except singleton.SingleInstanceException:
+        return 1
+
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(args)
     apply_palette(app)
 

@@ -66,6 +66,10 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
                              saver=lambda: (self.geometry().x(), self.geometry().y()),
                              loader=lambda x: self.set_window_position(*x),
                              default=(-1, -1))
+        self.add_config_item('start-minimized',
+                             saver=lambda: xappt_qt.config.start_minimized,
+                             loader=lambda x: setattr(xappt_qt.config, "start_minimized", x),
+                             default=True)
         if DISABLE_TRAY_ICON:
             self.options.chkMinimizeToTray.setChecked(False)
             self.options.chkMinimizeToTray.setEnabled(False)
@@ -136,7 +140,12 @@ def main(args) -> int:
     apply_palette(app)
 
     browser = XapptBrowser()
-    browser.show()
+    if xappt_qt.config.start_minimized:
+        if not xappt_qt.config.minimize_to_tray:
+            browser.setWindowState(QtCore.Qt.WindowMinimized)
+            browser.show()
+    else:
+        browser.show()
 
     app.setProperty(APP_PROPERTY_RUNNING, True)
     app.setProperty(APP_PROPERTY_LAUNCHER, False)

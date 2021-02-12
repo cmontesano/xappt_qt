@@ -54,10 +54,6 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
                              saver=lambda: xappt_qt.config.launch_new_process,
                              loader=lambda x: setattr(xappt_qt.config, "launch_new_process", x),
                              default=True)
-        self.add_config_item('minimize-to-tray',
-                             saver=lambda: xappt_qt.config.minimize_to_tray,
-                             loader=lambda x: setattr(xappt_qt.config, "minimize_to_tray", x),
-                             default=True)
         self.add_config_item('window-size',
                              saver=lambda: (self.width(), self.height()),
                              loader=lambda x: self.setGeometry(0, 0, *x),
@@ -74,6 +70,11 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
             self.options.chkMinimizeToTray.setChecked(False)
             self.options.chkMinimizeToTray.setEnabled(False)
             xappt_qt.config.minimize_to_tray = False
+        else:
+            self.add_config_item('minimize-to-tray',
+                                 saver=lambda: xappt_qt.config.minimize_to_tray,
+                                 loader=lambda x: setattr(xappt_qt.config, "minimize_to_tray", x),
+                                 default=True)
 
     def init_tray_icon(self):
         if DISABLE_TRAY_ICON:

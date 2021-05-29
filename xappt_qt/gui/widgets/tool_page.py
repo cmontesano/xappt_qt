@@ -138,15 +138,21 @@ class ToolPage(QtWidgets.QWidget):
         return w
 
     def _convert_bool(self, param: xappt.Parameter) -> QtWidgets.QWidget:
-        w = QtWidgets.QCheckBox()
-        for v in (param.value, param.default):
-            if v is not None:
-                w.setChecked(v)
-                break
+        if param.options.get("ui") == "button":
+            w = QtWidgets.QPushButton()
+            w.setText(self.get_caption(param))
+            w.clicked.connect(lambda x: self.update_tool_param(param.name, param.value))
+            param.metadata['label'].setText("")
         else:
-            param.value = w.isChecked()
-        w.stateChanged.connect(lambda x: self.update_tool_param(param.name, x == QtCore.Qt.Checked))
-        param.metadata['ui-setter'] = w.setChecked
+            w = QtWidgets.QCheckBox()
+            for v in (param.value, param.default):
+                if v is not None:
+                    w.setChecked(v)
+                    break
+            else:
+                param.value = w.isChecked()
+            w.stateChanged.connect(lambda x: self.update_tool_param(param.name, x == QtCore.Qt.Checked))
+            param.metadata['ui-setter'] = w.setChecked
         return w
 
     def _convert_str(self, param: xappt.Parameter) -> QtWidgets.QWidget:

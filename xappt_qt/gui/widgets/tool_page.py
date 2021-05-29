@@ -159,11 +159,10 @@ class ToolPage(QtWidgets.QWidget):
         w = QtWidgets.QComboBox()
         w.addItems(param.choices)
         for v in (param.value, param.default):
-            if v is not None:
-                if v in param.choices:
-                    index = w.findText(param.default)
-                    w.setCurrentIndex(index)
-                    break
+            if v is not None and v in param.choices:
+                index = w.findText(v)
+                w.setCurrentIndex(index)
+                break
         else:
             param.value = w.currentText()
 

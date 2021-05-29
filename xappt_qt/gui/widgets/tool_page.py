@@ -194,7 +194,7 @@ class ToolPage(QtWidgets.QWidget):
 
         for v in (param.value, param.default):
             if v is not None:
-                w.setText(param.value)
+                w.setText(v)
                 break
         else:
             w.setText("")

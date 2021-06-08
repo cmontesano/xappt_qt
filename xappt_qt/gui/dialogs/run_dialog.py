@@ -62,6 +62,7 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         return self.txtOutput.isVisible()
 
     def clear_console(self):
+        self._console_lines.clear()
         self.txtOutput.clear()
 
     def clear(self):

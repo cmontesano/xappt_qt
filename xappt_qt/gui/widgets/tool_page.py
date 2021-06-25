@@ -235,12 +235,18 @@ class ToolPage(QtWidgets.QWidget):
 
     def update_list_param(self, name: str):
         param: xappt.Parameter = getattr(self.tool, name)
+        error: ErrorLabel = param.metadata['error']
         widget: CheckList = param.metadata.get('widget')
         if widget is None:
             return
         checked_items = list(widget.checked_items())
         param.on_value_changed.paused = True
-        param.value = param.validate(checked_items)
+        try:
+            param.value = param.validate(checked_items)
+        except xappt.ParameterValidationError as e:
+            error.set_error(str(e))
+        else:
+            error.reset()
         param.on_value_changed.paused = False
 
     def update_tool_param(self, name: str, value: Any):

@@ -145,8 +145,9 @@ class QtInterface(xappt.BaseInterface):
     def close(self):
         if self.command_runner.running:
             self.command_runner.abort()
-        else:
-            self.runner.close()
+            if not self.ask("Process has been terminated. Close this tool?"):
+                return
+        self.runner.close()
 
     def clear_console(self):
         self.runner.clear_console()

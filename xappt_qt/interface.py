@@ -34,6 +34,8 @@ class QtInterface(xappt.BaseInterface):
         self.runner.btnClose.clicked.connect(self.close)
         self.progress_dialog = None
         self.headless = False
+        self.add_stdout_callback(self.write_console_stdout)
+        self.add_stderr_callback(self.write_console_stderr)
 
     @classmethod
     def name(cls) -> str:
@@ -111,6 +113,16 @@ class QtInterface(xappt.BaseInterface):
             self.runner.progressBar.setFormat("")
         self.app.processEvents()
 
+    def write_console_stdout(self, text: str):
+        self.show_console()
+        for line in text.splitlines():
+            self.runner.add_output_line(line, error=False)
+
+    def write_console_stderr(self, text: str):
+        self.show_console()
+        for line in text.splitlines():
+            self.runner.add_output_line(line, error=True)
+
     def _on_run(self):
         try:
             self.runner.tool_plugin.validate()
@@ -131,7 +143,10 @@ class QtInterface(xappt.BaseInterface):
         self.runner.tool_widget.setEnabled(enabled)
 
     def close(self):
-        self.runner.close()
+        if self.command_runner.running:
+            self.command_runner.abort()
+        else:
+            self.runner.close()
 
     def clear_console(self):
         self.runner.clear_console()
@@ -144,14 +159,6 @@ class QtInterface(xappt.BaseInterface):
 
     def is_console_visible(self) -> bool:
         return self.runner.is_console_visible()
-
-    def write_console_out(self, s: str):
-        for line in s.splitlines():
-            self.runner.add_output_line(line, error=False)
-
-    def write_console_err(self, s: str):
-        for line in s.splitlines():
-            self.runner.add_output_line(line, error=True)
 
     def close_event(self, event: QtGui.QCloseEvent):
         tool_plugin = self.runner.tool_plugin

@@ -41,6 +41,22 @@ class QtInterface(xappt.BaseInterface):
     def name(cls) -> str:
         return APP_INTERFACE_NAME
 
+    def load_window_geo(self):
+        assert self.runner.tool_plugin is not None
+        tool_key = f"{self.runner.tool_plugin.collection()}::{self.runner.tool_plugin.name()}"
+        geo = self.data(f"{tool_key}.geo")
+        if geo is not None:
+            self.runner.setGeometry(0, 0, *geo)
+        pos = self.data(f"{tool_key}.pos")
+        if pos is not None:
+            self.runner.move(*pos)
+
+    def save_window_geo(self):
+        assert self.runner.tool_plugin is not None
+        tool_key = f"{self.runner.tool_plugin.collection()}::{self.runner.tool_plugin.name()}"
+        self.set_data(f"{tool_key}.geo", (self.runner.width(), self.runner.height()))
+        self.set_data(f"{tool_key}.pos", (self.runner.geometry().x(), self.runner.geometry().y()))
+
     def invoke(self, plugin: BaseTool, **kwargs):
         self.headless = kwargs.get('headless')
         if self.headless:
@@ -53,6 +69,7 @@ class QtInterface(xappt.BaseInterface):
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
+        self.load_window_geo()
         for parameter in self.runner.tool_plugin.parameters():
             self.runner.tool_widget.widget_value_updated(param=parameter)
         if kwargs.get('auto_run', False):
@@ -167,4 +184,5 @@ class QtInterface(xappt.BaseInterface):
             if hasattr(tool_plugin, "can_close"):
                 if not tool_plugin.can_close():
                     return event.ignore()
+        self.save_window_geo()
         return self.__runner_close_event(event)

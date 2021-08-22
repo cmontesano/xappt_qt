@@ -34,8 +34,8 @@ class QtInterface(xappt.BaseInterface):
         self.runner.btnClose.clicked.connect(self.close)
         self.progress_dialog = None
         self.headless = False
-        self.add_stdout_callback(self.write_console_stdout)
-        self.add_stderr_callback(self.write_console_stderr)
+        self.on_write_stdout.add(self.write_console_stdout)
+        self.on_write_stderr.add(self.write_console_stderr)
 
     @classmethod
     def name(cls) -> str:
@@ -145,8 +145,8 @@ class QtInterface(xappt.BaseInterface):
     def close(self):
         if self.command_runner.running:
             self.command_runner.abort()
-            if not self.ask("Process has been terminated. Close this tool?"):
-                return
+            self.warning("Process has been terminated.")
+            return
         self.runner.close()
 
     def clear_console(self):

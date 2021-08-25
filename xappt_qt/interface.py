@@ -34,10 +34,28 @@ class QtInterface(xappt.BaseInterface):
         self.runner.btnClose.clicked.connect(self.close)
         self.progress_dialog = None
         self.headless = False
+        self.on_write_stdout.add(self.write_console_stdout)
+        self.on_write_stderr.add(self.write_console_stderr)
 
     @classmethod
     def name(cls) -> str:
         return APP_INTERFACE_NAME
+
+    def load_window_geo(self):
+        assert self.runner.tool_plugin is not None
+        tool_key = f"{self.runner.tool_plugin.collection()}::{self.runner.tool_plugin.name()}"
+        geo = self.data(f"{tool_key}.geo")
+        if geo is not None:
+            self.runner.setGeometry(0, 0, *geo)
+        pos = self.data(f"{tool_key}.pos")
+        if pos is not None:
+            self.runner.move(*pos)
+
+    def save_window_geo(self):
+        assert self.runner.tool_plugin is not None
+        tool_key = f"{self.runner.tool_plugin.collection()}::{self.runner.tool_plugin.name()}"
+        self.set_data(f"{tool_key}.geo", (self.runner.width(), self.runner.height()))
+        self.set_data(f"{tool_key}.pos", (self.runner.geometry().x(), self.runner.geometry().y()))
 
     def invoke(self, plugin: BaseTool, **kwargs):
         self.headless = kwargs.get('headless')
@@ -51,6 +69,7 @@ class QtInterface(xappt.BaseInterface):
         self.runner.clear()
         self.runner.set_current_tool(plugin)
         self.runner.show()
+        self.load_window_geo()
         for parameter in self.runner.tool_plugin.parameters():
             self.runner.tool_widget.widget_value_updated(param=parameter)
         if kwargs.get('auto_run', False):
@@ -111,6 +130,16 @@ class QtInterface(xappt.BaseInterface):
             self.runner.progressBar.setFormat("")
         self.app.processEvents()
 
+    def write_console_stdout(self, text: str):
+        self.show_console()
+        for line in text.splitlines():
+            self.runner.add_output_line(line, error=False)
+
+    def write_console_stderr(self, text: str):
+        self.show_console()
+        for line in text.splitlines():
+            self.runner.add_output_line(line, error=True)
+
     def _on_run(self):
         try:
             self.runner.tool_plugin.validate()
@@ -131,6 +160,10 @@ class QtInterface(xappt.BaseInterface):
         self.runner.tool_widget.setEnabled(enabled)
 
     def close(self):
+        if self.command_runner.running:
+            self.command_runner.abort()
+            self.warning("Process has been terminated.")
+            return
         self.runner.close()
 
     def clear_console(self):
@@ -145,18 +178,11 @@ class QtInterface(xappt.BaseInterface):
     def is_console_visible(self) -> bool:
         return self.runner.is_console_visible()
 
-    def write_console_out(self, s: str):
-        for line in s.splitlines():
-            self.runner.add_output_line(line, error=False)
-
-    def write_console_err(self, s: str):
-        for line in s.splitlines():
-            self.runner.add_output_line(line, error=True)
-
     def close_event(self, event: QtGui.QCloseEvent):
         tool_plugin = self.runner.tool_plugin
         if tool_plugin is not None:
             if hasattr(tool_plugin, "can_close"):
                 if not tool_plugin.can_close():
                     return event.ignore()
+        self.save_window_geo()
         return self.__runner_close_event(event)

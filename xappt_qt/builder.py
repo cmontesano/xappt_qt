@@ -141,7 +141,7 @@ class Builder:
         self.cmd.env_path_prepend('PATH', os.path.dirname(self.python_bin))
         self.cmd.env_path_prepend('PATH', os.path.join(self.site_packages, 'bin'))
         self.cmd.env_path_prepend('PYTHONPATH', self.site_packages)
-        self.cmd.env_var_add('VIRTUAL_ENV', venv_path)
+        self.cmd.env_var_set('VIRTUAL_ENV', venv_path)
         self.cmd.env_var_remove('PYTHONHOME')
 
     def install_python_package(self, package_name: str):

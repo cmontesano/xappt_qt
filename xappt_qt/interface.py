@@ -18,7 +18,7 @@ from xappt_qt.constants import *
 # noinspection PyUnresolvedReferences
 from xappt_qt.gui.resources import icons
 
-os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
+os.environ['QT_STYLE_OVERRIDE'] = os.getenv('QT_STYLE_OVERRIDE', "Fusion")
 os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
 
 

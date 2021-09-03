@@ -10,7 +10,7 @@ import xappt
 import xappt_qt.config
 from xappt_qt.gui.ui.browser import Ui_Browser
 from xappt_qt.gui.utilities import center_widget
-from xappt_qt.gui.utilities.dark_palette import apply_palette
+from xappt_qt.gui.utilities.style import apply_style
 from xappt_qt.gui.utilities.tray_icon import TrayIcon
 from xappt_qt.constants import *
 from xappt_qt.gui.tab_pages import ToolsTabPage, OptionsTabPage, AboutTabPage
@@ -138,7 +138,7 @@ def main(args) -> int:
         return 1
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(args)
-    apply_palette(app)
+    apply_style(app)
 
     browser = XapptBrowser()
     if xappt_qt.config.start_minimized:

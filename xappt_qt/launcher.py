@@ -8,7 +8,7 @@ from PyQt5 import QtWidgets
 import xappt
 from xappt.models.parameter import convert
 
-from xappt_qt.gui.utilities.dark_palette import apply_palette
+from xappt_qt.gui.utilities.style import apply_style
 from xappt_qt.constants import *
 
 
@@ -26,7 +26,7 @@ def main(argv) -> int:
         raise SystemExit(f"Tool {options.toolname} not found.")
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(argv)
-    apply_palette(app)
+    apply_style(app)
 
     app.setProperty(APP_PROPERTY_RUNNING, True)
     app.setProperty(APP_PROPERTY_LAUNCHER, True)

@@ -41,11 +41,22 @@ def apply_palette(app):
                           QPalette.ButtonText, DISABLED_COLOR)
 
     app.setPalette(dark_palette)
-    app.setStyleSheet(f"""
-        QToolTip {{ 
-            color: {BRIGHT_COLOR.name()}; 
-            background-color: {PRIMARY_COLOR.name()}; 
-            border: 1px solid {HIGHLIGHT_COLOR.name()};
+    app.setStyleSheet("""
+        QToolTip { 
+            color: palette(button); 
+            background-color: palette(buttontext); 
+            border: 1px solid palette(highlight);
             padding: 2px 8px;
-        }}
+        }
+        
+        QPlainTextEdit {
+            border: 1px solid palette(base);
+            border-radius: 3px;
+            background-color: palette(base);
+            padding: 1px;
+        }
+        
+        QPlainTextEdit:focus {
+            border-color: palette(highlight);
+        }
     """)

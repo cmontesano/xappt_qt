@@ -1,16 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-TEXT_EDIT_STYLE_SHEET = """
-QPlainTextEdit {
-    border: 1px solid palette(base);
-    border-radius: 3px;
-    background-color: palette(base);
-    padding: 1px;
-}
-QPlainTextEdit:focus {
-    border-color: palette(highlight);
-}"""
-
 
 class TextEdit(QtWidgets.QPlainTextEdit):
     editingFinished = QtCore.pyqtSignal()
@@ -20,7 +9,6 @@ class TextEdit(QtWidgets.QPlainTextEdit):
         self._changed = False
         self.setTabChangesFocus(True)
         self.textChanged.connect(self._handle_text_changed)
-        self.setStyleSheet(TEXT_EDIT_STYLE_SHEET)
         self.setLineWrapMode(self.NoWrap)
 
     def focusOutEvent(self, event: QtGui.QFocusEvent):

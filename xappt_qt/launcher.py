@@ -2,8 +2,6 @@ import argparse
 import os
 import sys
 
-from PyQt5 import QtWidgets
-
 import xappt
 
 from xappt_qt.constants import *

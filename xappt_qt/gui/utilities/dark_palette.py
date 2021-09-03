@@ -15,8 +15,6 @@ DISABLED_COLOR = QColor(64, 64, 64)
 
 # noinspection PyUnresolvedReferences
 def apply_palette(app):
-    app.setStyle("Fusion")
-
     dark_palette = QPalette()
 
     dark_palette.setColor(QPalette.Window, PRIMARY_COLOR)

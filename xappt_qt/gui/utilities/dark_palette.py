@@ -48,6 +48,17 @@ def apply_palette(app):
             border: 1px solid {0};
             padding: 2px 8px;
         }}
+        
+        QPlainTextEdit {{
+            border: 1px solid palette(base);
+            border-radius: 3px;
+            background-color: palette(base);
+            padding: 1px;
+        }}
+        
+        QPlainTextEdit:focus {{
+            border-color: palette(highlight);
+        }}
     """.format(HIGHLIGHT_COLOR.name(),
                PRIMARY_COLOR.name(),
                BRIGHT_COLOR.name()))

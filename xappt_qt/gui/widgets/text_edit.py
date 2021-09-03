@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 TEXT_EDIT_STYLE_SHEET = """
 QPlainTextEdit {
@@ -23,7 +23,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
         self.setStyleSheet(TEXT_EDIT_STYLE_SHEET)
         self.setLineWrapMode(self.NoWrap)
 
-    def focusOutEvent(self, event):
+    def focusOutEvent(self, event: QtGui.QFocusEvent):
         if self._changed:
             self.editingFinished.emit()
         super().focusOutEvent(event)
@@ -31,10 +31,10 @@ class TextEdit(QtWidgets.QPlainTextEdit):
     def _handle_text_changed(self):
         self._changed = True
 
-    def setTextChanged(self, state=True):
+    def setTextChanged(self, state: bool = True):  # noqa
         self._changed = state
 
-    def setText(self, text: str):
+    def setText(self, text: str):  # noqa
         self.setPlainText(text)
         self._changed = False
 

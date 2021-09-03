@@ -11,18 +11,18 @@ from xappt import BaseTool
 from xappt_qt.gui.utilities import center_widget
 from xappt_qt.gui.utilities.dark_palette import apply_palette
 
-from xappt_qt.gui.dialogs import RunDialog
+# from xappt_qt.gui.dialogs import RunDialog
 from xappt_qt.gui.ui.tool_interface import Ui_ToolInterface
 
 from xappt_qt.constants import *
 
-# noinspection PyUnresolvedReferences
-from xappt_qt.gui.resources import icons
+from xappt_qt.gui.resources import icons  # noqa
+from xappt_qt.gui.widgets.tool_page.widget import ToolPage
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
 os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
 
-
+"""
 class QtInterface2(xappt.BaseInterface):
     def __init__(self):
         super().__init__()
@@ -187,6 +187,8 @@ class QtInterface2(xappt.BaseInterface):
         self.save_window_geo()
         return self.__runner_close_event(event)
 
+"""
+
 
 class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
     onToolCompleted = QtCore.pyqtSignal(int, int)  # tool_id, return_code
@@ -197,12 +199,48 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.btnNext.clicked.connect(self.run_current_tool)
         self.current_tool_id = -1
 
+        self.set_window_attributes()
+
+        self.hide_console()
+
+    def set_window_attributes(self):
+        flags = QtCore.Qt.Window
+        flags |= QtCore.Qt.WindowCloseButtonHint
+        flags |= QtCore.Qt.WindowMinimizeButtonHint
+        self.setWindowFlags(flags)
+        self.setWindowIcon(QtGui.QIcon(":appicon"))
+
     def load_tool(self, tool_instance: BaseTool, tool_id: int):
         self.current_tool_id = tool_id
+        tool_page_widget = ToolPage(tool_instance)
+
+        scroller = QtWidgets.QScrollArea()
+        scroller.setWidgetResizable(True)
+
+        widget = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout()
+
+        layout.addWidget(tool_page_widget)
+        layout.addItem(QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Minimum,
+                                             QtWidgets.QSizePolicy.Expanding))
+
+        widget.setLayout(layout)
+        scroller.setWidget(widget)
+
+        self.stackedWidget.addWidget(scroller)
+
+        self.stackedWidget.setCurrentIndex(tool_id)
 
     def run_current_tool(self):
         result = 0  # tool.execute()
         self.onToolCompleted.emit(self.current_tool_id, result)
+
+    def show_console(self):
+        half_height = int(self.height() * 0.5)
+        self.splitter.setSizes((half_height, half_height))
+
+    def hide_console(self):
+        self.splitter.setSizes((self.height(), 0))
 
 
 @xappt.register_plugin

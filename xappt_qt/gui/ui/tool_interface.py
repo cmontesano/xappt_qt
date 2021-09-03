@@ -15,7 +15,7 @@ class Ui_ToolInterface(object):
     def setupUi(self, ToolInterface):
         ToolInterface.setObjectName("ToolInterface")
         ToolInterface.setWindowModality(QtCore.Qt.ApplicationModal)
-        ToolInterface.resize(676, 380)
+        ToolInterface.resize(676, 462)
         ToolInterface.setSizeGripEnabled(False)
         ToolInterface.setModal(True)
         self.gridLayout_3 = QtWidgets.QGridLayout(ToolInterface)

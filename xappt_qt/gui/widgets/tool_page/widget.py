@@ -110,6 +110,12 @@ class ToolPage(QtWidgets.QWidget):
         assert widget is not None
         setter = param.metadata.get('ui-setter')
         assert setter is not None
+
+        # Block signals to avoid infinite recursion:
+        #    Updating the widget's value here can trigger the widget's onValueChanged
+        #    signal, which would then update the parameter, cause its on_value_changed
+        #    callback to be invoked, and then then trigger this function leading which
+        #    would start the process over again.
         widget.blockSignals(True)
         setter(param.value)
         widget.blockSignals(False)

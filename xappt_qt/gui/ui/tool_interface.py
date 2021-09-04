@@ -27,6 +27,11 @@ class Ui_ToolInterface(object):
         self.stackedWidget = QtWidgets.QStackedWidget(self.splitter)
         self.stackedWidget.setObjectName("stackedWidget")
         self.txtConsole = QtWidgets.QTextEdit(self.splitter)
+        self.txtConsole.setUndoRedoEnabled(False)
+        self.txtConsole.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+        self.txtConsole.setReadOnly(True)
+        self.txtConsole.setTabStopWidth(40)
+        self.txtConsole.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.txtConsole.setObjectName("txtConsole")
         self.gridLayout_3.addWidget(self.splitter, 0, 0, 1, 1)
         self.progressBar = QtWidgets.QProgressBar(ToolInterface)
@@ -42,6 +47,10 @@ class Ui_ToolInterface(object):
         self.btnNext = QtWidgets.QPushButton(ToolInterface)
         self.btnNext.setObjectName("btnNext")
         self.horizontalLayout.addWidget(self.btnNext)
+        self.btnClose = QtWidgets.QPushButton(ToolInterface)
+        self.btnClose.setAutoDefault(False)
+        self.btnClose.setObjectName("btnClose")
+        self.horizontalLayout.addWidget(self.btnClose)
         self.gridLayout_3.addLayout(self.horizontalLayout, 2, 0, 1, 1)
 
         self.retranslateUi(ToolInterface)
@@ -51,4 +60,10 @@ class Ui_ToolInterface(object):
     def retranslateUi(self, ToolInterface):
         _translate = QtCore.QCoreApplication.translate
         ToolInterface.setWindowTitle(_translate("ToolInterface", "Dialog"))
+        self.txtConsole.setHtml(_translate("ToolInterface", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Fira Sans Semi-Light\'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.btnNext.setText(_translate("ToolInterface", "Next"))
+        self.btnClose.setText(_translate("ToolInterface", "Close"))

@@ -90,17 +90,15 @@ class ToolPage(QtWidgets.QWidget):
 
     def on_widget_value_changed(self, param_name: str, param_value: Any):
         parameter: xappt.Parameter = getattr(self.tool, param_name)
-        error_widget: Optional[ErrorLabel] = parameter.metadata.get("error")
+        error_widget: ErrorLabel = parameter.metadata["error"]
 
         parameter.on_value_changed.paused = True
         try:
             parameter.value = parameter.validate(param_value)
         except xappt.ParameterValidationError as err:
-            if error_widget is not None:
-                error_widget.set_error(str(err))
+            error_widget.set_error(str(err))
         else:
-            if error_widget is not None:
-                error_widget.clear()
+            error_widget.reset()
         finally:
             parameter.on_value_changed.paused = False
 

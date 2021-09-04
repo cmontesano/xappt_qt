@@ -35,20 +35,24 @@ class ToolPage(QtWidgets.QWidget):
         self.setLayout(self.grid)
         self._load_tool_parameters()
 
+    def _convert_parameter(self, param: xappt.Parameter) -> QtWidgets.QWidget:
+        widget_class = self.convert_dispatch[param.data_type]
+        widget_instance: ParameterWidgetBase = widget_class(parameter=param, parent=self)
+        widget_instance.onValueChanged.connect(self.on_widget_value_changed)
+        return widget_instance
+
     def _load_tool_parameters(self):
         index = 0
         for param in self.tool.parameters():
             if param.hidden:
                 continue
-            widget_class = self.convert_dispatch[param.data_type]
-            widget_instance: ParameterWidgetBase = widget_class(parameter=param, parent=self)
+            widget_instance = self._convert_parameter(param)
             if len(widget_instance.caption):
                 label = QtWidgets.QLabel(widget_instance.caption)
                 label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
                 label.setToolTip(param.description)
                 param.metadata['label'] = label
                 self.grid.addWidget(label, index, 0)
-            widget_instance.onValueChanged.connect(self.on_widget_value_changed)
 
             error = ErrorLabel()
             param.metadata['error'] = error
@@ -83,7 +87,7 @@ class ToolPage(QtWidgets.QWidget):
         param.on_choices_changed.clear()
 
         # create a new widget to replace it
-        new_widget = self.convert_parameter(param)
+        new_widget = self._convert_parameter(param)
         self.grid.addWidget(new_widget, row, column)
         param.metadata['widget'] = new_widget
         param.on_choices_changed.add(self.update_tool_choices)
@@ -92,15 +96,12 @@ class ToolPage(QtWidgets.QWidget):
         parameter: xappt.Parameter = getattr(self.tool, param_name)
         error_widget: ErrorLabel = parameter.metadata["error"]
 
-        parameter.on_value_changed.paused = True
         try:
             parameter.value = parameter.validate(param_value)
         except xappt.ParameterValidationError as err:
             error_widget.set_error(str(err))
         else:
             error_widget.reset()
-        finally:
-            parameter.on_value_changed.paused = False
 
     @staticmethod
     def parameter_value_updated(param: xappt.Parameter):

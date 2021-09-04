@@ -6,7 +6,6 @@ import xappt
 
 from xappt_qt.gui.widgets.tool_page.converters.base import ParameterWidgetBase
 from xappt_qt.gui.widgets.check_list import CheckList
-from xappt_qt.gui.widgets.error_label import ErrorLabel
 
 
 class ParameterWidgetList(ParameterWidgetBase):

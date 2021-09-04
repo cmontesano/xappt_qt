@@ -5,5 +5,9 @@
   <qresource prefix="svg">
     <file alias='appicon'>../svg/icon.svg</file>
     <file alias='error'>../svg/error.svg</file>
+    <file alias='copy'>../svg/copy.svg</file>
+    <file alias='scroll-down'>../svg/scroll-down.svg</file>
+    <file alias='trash'>../svg/trash.svg</file>
+    <file alias='word-wrap'>../svg/word-wrap.svg</file>
   </qresource>
 </RCC>

@@ -1,26 +1,29 @@
 import os
 import sys
 
-from typing import Optional
+from collections import deque
+from collections import namedtuple
+from typing import Optional, Type
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-import xappt
-from xappt import BaseTool
+import xappt  # noqa
 
-from xappt_qt.gui.utilities import center_widget
 from xappt_qt.gui.utilities.dark_palette import apply_palette
 
-# from xappt_qt.gui.dialogs import RunDialog
 from xappt_qt.gui.ui.tool_interface import Ui_ToolInterface
 
 from xappt_qt.constants import *
 
+from xappt_qt import config
 from xappt_qt.gui.resources import icons  # noqa
 from xappt_qt.gui.widgets.tool_page.widget import ToolPage
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
 os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
+
+OutputLine = namedtuple("OutputLine", ("text", "stream"))
+
 
 """
 class QtInterface2(xappt.BaseInterface):
@@ -191,14 +194,15 @@ class QtInterface2(xappt.BaseInterface):
 
 
 class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
-    onToolCompleted = QtCore.pyqtSignal(int, int)  # tool_id, return_code
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setupUi(self)
-        self.btnNext.clicked.connect(self.run_current_tool)
-        self.current_tool_id = -1
 
+        self.output_buffer_raw = deque(maxlen=config.console_line_limit)
+        self.output_buffer_html = deque(maxlen=config.console_line_limit)
+
+        self.current_tool: Optional[xappt.BaseTool] = None
+
+        self.setupUi(self)
         self.set_window_attributes()
 
         self.hide_console()
@@ -210,9 +214,12 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.setWindowFlags(flags)
         self.setWindowIcon(QtGui.QIcon(":appicon"))
 
-    def load_tool(self, tool_instance: BaseTool, tool_id: int):
-        self.current_tool_id = tool_id
-        tool_page_widget = ToolPage(tool_instance)
+    def load_tool(self, tool_instance: xappt.BaseTool):
+        self.current_tool = tool_instance
+        self.create_tool_widget()
+
+    def create_tool_widget(self):
+        tool_page_widget = ToolPage(self.current_tool)
 
         scroller = QtWidgets.QScrollArea()
         scroller.setWidgetResizable(True)
@@ -229,11 +236,7 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
 
         self.stackedWidget.addWidget(scroller)
 
-        self.stackedWidget.setCurrentIndex(tool_id)
-
-    def run_current_tool(self):
-        result = 0  # tool.execute()
-        self.onToolCompleted.emit(self.current_tool_id, result)
+        self.stackedWidget.setCurrentIndex(self.stackedWidget.count() - 1)
 
     def show_console(self):
         half_height = int(self.height() * 0.5)
@@ -241,6 +244,44 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
 
     def hide_console(self):
         self.splitter.setSizes((self.height(), 0))
+
+    def write_to_console(self, text: str, error: bool = False):
+        self.show_console()
+        for line in text.splitlines():
+            self.add_output_line(line, error=error)
+
+    @staticmethod
+    def convert_leading_whitespace(s: str, tabwidth: int = 4) -> str:
+        leading_spaces = 0
+        while True:
+            if not len(s):
+                break
+            if s[0] == " ":
+                leading_spaces += 1
+            elif s[0] == "\t":
+                leading_spaces += tabwidth
+            else:
+                break
+            s = s[1:]
+        return f"{'&nbsp;' * leading_spaces}{s}"
+
+    def _add_console_line(self, s: str, error: bool = False):
+        s = self.convert_leading_whitespace(s)
+        color = config.console_color_stdout
+        if error:
+            color = config.console_color_stderr
+
+        self.output_buffer_raw.append(s)
+        self.output_buffer_html.append(f'<span style="color: {color}">{s}</span>')
+
+        self.txtOutput.setHtml("<br />".join(self.output_buffer_html))
+        self.txtOutput.moveCursor(QtGui.QTextCursor.End)
+
+        max_scroll = self.txtOutput.verticalScrollBar().maximum()
+        self.txtOutput.verticalScrollBar().setValue(max_scroll)
+        self.txtOutput.horizontalScrollBar().setValue(0)
+
+        QtWidgets.QApplication.instance().processEvents()
 
 
 @xappt.register_plugin
@@ -250,14 +291,22 @@ class QtInterface(xappt.BaseInterface):
         self.app = QtWidgets.QApplication(sys.argv)
         apply_palette(self.app)
         self.ui = ToolUI()
-        self.ui.onToolCompleted.connect(self.on_tool_completed)
+
+        self.ui.btnNext.clicked.connect(self.on_execute_tool)
+        self.on_tool_added.add(self.update_next_button_caption)
+        self.on_write_stdout.add(lambda s: self.ui.write_to_console(s, False))
+        self.on_write_stderr.add(lambda s: self.ui.write_to_console(s, True))
 
     @classmethod
     def name(cls) -> str:
         return APP_INTERFACE_NAME
 
-    def invoke(self, plugin: BaseTool, **kwargs) -> int:
-        return 0
+    def on_execute_tool(self):
+        tool = self.ui.current_tool
+        self.on_tool_completed(self.invoke(tool, **self.tool_data))
+
+    def invoke(self, plugin: xappt.BaseTool, **kwargs) -> int:
+        return plugin.execute(interface=self, **kwargs)
 
     def message(self, message: str):
         QtWidgets.QMessageBox.information(self.ui, APP_TITLE, message)
@@ -290,33 +339,37 @@ class QtInterface(xappt.BaseInterface):
         self.ui.progressBar.setFormat("")
         self.app.processEvents()
 
-    def on_tool_completed(self, tool_id: int, return_code: int):
+    def on_tool_completed(self, return_code: int):
         if return_code != 0:
             self.error("tool failed")
             self.ui.reject()
             return
 
-        next_tool_id = tool_id + 1
+        self._current_tool_index = self.current_tool_index + 1
         try:
-            self.load_tool(next_tool_id)
+            self.load_tool_ui()
         except IndexError:
             self.message("Complete")
             self.ui.accept()
 
-    def load_tool(self, tool_index: int) -> int:
-        tool_class = self._tool_chain[tool_index]
+    def load_tool_ui(self):
+        tool_class = self.get_tool(self.current_tool_index)
         tool_instance = tool_class(**self.tool_data)
-        self.ui.load_tool(tool_instance, tool_index)
-        result = self.invoke(tool_instance, **self.tool_data)
-        if result != 0:
-            raise RuntimeError(f"Tool {tool_class} did not complete successfully")
-        return result
+        self.ui.load_tool(tool_instance)
+        self.update_next_button_caption()
 
     def run(self) -> int:
         if not len(self._tool_chain):
             return 2
-        self.load_tool(0)
+        self._current_tool_index = 0
+        self.load_tool_ui()
         result = self.ui.exec()
         if result == QtWidgets.QDialog.Accepted:
             return 0
         return 1
+
+    def update_next_button_caption(self):  # noqa
+        if self.current_tool_index == self.tool_count - 1:
+            self.ui.btnNext.setText("Run")
+        else:
+            self.ui.btnNext.setText("Next")

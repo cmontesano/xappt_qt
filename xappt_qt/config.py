@@ -1,6 +1,8 @@
 launch_new_process = False
 minimize_to_tray = True
 console_line_limit = 1024
+console_color_stdout: str = "#ccc"
+console_color_stderr: str = "#f55"
 start_minimized = False
 
 

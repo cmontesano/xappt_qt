@@ -84,34 +84,34 @@ class RunDialog(QtWidgets.QDialog, Ui_RunDialog):
         self.setWindowTitle(f"{tool_plugin.name()} - {APP_TITLE}")
         self.tool_widget.setEnabled(True)
 
-    @staticmethod
-    def convert_leading_whitespace(s: str, tabwidth: int = 4) -> str:
-        leading_spaces = 0
-        while True:
-            if not len(s):
-                break
-            if s[0] == " ":
-                leading_spaces += 1
-            elif s[0] == "\t":
-                leading_spaces += tabwidth
-            else:
-                break
-            s = s[1:]
-        return f"{'&nbsp;' * leading_spaces}{s}"
-
-    def add_output_line(self, s: str, error: bool = False):
-        s = self.convert_leading_whitespace(s)
-        if error:
-            self._console_lines.append(f'<span style="color: #f55">{s}</span>')
-        else:
-            self._console_lines.append(f'<span style="color: #ccc">{s}</span>')
-        self.txtOutput.setHtml("<br />".join(self._console_lines))
-        self.txtOutput.moveCursor(QtGui.QTextCursor.End)
-        max_scroll = self.txtOutput.verticalScrollBar().maximum()
-        self.txtOutput.verticalScrollBar().setValue(max_scroll)
-        self.txtOutput.horizontalScrollBar().setValue(0)
-        # noinspection PyArgumentList
-        QtWidgets.QApplication.instance().processEvents()
+    # @staticmethod
+    # def convert_leading_whitespace(s: str, tabwidth: int = 4) -> str:
+    #     leading_spaces = 0
+    #     while True:
+    #         if not len(s):
+    #             break
+    #         if s[0] == " ":
+    #             leading_spaces += 1
+    #         elif s[0] == "\t":
+    #             leading_spaces += tabwidth
+    #         else:
+    #             break
+    #         s = s[1:]
+    #     return f"{'&nbsp;' * leading_spaces}{s}"
+    #
+    # def add_output_line(self, s: str, error: bool = False):
+    #     s = self.convert_leading_whitespace(s)
+    #     if error:
+    #         self._console_lines.append(f'<span style="color: #f55">{s}</span>')
+    #     else:
+    #         self._console_lines.append(f'<span style="color: #ccc">{s}</span>')
+    #     self.txtOutput.setHtml("<br />".join(self._console_lines))
+    #     self.txtOutput.moveCursor(QtGui.QTextCursor.End)
+    #     max_scroll = self.txtOutput.verticalScrollBar().maximum()
+    #     self.txtOutput.verticalScrollBar().setValue(max_scroll)
+    #     self.txtOutput.horizontalScrollBar().setValue(0)
+    #     # noinspection PyArgumentList
+    #     QtWidgets.QApplication.instance().processEvents()
 
     def add_error_line(self, s: str):
         self.add_output_line(s, True)

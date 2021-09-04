@@ -18,6 +18,7 @@ class CheckList(QtWidgets.QWidget):
 
     def setup_ui(self, searchable: bool):
         grid = QtWidgets.QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
         self.setLayout(grid)
 
         list_row = 0

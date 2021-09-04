@@ -11,6 +11,8 @@ from xappt_qt.gui.widgets.tool_page.widget import ToolPage
 
 OutputLine = namedtuple("OutputLine", ("text", "stream"))
 
+# todo: Make txtConsole into proper widget, with copy, clear, save, scroll to end, etc buttons
+
 
 class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
     STREAM_STDOUT = 0

@@ -22,11 +22,19 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.output_buffer_html = deque(maxlen=config.console_line_limit)
 
         self.current_tool: Optional[xappt.BaseTool] = None
+        self.saved_size: tuple[int, int] = (-1, -1)
+        self.saved_position: tuple[int, int] = (-1, -1)
 
         self.setupUi(self)
         self.set_window_attributes()
+        self.set_console_attributes()
 
-        self.hide_console()
+    def showEvent(self, event: QtGui.QShowEvent):
+        super().showEvent(event)
+        if self.saved_size > (1, 1):
+            self.setGeometry(0, 0, *self.saved_size)
+        if self.saved_position >= (0, 0):
+            self.move(*self.saved_position)
 
     def set_window_attributes(self):
         flags = QtCore.Qt.Window
@@ -34,6 +42,13 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         flags |= QtCore.Qt.WindowMinimizeButtonHint
         self.setWindowFlags(flags)
         self.setWindowIcon(QtGui.QIcon(":/svg/appicon"))
+
+    def set_console_attributes(self):
+        font_size = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.GeneralFont).pointSizeF()
+        mono_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
+        mono_font.setPointSizeF(font_size)
+        self.txtConsole.setFont(mono_font)
+        self.hide_console()
 
     def clear_loaded_tools(self):
         while self.stackedWidget.count():
@@ -56,15 +71,14 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         layout = QtWidgets.QVBoxLayout()
 
         layout.addWidget(tool_page_widget)
-        layout.addItem(QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Minimum,
-                                             QtWidgets.QSizePolicy.Expanding))
+        layout.addItem(QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding))
 
         widget.setLayout(layout)
         scroller.setWidget(widget)
 
         self.stackedWidget.addWidget(scroller)
-
-        self.stackedWidget.setCurrentIndex(self.stackedWidget.count() - 1)
+        # since we're clearing widgets self.stackedWidget.count() should always be one
+        self.stackedWidget.setCurrentIndex(0)
 
     def show_console(self):
         half_height = int(self.height() * 0.5)
@@ -76,7 +90,7 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
     def write_to_console(self, text: str, stream: int = STREAM_STDOUT):
         self.show_console()
         for line in text.splitlines():
-            self.add_output_line(line, stream=stream)
+            self._add_console_line(line, stream=stream)
 
     @staticmethod
     def convert_leading_whitespace(s: str, tabwidth: int = 4) -> str:
@@ -102,11 +116,11 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.output_buffer_raw.append(OutputLine(text=s, stream=stream))
         self.output_buffer_html.append(f'<span style="color: {color}">{s}</span>')
 
-        self.txtOutput.setHtml("<br />".join(self.output_buffer_html))
-        self.txtOutput.moveCursor(QtGui.QTextCursor.End)
+        self.txtConsole.setHtml("<br />".join(self.output_buffer_html))
+        self.txtConsole.moveCursor(QtGui.QTextCursor.End)
 
-        max_scroll = self.txtOutput.verticalScrollBar().maximum()
-        self.txtOutput.verticalScrollBar().setValue(max_scroll)
-        self.txtOutput.horizontalScrollBar().setValue(0)
+        max_scroll = self.txtConsole.verticalScrollBar().maximum()
+        self.txtConsole.verticalScrollBar().setValue(max_scroll)
+        self.txtConsole.horizontalScrollBar().setValue(0)
 
         QtWidgets.QApplication.instance().processEvents()

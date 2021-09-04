@@ -27,7 +27,7 @@ class QtInterface(xappt.BaseInterface):
         self.ui = ToolUI()
 
         self.ui.btnNext.clicked.connect(self.on_execute_tool)
-        self.on_tool_added.add(self.update_next_button_caption)
+        self.on_tool_added.add(self.on_next_tool_loaded)
         self.on_write_stdout.add(lambda s: self.ui.write_to_console(s, False))
         self.on_write_stderr.add(lambda s: self.ui.write_to_console(s, True))
 
@@ -90,20 +90,40 @@ class QtInterface(xappt.BaseInterface):
         tool_class = self.get_tool(self.current_tool_index)
         tool_instance = tool_class(**self.tool_data)
         self.ui.load_tool(tool_instance)
-        self.update_next_button_caption()
+        self.on_next_tool_loaded()
 
     def run(self) -> int:
         if not len(self._tool_chain):
             return 2
         self._current_tool_index = 0
+        tool_class = self.get_tool(self.current_tool_index)
+        tool_geo_key = f"{tool_class.collection()}::{tool_class.name()}"
+
+        self.load_window_geo(tool_geo_key)
         self.load_tool_ui()
+
         result = self.ui.exec()
+        self.save_window_geo(tool_geo_key)
         if result == QtWidgets.QDialog.Accepted:
             return 0
         return 1
 
-    def update_next_button_caption(self):  # noqa
+    def on_next_tool_loaded(self):
+        tool_class = self.get_tool(self.current_tool_index)
+        self.ui.setWindowTitle(f"{tool_class.name()} - {APP_TITLE}")
         if self.current_tool_index == self.tool_count - 1:
             self.ui.btnNext.setText("Run")
         else:
             self.ui.btnNext.setText("Next")
+
+    def load_window_geo(self, tool_key: str):
+        geo = self.data(f"{tool_key}.size")
+        if geo is not None:
+            self.ui.saved_size = tuple(geo)
+        pos = self.data(f"{tool_key}.pos")
+        if pos is not None:
+            self.ui.saved_position = tuple(pos)
+
+    def save_window_geo(self, tool_key: str):
+        self.set_data(f"{tool_key}.size", (self.ui.width(), self.ui.height()))
+        self.set_data(f"{tool_key}.pos", (self.ui.geometry().x(), self.ui.geometry().y()))

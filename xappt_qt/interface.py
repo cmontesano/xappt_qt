@@ -3,7 +3,7 @@ import sys
 
 from collections import deque
 from collections import namedtuple
-from typing import Optional, Type
+from typing import Any, Optional, Type
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -194,6 +194,9 @@ class QtInterface2(xappt.BaseInterface):
 
 
 class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
+    STREAM_STDOUT = 0
+    STREAM_STDERR = 1
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -245,10 +248,10 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
     def hide_console(self):
         self.splitter.setSizes((self.height(), 0))
 
-    def write_to_console(self, text: str, error: bool = False):
+    def write_to_console(self, text: str, stream: int = STREAM_STDOUT):
         self.show_console()
         for line in text.splitlines():
-            self.add_output_line(line, error=error)
+            self.add_output_line(line, stream=stream)
 
     @staticmethod
     def convert_leading_whitespace(s: str, tabwidth: int = 4) -> str:
@@ -265,13 +268,13 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
             s = s[1:]
         return f"{'&nbsp;' * leading_spaces}{s}"
 
-    def _add_console_line(self, s: str, error: bool = False):
+    def _add_console_line(self, s: str, stream: int):
         s = self.convert_leading_whitespace(s)
         color = config.console_color_stdout
-        if error:
+        if stream == self.STREAM_STDERR:
             color = config.console_color_stderr
 
-        self.output_buffer_raw.append(s)
+        self.output_buffer_raw.append(OutputLine(text=s, stream=stream))
         self.output_buffer_html.append(f'<span style="color: {color}">{s}</span>')
 
         self.txtOutput.setHtml("<br />".join(self.output_buffer_html))

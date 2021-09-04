@@ -48,6 +48,7 @@ class ToolPage(QtWidgets.QWidget):
                 label.setToolTip(param.description)
                 param.metadata['label'] = label
                 self.grid.addWidget(label, index, 0)
+            widget_instance.onValueChanged.connect(self.on_widget_value_changed)
 
             error = ErrorLabel()
             param.metadata['error'] = error
@@ -87,9 +88,25 @@ class ToolPage(QtWidgets.QWidget):
         param.metadata['widget'] = new_widget
         param.on_choices_changed.add(self.update_tool_choices)
 
+    def on_widget_value_changed(self, param_name: str, param_value: Any):
+        parameter: xappt.Parameter = getattr(self.tool, param_name)
+        error_widget: Optional[ErrorLabel] = parameter.metadata.get("error")
+
+        parameter.on_value_changed.paused = True
+        try:
+            parameter.value = parameter.validate(param_value)
+        except xappt.ParameterValidationError as err:
+            if error_widget is not None:
+                error_widget.set_error(str(err))
+        else:
+            if error_widget is not None:
+                error_widget.clear()
+        finally:
+            parameter.on_value_changed.paused = False
+
     @staticmethod
     def parameter_value_updated(param: xappt.Parameter):
-        """ Update widget with the parameter's not value """
+        """ Update widget with the parameter's new value """
         setter = param.metadata.get('ui-setter')
         if setter is None:
             return

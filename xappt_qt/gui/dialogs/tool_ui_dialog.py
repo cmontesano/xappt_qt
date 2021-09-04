@@ -1,4 +1,5 @@
 from collections import deque, namedtuple
+from contextlib import contextmanager
 from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -35,6 +36,16 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
             self.setGeometry(0, 0, *self.saved_size)
         if self.saved_position >= (0, 0):
             self.move(*self.saved_position)
+
+    @contextmanager
+    def tool_executing(self):
+        self.stackedWidget.setEnabled(False)
+        self.btnNext.setEnabled(False)
+        try:
+            yield
+        finally:
+            self.stackedWidget.setEnabled(True)
+            self.btnNext.setEnabled(True)
 
     def set_window_attributes(self):
         flags = QtCore.Qt.Window

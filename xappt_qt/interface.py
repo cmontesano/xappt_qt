@@ -27,7 +27,7 @@ class QtInterface(xappt.BaseInterface):
         self.ui = ToolUI()
 
         self.ui.btnNext.clicked.connect(self.on_execute_tool)
-        self.on_tool_added.add(self.on_next_tool_loaded)
+        self.on_tool_chain_modified.add(self.update_ui)
         self.on_write_stdout.add(lambda s: self.ui.write_to_console(s, False))
         self.on_write_stderr.add(lambda s: self.ui.write_to_console(s, True))
 
@@ -40,7 +40,9 @@ class QtInterface(xappt.BaseInterface):
         self.on_tool_completed(self.invoke(tool, **self.tool_data))
 
     def invoke(self, plugin: xappt.BaseTool, **kwargs) -> int:
-        return plugin.execute(interface=self, **kwargs)
+        with self.ui.tool_executing():
+            result = plugin.execute(interface=self, **kwargs)
+        return result
 
     def message(self, message: str):
         QtWidgets.QMessageBox.information(self.ui, APP_TITLE, message)
@@ -90,7 +92,7 @@ class QtInterface(xappt.BaseInterface):
         tool_class = self.get_tool(self.current_tool_index)
         tool_instance = tool_class(**self.tool_data)
         self.ui.load_tool(tool_instance)
-        self.on_next_tool_loaded()
+        self.update_ui()
 
     def run(self) -> int:
         if not len(self._tool_chain):
@@ -108,7 +110,7 @@ class QtInterface(xappt.BaseInterface):
             return 0
         return 1
 
-    def on_next_tool_loaded(self):
+    def update_ui(self):
         tool_class = self.get_tool(self.current_tool_index)
         self.ui.setWindowTitle(f"{tool_class.name()} - {APP_TITLE}")
         if self.current_tool_index == self.tool_count - 1:

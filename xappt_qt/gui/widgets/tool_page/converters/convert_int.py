@@ -51,7 +51,7 @@ class ParameterWidgetInt(ParameterWidgetBase):
             param.value = w.value()
         w.valueChanged[int].connect(lambda x: self.onValueChanged.emit(param.name, x))
 
-        self._getter_fn = w.setValue
-        self._setter_fn = w.value
+        self._getter_fn = w.value
+        self._setter_fn = w.setValue
 
         return w

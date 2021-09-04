@@ -106,10 +106,13 @@ class ToolPage(QtWidgets.QWidget):
     @staticmethod
     def parameter_value_updated(param: xappt.Parameter):
         """ Update widget with the parameter's new value """
+        widget = param.metadata.get('widget')
+        assert widget is not None
         setter = param.metadata.get('ui-setter')
-        if setter is None:
-            return
+        assert setter is not None
+        widget.blockSignals(True)
         setter(param.value)
+        widget.blockSignals(False)
 
     @staticmethod
     def parameter_options_updated(param: xappt.Parameter):

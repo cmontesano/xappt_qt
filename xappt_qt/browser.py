@@ -28,10 +28,10 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         super().__init__()
 
         self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon(":appicon"))
+        self.setWindowIcon(QtGui.QIcon(":/svg/appicon"))
         self.setWindowTitle(APP_TITLE)
 
-        self.tray_icon = TrayIcon(self, QtGui.QIcon(":appicon"))
+        self.tray_icon = TrayIcon(self, QtGui.QIcon(":/svg/appicon"))
 
         self.tools = ToolsTabPage(on_info=self.tray_icon.info, on_warn=self.tray_icon.warn,
                                   on_error=self.tray_icon.critical)

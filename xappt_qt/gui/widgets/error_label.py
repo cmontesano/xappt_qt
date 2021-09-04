@@ -1,18 +1,18 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from xappt_qt.constants import *
+from xappt_qt.gui.resources import icons  # noqa
 
 
 class ErrorLabel(QtWidgets.QLabel):
+    ERROR_LINK = '<a href="#"><img src=":/svg/error" /></a>'
+
     def __init__(self):
         super().__init__()
         self._message: str = ""
         self.linkActivated.connect(self._on_link_activated)
 
-        font_size = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.GeneralFont).pointSizeF()
-        mono_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
-        mono_font.setPointSizeF(font_size * 1.5)
-        self.setFont(mono_font)
+        self.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
         size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Ignored)
         size_policy.setHorizontalStretch(0)
@@ -27,7 +27,7 @@ class ErrorLabel(QtWidgets.QLabel):
 
     def set_error(self, message: str):
         self._message = message
-        self.setText('<a href="#" style="color: red; text-decoration:none;">⛔</a>')
+        self.setText(self.ERROR_LINK)
 
     def show_error(self):
         if len(self._message):

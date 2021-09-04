@@ -1,5 +1,9 @@
 <RCC>
-  <qresource prefix="">
+  <qresource prefix="png">
     <file alias='appicon'>../png/appicon_256.png</file>
+  </qresource>
+  <qresource prefix="svg">
+    <file alias='appicon'>../svg/icon.svg</file>
+    <file alias='error'>../svg/error.svg</file>
   </qresource>
 </RCC>

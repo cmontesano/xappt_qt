@@ -18,7 +18,7 @@ class ParameterWidgetList(ParameterWidgetBase):
                 w.check_items(v)
                 break
         param.value = list(w.checked_items())
-        w.item_changed.connect(lambda: self.onValueChanged.emit(param.name))
+        w.item_changed.connect(lambda: self.onValueChanged.emit(param.name, self.value))
 
         self._getter_fn = lambda widget=w: list(widget.checked_items)
         self._setter_fn = lambda value, widget=w: self.set_list_value(value, widget)

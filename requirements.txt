@@ -1,2 +1,3 @@
-PyQt5==5.15.4
+PyQt5~=5.15.4
+pyperclip~=1.8.2
 #xappt==0.6.0

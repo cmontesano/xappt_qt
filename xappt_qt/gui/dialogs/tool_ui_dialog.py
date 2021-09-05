@@ -1,28 +1,18 @@
-from collections import deque, namedtuple
 from contextlib import contextmanager
 from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import xappt
-from xappt_qt import config
+
 from xappt_qt.gui.ui.tool_interface import Ui_ToolInterface
+from xappt_qt.gui.widgets.console import ConsoleWidget
 from xappt_qt.gui.widgets.tool_page.widget import ToolPage
-
-OutputLine = namedtuple("OutputLine", ("text", "stream"))
-
-# todo: Make txtConsole into proper widget, with copy, clear, save, scroll to end, etc buttons
 
 
 class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
-    STREAM_STDOUT = 0
-    STREAM_STDERR = 1
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.output_buffer_raw = deque(maxlen=config.console_line_limit)
-        self.output_buffer_html = deque(maxlen=config.console_line_limit)
 
         self.current_tool: Optional[xappt.BaseTool] = None
         self.saved_size: tuple[int, int] = (-1, -1)
@@ -30,7 +20,9 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
 
         self.setupUi(self)
         self.set_window_attributes()
-        self.set_console_attributes()
+
+        self.console = ConsoleWidget()
+        self.setup_console()
 
     def showEvent(self, event: QtGui.QShowEvent):
         super().showEvent(event)
@@ -56,11 +48,12 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.setWindowFlags(flags)
         self.setWindowIcon(QtGui.QIcon(":/svg/appicon"))
 
-    def set_console_attributes(self):
+    def setup_console(self):
         font_size = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.GeneralFont).pointSizeF()
         mono_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
         mono_font.setPointSizeF(font_size)
-        self.txtConsole.setFont(mono_font)
+        self.console.setFont(mono_font)
+        self.consoleContainer.layout().addWidget(self.console)
         self.hide_console()
 
     def clear_loaded_tools(self):
@@ -100,40 +93,14 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
     def hide_console(self):
         self.splitter.setSizes((self.height(), 0))
 
-    def write_to_console(self, text: str, stream: int = STREAM_STDOUT):
+    def write_stdout(self, text: str):
         self.show_console()
         for line in text.splitlines():
-            self._add_console_line(line, stream=stream)
+            self.console.write_stdout(line)
+        QtWidgets.QApplication.instance().processEvents()
 
-    @staticmethod
-    def convert_leading_whitespace(s: str, tabwidth: int = 4) -> str:
-        leading_spaces = 0
-        while True:
-            if not len(s):
-                break
-            if s[0] == " ":
-                leading_spaces += 1
-            elif s[0] == "\t":
-                leading_spaces += tabwidth
-            else:
-                break
-            s = s[1:]
-        return f"{'&nbsp;' * leading_spaces}{s}"
-
-    def _add_console_line(self, s: str, stream: int):
-        s = self.convert_leading_whitespace(s)
-        color = config.console_color_stdout
-        if stream == self.STREAM_STDERR:
-            color = config.console_color_stderr
-
-        self.output_buffer_raw.append(OutputLine(text=s, stream=stream))
-        self.output_buffer_html.append(f'<span style="color: {color}">{s}</span>')
-
-        self.txtConsole.setHtml("<br />".join(self.output_buffer_html))
-        self.txtConsole.moveCursor(QtGui.QTextCursor.End)
-
-        max_scroll = self.txtConsole.verticalScrollBar().maximum()
-        self.txtConsole.verticalScrollBar().setValue(max_scroll)
-        self.txtConsole.horizontalScrollBar().setValue(0)
-
+    def write_stderr(self, text: str):
+        self.show_console()
+        for line in text.splitlines():
+            self.console.write_stderr(line)
         QtWidgets.QApplication.instance().processEvents()

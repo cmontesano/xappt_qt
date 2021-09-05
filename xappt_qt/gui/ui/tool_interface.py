@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'tool_interface.ui'
+# Form implementation generated from reading ui file '/home/cmontesano/projects/xappt_qt/resources/ui/tool_interface.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -15,31 +15,28 @@ class Ui_ToolInterface(object):
     def setupUi(self, ToolInterface):
         ToolInterface.setObjectName("ToolInterface")
         ToolInterface.setWindowModality(QtCore.Qt.ApplicationModal)
-        ToolInterface.resize(676, 462)
+        ToolInterface.resize(728, 614)
         ToolInterface.setSizeGripEnabled(False)
         ToolInterface.setModal(True)
-        self.gridLayout_3 = QtWidgets.QGridLayout(ToolInterface)
-        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.gridLayout = QtWidgets.QGridLayout(ToolInterface)
+        self.gridLayout.setObjectName("gridLayout")
         self.splitter = QtWidgets.QSplitter(ToolInterface)
         self.splitter.setOrientation(QtCore.Qt.Vertical)
-        self.splitter.setHandleWidth(8)
         self.splitter.setObjectName("splitter")
         self.stackedWidget = QtWidgets.QStackedWidget(self.splitter)
         self.stackedWidget.setObjectName("stackedWidget")
-        self.txtConsole = QtWidgets.QTextEdit(self.splitter)
-        self.txtConsole.setUndoRedoEnabled(False)
-        self.txtConsole.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-        self.txtConsole.setReadOnly(True)
-        self.txtConsole.setTabStopWidth(40)
-        self.txtConsole.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
-        self.txtConsole.setObjectName("txtConsole")
-        self.gridLayout_3.addWidget(self.splitter, 0, 0, 1, 1)
+        self.consoleContainer = QtWidgets.QWidget(self.splitter)
+        self.consoleContainer.setObjectName("consoleContainer")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.consoleContainer)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self.progressBar = QtWidgets.QProgressBar(ToolInterface)
         self.progressBar.setProperty("value", 0)
         self.progressBar.setAlignment(QtCore.Qt.AlignCenter)
         self.progressBar.setFormat("")
         self.progressBar.setObjectName("progressBar")
-        self.gridLayout_3.addWidget(self.progressBar, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.progressBar, 1, 0, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -51,7 +48,7 @@ class Ui_ToolInterface(object):
         self.btnClose.setAutoDefault(False)
         self.btnClose.setObjectName("btnClose")
         self.horizontalLayout.addWidget(self.btnClose)
-        self.gridLayout_3.addLayout(self.horizontalLayout, 2, 0, 1, 1)
+        self.gridLayout.addLayout(self.horizontalLayout, 2, 0, 1, 1)
 
         self.retranslateUi(ToolInterface)
         self.stackedWidget.setCurrentIndex(-1)
@@ -60,10 +57,5 @@ class Ui_ToolInterface(object):
     def retranslateUi(self, ToolInterface):
         _translate = QtCore.QCoreApplication.translate
         ToolInterface.setWindowTitle(_translate("ToolInterface", "Dialog"))
-        self.txtConsole.setHtml(_translate("ToolInterface", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Fira Sans Semi-Light\'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.btnNext.setText(_translate("ToolInterface", "Next"))
         self.btnClose.setText(_translate("ToolInterface", "Close"))

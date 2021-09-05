@@ -28,8 +28,8 @@ class QtInterface(xappt.BaseInterface):
 
         self.ui.btnNext.clicked.connect(self.on_execute_tool)
         self.on_tool_chain_modified.add(self.update_ui)
-        self.on_write_stdout.add(lambda s: self.ui.write_to_console(s, False))
-        self.on_write_stderr.add(lambda s: self.ui.write_to_console(s, True))
+        self.on_write_stdout.add(self.ui.write_stdout)
+        self.on_write_stderr.add(self.ui.write_stderr)
 
     @classmethod
     def name(cls) -> str:

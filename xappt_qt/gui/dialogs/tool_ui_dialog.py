@@ -106,6 +106,8 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         return scroller
 
     def show_console(self):
+        if self.splitter.sizes()[1] > 0:
+            return
         half_height = int(self.height() * 0.5)
         self.splitter.setSizes((half_height, half_height))
 

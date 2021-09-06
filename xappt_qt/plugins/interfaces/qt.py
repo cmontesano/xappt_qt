@@ -3,7 +3,7 @@ import sys
 
 from typing import Optional
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 
 import xappt
 from xappt_qt.gui.dialogs.tool_ui_dialog import ToolUI
@@ -22,9 +22,12 @@ os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
 class QtInterface(xappt.BaseInterface):
     def __init__(self):
         super().__init__()
-        self.app = QtWidgets.QApplication(sys.argv)
+        self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[1:])
         apply_palette(self.app)
         self.ui = ToolUI()
+
+        self.__ui_close_event_orig = self.ui.closeEvent
+        self.ui.closeEvent = self.close_event
 
         self.ui.btnNext.clicked.connect(self.on_execute_tool)
         self.on_tool_chain_modified.add(self.update_ui)
@@ -76,17 +79,13 @@ class QtInterface(xappt.BaseInterface):
         self.app.processEvents()
 
     def on_tool_completed(self, return_code: int):
-        if return_code != 0:
-            self.error("tool failed")
-            self.ui.reject()
-            return
-
-        self._current_tool_index = self.current_tool_index + 1
-        try:
-            self.load_tool_ui()
-        except IndexError:
-            self.message("Complete")
-            self.ui.accept()
+        if return_code == 0:
+            self._current_tool_index = self.current_tool_index + 1
+            try:
+                self.load_tool_ui()
+            except IndexError:
+                pass
+        self.ui.close()
 
     def load_tool_ui(self):
         tool_class = self.get_tool(self.current_tool_index)
@@ -104,11 +103,9 @@ class QtInterface(xappt.BaseInterface):
         self.load_window_geo(tool_geo_key)
         self.load_tool_ui()
 
-        result = self.ui.exec()
+        self.ui.exec()
         self.save_window_geo(tool_geo_key)
-        if result == QtWidgets.QDialog.Accepted:
-            return 0
-        return 1
+        return 0
 
     def update_ui(self):
         tool_class = self.get_tool(self.current_tool_index)
@@ -129,3 +126,12 @@ class QtInterface(xappt.BaseInterface):
     def save_window_geo(self, tool_key: str):
         self.set_data(f"{tool_key}.size", (self.ui.width(), self.ui.height()))
         self.set_data(f"{tool_key}.pos", (self.ui.geometry().x(), self.ui.geometry().y()))
+
+    def close_event(self, event: QtGui.QCloseEvent):
+        if self.command_runner.running:
+            if self.ask("A process is currently running.\nDo you want to kill it?"):
+                self.command_runner.abort()
+                self.warning("The Process has been terminated.")
+            event.ignore()
+        else:
+            self.__ui_close_event_orig(event)

@@ -1,5 +1,5 @@
 import os
-from collections import deque
+from typing import Generator
 
 import pyperclip
 
@@ -17,10 +17,11 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
 
-        self.output_buffer_raw = deque(maxlen=config.console_line_limit)
-        self.output_buffer_html = deque(maxlen=config.console_line_limit)
+        self.output_buffer_raw = []
 
         self.connect_signals()
+
+        self.txtConsole.setTabChangesFocus(True)
 
         self.word_wrap: bool = config.console_word_wrap
         self.btnWordWrap.setChecked(self.word_wrap)
@@ -38,6 +39,9 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
 
     def on_copy(self):
         pyperclip.copy(os.linesep.join(self.output_buffer_raw))
+        app = QtWidgets.QApplication.instance()
+        print(app)
+        print(app.property("test"))
 
     def on_wrap_toggled(self, state: bool):
         self.word_wrap = state
@@ -51,7 +55,6 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
 
     def on_clear(self):
         self.output_buffer_raw.clear()
-        self.output_buffer_html.clear()
         self.txtConsole.clear()
 
     def write_stdout(self, s: str):
@@ -80,14 +83,18 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
         color = config.console_color_stdout
         if stream == self.STREAM_STDERR:
             color = config.console_color_stderr
+        html = f'<span style="color: {color}">{s}</span>'
 
         self.output_buffer_raw.append(s)
-        self.output_buffer_html.append(f'<span style="color: {color}">{s}</span>')
-
-        self.txtConsole.setHtml("<br />".join(self.output_buffer_html))
-        self.txtConsole.moveCursor(QtGui.QTextCursor.End)
+        self.txtConsole.append(html)
 
         if self.auto_scroll:
-            max_scroll = self.txtConsole.verticalScrollBar().maximum()
-            self.txtConsole.verticalScrollBar().setValue(max_scroll)
-            self.txtConsole.horizontalScrollBar().setValue(0)
+            self.txtConsole.moveCursor(QtGui.QTextCursor.End)
+            self.txtConsole.moveCursor(QtGui.QTextCursor.StartOfLine)
+
+    def ordered_widgets(self) -> Generator[QtWidgets.QWidget, None, None]:
+        yield self.txtConsole
+        yield self.btnCopy
+        yield self.btnWordWrap
+        yield self.btnScrollDown
+        yield self.btnTrash

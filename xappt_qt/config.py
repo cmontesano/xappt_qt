@@ -2,7 +2,6 @@ launch_new_process = False
 minimize_to_tray = True
 start_minimized = False
 
-console_line_limit = 1024
 console_word_wrap = False
 console_auto_scroll = True
 

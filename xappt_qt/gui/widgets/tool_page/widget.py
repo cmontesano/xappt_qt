@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, Generator, Optional, Type
 
 from PyQt5 import QtWidgets, QtCore
 
@@ -69,6 +69,12 @@ class ToolPage(QtWidgets.QWidget):
             param.on_options_changed.add(self.parameter_options_updated)
 
             index += 1
+
+    def ordered_widgets(self) -> Generator[QtWidgets.QWidget, None, None]:
+        for row in range(self.grid.rowCount()):
+            widget = self.grid.itemAtPosition(row, 1).widget()
+            if widget is not None:
+                yield widget
 
     def update_tool_choices(self, param: xappt.Parameter):
         """ Given that multiple parameter types can be updated at runtime,

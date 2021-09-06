@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from itertools import chain
 from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -23,6 +24,8 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
 
         self.console = ConsoleWidget()
         self.setup_console()
+
+        self.btnClose.clicked.connect(self.close)
 
     def showEvent(self, event: QtGui.QShowEvent):
         super().showEvent(event)
@@ -65,26 +68,42 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
     def load_tool(self, tool_instance: xappt.BaseTool):
         self.clear_loaded_tools()
         self.current_tool = tool_instance
-        self.create_tool_widget()
+        widget = ToolPage(self.current_tool)
+        self.stackedWidget.addWidget(self.wrap_widget(widget))
+        # since we're clearing widgets self.stackedWidget.count() should always be one
+        self.stackedWidget.setCurrentIndex(0)
+        self.set_tab_order(widget)
 
-    def create_tool_widget(self):
-        tool_page_widget = ToolPage(self.current_tool)
+    def set_tab_order(self, tool_widget: ToolPage):
+        ui_widgets = [self.btnNext, self.btnClose]
+        first_widget: Optional[QtWidgets.QWidget] = None
+        last_widget: Optional[QtWidgets.QWidget] = None
+        for widget in chain(tool_widget.ordered_widgets(), self.console.ordered_widgets(), ui_widgets):
+            if last_widget is None:
+                first_widget = widget
+            else:
+                self.setTabOrder(last_widget, widget)
+            last_widget = widget
+        if first_widget is not None:
+            first_widget.setFocus()
 
+    @staticmethod
+    def wrap_widget(widget: QtWidgets.QWidget) -> QtWidgets.QWidget:
         scroller = QtWidgets.QScrollArea()
         scroller.setWidgetResizable(True)
 
-        widget = QtWidgets.QWidget()
+        container = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
 
-        layout.addWidget(tool_page_widget)
+        layout.addWidget(widget)
         layout.addItem(QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding))
 
-        widget.setLayout(layout)
-        scroller.setWidget(widget)
+        container.setFocusPolicy(QtCore.Qt.NoFocus)
+        container.setLayout(layout)
+        scroller.setFocusPolicy(QtCore.Qt.NoFocus)
+        scroller.setWidget(container)
 
-        self.stackedWidget.addWidget(scroller)
-        # since we're clearing widgets self.stackedWidget.count() should always be one
-        self.stackedWidget.setCurrentIndex(0)
+        return scroller
 
     def show_console(self):
         half_height = int(self.height() * 0.5)

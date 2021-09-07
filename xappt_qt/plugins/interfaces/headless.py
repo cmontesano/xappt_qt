@@ -17,15 +17,17 @@ class HeadlessInterface(xappt.BaseInterface):
         apply_palette(self.app)
 
         self.progress_dialog = QtWidgets.QProgressDialog()
-        self.progress_dialog.setFixedWidth(400)
+        self.setup_progress_dialog()
+
+    def setup_progress_dialog(self):
+        self.progress_dialog.setMinimumWidth(600)
         self.progress_dialog.setWindowIcon(QtGui.QIcon(":/svg/appicon"))
-        self.progress_dialog.setRange(0, 100)
-        self.progress_dialog.setLabelText("")
-        self.progress_dialog.setCancelButton(None)
+
         flags = self.progress_dialog.windowFlags()
-        flags = flags & ~QtCore.Qt.WindowCloseButtonHint
-        flags = flags & ~QtCore.Qt.WindowContextHelpButtonHint
+        flags = flags & ~QtCore.Qt.WindowContextHelpButtonHint  # noqa
         self.progress_dialog.setWindowFlags(flags)
+
+        self.progress_dialog.canceled.connect(self.abort)
 
     def invoke(self, plugin: xappt.BaseTool, **kwargs) -> int:
         self.progress_dialog.setWindowTitle(f"{plugin.name()} - {APP_TITLE}")
@@ -66,3 +68,8 @@ class HeadlessInterface(xappt.BaseInterface):
 
     def run(self, **kwargs) -> int:
         return super().run(**kwargs)
+
+    def abort(self):
+        if self.command_runner.running:
+            self.command_runner.abort()
+        raise SystemExit("Aborted by user")

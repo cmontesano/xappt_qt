@@ -45,11 +45,6 @@ class QtInterface(xappt.BaseInterface):
             result = plugin.execute(interface=self, **kwargs)
         return result
 
-    def invoke_headless(self, plugin: xappt.BaseTool, **kwargs) -> int:
-        with self.ui.tool_executing():
-            result = plugin.execute(interface=self, **kwargs)
-        return result
-
     def message(self, message: str):
         QtWidgets.QMessageBox.information(self.ui, APP_TITLE, message)
 

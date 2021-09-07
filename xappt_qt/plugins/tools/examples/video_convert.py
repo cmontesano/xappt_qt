@@ -45,7 +45,10 @@ class ConvertX265(xappt.BaseTool):
 
     @classmethod
     def help(cls) -> str:
-        return "Convert a video with the x265 (HEVC) codec."
+        return ("This is a fairly complex example tool that uses FFMpeg to convert a video "
+                "using the x265 (HEVC) codec. \nIt demonstrates using the interface's subprocess "
+                "mechanism, setting up callbacks to monitor stdout and stderr, and storing "
+                "settings between sessions.")
 
     @classmethod
     def collection(cls) -> str:
@@ -95,6 +98,10 @@ class ConvertX265(xappt.BaseTool):
 
     @contextmanager
     def progress_callbacks(self, interface: xappt.BaseInterface):
+        """ This context manager is simply to ensure that the progress handler callbacks
+        are removed when we are done with them. This way we don't have to worry about tools
+        that have not yet been garbage collected modifying the progress bars
+        unintentionally. """
         interface.progress_start()
         interface.on_write_stdout.add(self.handle_progress)
         interface.on_write_stderr.add(self.handle_progress)

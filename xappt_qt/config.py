@@ -19,8 +19,6 @@ def load_settings():
     except (FileNotFoundError, json.JSONDecodeError):
         pass
     else:
-        global console_line_limit
-        console_line_limit = settings_raw.get('console_line_limit', 1024)
         global console_word_wrap
         console_word_wrap = settings_raw.get('console_word_wrap', False)
         global console_auto_scroll

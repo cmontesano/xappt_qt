@@ -43,7 +43,10 @@ class AboutTabPage(BaseTabPage, Ui_tabAbout):
         for name, app_data in app_info.items():
             url = app_data['url']
             version = app_data['version']
-            html.append(f'<tr><td><a href="{url}" style="text-decoration: none;">{name}</a></td><td>{version}</td></tr>')
+            html.append(f'<tr>'
+                        f'<td><a href="{url}" style="text-decoration: none;">{name}</a></td>'
+                        f'<td>{version}</td>'
+                        f'</tr>')
 
         html.append("</table>")
 

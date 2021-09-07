@@ -8,11 +8,7 @@ from xappt_qt.gui.widgets.tool_page.converters.base import ParameterWidgetBase
 
 
 class ParameterWidgetFloat(ParameterWidgetBase):
-    def __init__(self, parameter: xappt.Parameter, parent: Optional[QtWidgets.QWidget]):
-        super().__init__(parameter=parameter, parent=parent)
-        self._convert_float(param=parameter)
-
-    def _convert_float(self, param: xappt.Parameter):
+    def get_widget(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         w = QtWidgets.QDoubleSpinBox(parent=self)
         minimum = param.options.get("minimum", -999999999.0)
         maximum = param.options.get("maximum", 999999999.0)
@@ -26,3 +22,5 @@ class ParameterWidgetFloat(ParameterWidgetBase):
 
         self._getter_fn = w.value
         self._setter_fn = w.setValue
+
+        return w

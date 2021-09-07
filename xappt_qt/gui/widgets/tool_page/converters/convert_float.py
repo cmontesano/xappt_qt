@@ -1,5 +1,3 @@
-from typing import Optional
-
 from PyQt5 import QtWidgets
 
 import xappt

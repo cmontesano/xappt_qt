@@ -1,10 +1,9 @@
-import os
 import pathlib
 import re
 import shutil
 
 from contextlib import contextmanager
-from typing import Generator, Optional
+from typing import Optional
 
 import xappt
 

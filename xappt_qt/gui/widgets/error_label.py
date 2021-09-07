@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
 from xappt_qt.constants import *
 from xappt_qt.gui.resources import icons  # noqa

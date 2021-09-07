@@ -1,4 +1,4 @@
-from typing import Generator, List, Sequence
+from typing import Generator, Sequence
 
 from PyQt5 import QtCore, QtWidgets
 

@@ -72,7 +72,10 @@ class ToolPage(QtWidgets.QWidget):
 
     def ordered_widgets(self) -> Generator[QtWidgets.QWidget, None, None]:
         for row in range(self.grid.rowCount()):
-            widget = self.grid.itemAtPosition(row, 1).widget()
+            layout_item = self.grid.itemAtPosition(row, 1)
+            if layout_item is None:
+                continue
+            widget = layout_item.widget()
             if widget is not None:
                 yield widget
 

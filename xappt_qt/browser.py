@@ -50,10 +50,6 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.init_tray_icon()
 
     def init_config(self):
-        self.add_config_item('launch-new-process',
-                             saver=lambda: xappt_qt.config.launch_new_process,
-                             loader=lambda x: setattr(xappt_qt.config, "launch_new_process", x),
-                             default=True)
         self.add_config_item('window-size',
                              saver=lambda: (self.width(), self.height()),
                              loader=lambda x: self.setGeometry(0, 0, *x),
@@ -148,8 +144,6 @@ def main(args) -> int:
     else:
         browser.show()
 
-    app.setProperty(APP_PROPERTY_RUNNING, True)
-    app.setProperty(APP_PROPERTY_LAUNCHER, False)
     return app.exec_()
 
 

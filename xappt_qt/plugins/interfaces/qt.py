@@ -15,7 +15,6 @@ from xappt_qt.constants import *
 from xappt_qt.gui.resources import icons  # noqa
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
-os.environ[xappt.INTERFACE_ENV] = APP_INTERFACE_NAME
 
 
 @xappt.register_plugin
@@ -99,6 +98,10 @@ class QtInterface(xappt.BaseInterface):
     def run(self, **kwargs) -> int:
         if not len(self._tool_chain):
             return 2
+
+        # if kwargs['auto_run']
+        # if hasattr(tool_instance, "headless") and tool_instance.headless:
+
         self._current_tool_index = 0
         tool_class = self.get_tool(self.current_tool_index)
         tool_geo_key = f"{tool_class.collection()}::{tool_class.name()}"

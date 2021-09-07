@@ -87,21 +87,6 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         return sys.executable, "-m", "xappt_qt.launcher", tool_name
 
     def launch_tool(self, tool_class: Type[xappt.BaseTool]):
-        if xappt_qt.config.launch_new_process:
-            self.launch_tool_new_process(tool_class)
-            return
-        interface = xappt.get_interface()
-        tool_instance = tool_class(interface=interface)
-        invoke_options = {
-            'auto_run': False,
-            'headless': False,
-        }
-        if hasattr(tool_instance, "headless") and tool_instance.headless:
-            invoke_options['auto_run'] = True
-            invoke_options['headless'] = True
-        interface.invoke(tool_instance, **invoke_options)
-
-    def launch_tool_new_process(self, tool_class: Type[xappt.BaseTool]):
         tool_name = tool_class.name()
         try:
             launch_command = self.launch_command(tool_name)

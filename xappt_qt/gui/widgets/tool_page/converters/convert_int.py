@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 import xappt
 
@@ -10,7 +10,7 @@ class ParameterWidgetInt(ParameterWidgetBase):
         if param.choices is not None:
             return self._convert_int_choice(param)
         else:
-            return self._convert_int_spin(param)
+            return self._convert_int(param)
 
     def _convert_int_choice(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         w = QtWidgets.QComboBox(parent=self)
@@ -37,10 +37,26 @@ class ParameterWidgetInt(ParameterWidgetBase):
 
         return w
 
-    def _convert_int_spin(self, param: xappt.Parameter) -> QtWidgets.QWidget:
-        w = QtWidgets.QSpinBox(parent=self)
-        minimum = param.options.get("minimum", -999999999)
-        maximum = param.options.get("maximum", 999999999)
+    def _convert_int(self, param: xappt.Parameter) -> QtWidgets.QWidget:
+        minimum = param.options.get("minimum")
+        maximum = param.options.get("maximum")
+
+        ui = param.options.get("ui")
+        if ui == "slider" and minimum is not None and maximum is not None:
+            w = QtWidgets.QSlider(parent=self)
+            w.setOrientation(QtCore.Qt.Horizontal)
+            ticks = param.options.get("ticks", 0)
+            if ticks == 0:
+                w.setTickPosition(QtWidgets.QSlider.NoTicks)
+            else:
+                w.setTickPosition(QtWidgets.QSlider.TicksBelow)
+                w.setTickInterval(ticks)
+        else:
+            w = QtWidgets.QSpinBox(parent=self)
+            if minimum is None:
+                minimum = -999999999
+            if maximum is None:
+                maximum = 999999999
         w.setMinimum(minimum)
         w.setMaximum(maximum)
         for v in (param.value, param.default):

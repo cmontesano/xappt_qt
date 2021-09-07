@@ -14,7 +14,6 @@ def main(argv) -> int:
 
     parser = argparse.ArgumentParser()
     parser.add_argument('toolname', help='Specify the name of the tool to load')
-    parser.add_argument('--auto-run', action='store_true', help='Automatically run the tool when it is invoked.')
 
     options, unknowns = parser.parse_known_args(args=argv)
 
@@ -29,7 +28,7 @@ def main(argv) -> int:
     interface = xappt.get_interface()
     interface.add_tool(tool_class)
 
-    return interface.run(auto_run=options.auto_run)
+    return interface.run()
 
 
 def entry_point() -> int:

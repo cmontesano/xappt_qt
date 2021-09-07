@@ -6,13 +6,12 @@ from typing import Optional
 from PyQt5 import QtWidgets, QtGui
 
 import xappt
-from xappt_qt.gui.dialogs.tool_ui_dialog import ToolUI
-
-from xappt_qt.gui.utilities.dark_palette import apply_palette
 
 from xappt_qt.constants import *
-
+from xappt_qt.gui.dialogs.tool_ui_dialog import ToolUI
+from xappt_qt.plugins.interfaces.headless import HeadlessInterface
 from xappt_qt.gui.resources import icons  # noqa
+from xappt_qt.gui.utilities.dark_palette import apply_palette
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
 
@@ -42,6 +41,11 @@ class QtInterface(xappt.BaseInterface):
         self.on_tool_completed(self.invoke(tool, **self.tool_data))
 
     def invoke(self, plugin: xappt.BaseTool, **kwargs) -> int:
+        with self.ui.tool_executing():
+            result = plugin.execute(interface=self, **kwargs)
+        return result
+
+    def invoke_headless(self, plugin: xappt.BaseTool, **kwargs) -> int:
         with self.ui.tool_executing():
             result = plugin.execute(interface=self, **kwargs)
         return result
@@ -99,11 +103,14 @@ class QtInterface(xappt.BaseInterface):
         if not len(self._tool_chain):
             return 2
 
-        # if kwargs['auto_run']
-        # if hasattr(tool_instance, "headless") and tool_instance.headless:
-
         self._current_tool_index = 0
         tool_class = self.get_tool(self.current_tool_index)
+
+        if hasattr(tool_class, "headless") and tool_class.headless:
+            headless_interface = HeadlessInterface()
+            headless_interface.add_tool(tool_class)
+            return headless_interface.run(**kwargs)
+
         tool_geo_key = f"{tool_class.collection()}::{tool_class.name()}"
 
         self.load_window_geo(tool_geo_key)

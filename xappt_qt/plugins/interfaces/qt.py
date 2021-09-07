@@ -85,6 +85,9 @@ class QtInterface(xappt.BaseInterface):
                 self.load_tool_ui()
             except IndexError:
                 pass
+            else:
+                # don't close if we have another tool
+                return
         self.ui.close()
 
     def load_tool_ui(self):

@@ -93,7 +93,7 @@ class QtInterface(xappt.BaseInterface):
         self.ui.load_tool(tool_instance)
         self.update_ui()
 
-    def run(self) -> int:
+    def run(self, **kwargs) -> int:
         if not len(self._tool_chain):
             return 2
         self._current_tool_index = 0

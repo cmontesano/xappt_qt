@@ -63,6 +63,7 @@ class ConvertX265(xappt.BaseTool):
         super().__init__(**kwargs)
         self.total_seconds: Optional[float] = None
         self.current_file: Optional[str] = None
+        self.interface: Optional[xappt.BaseInterface] = None
         self.load_config()
 
     def init_config(self):
@@ -101,6 +102,7 @@ class ConvertX265(xappt.BaseTool):
         are removed when we are done with them. This way we don't have to worry about tools
         that have not yet been garbage collected modifying the progress bars
         unintentionally. """
+        self.interface = interface
         interface.progress_start()
         interface.on_write_stdout.add(self.handle_progress)
         interface.on_write_stderr.add(self.handle_progress)
@@ -110,6 +112,7 @@ class ConvertX265(xappt.BaseTool):
             interface.on_write_stderr.remove(self.handle_progress)
             interface.on_write_stdout.remove(self.handle_progress)
             interface.progress_end()
+            self.interface = None
 
     def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
         ffmpeg_bin = shutil.which('ffmpeg')

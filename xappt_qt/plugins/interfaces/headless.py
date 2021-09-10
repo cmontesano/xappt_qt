@@ -63,7 +63,7 @@ class HeadlessInterface(xappt.BaseInterface):
     def progress_end(self):
         self.progress_dialog.setValue(0)
         self.progress_dialog.setLabelText("")
-        self.progress_dialog.close()
+        self.progress_dialog.hide()
         self.app.processEvents()
 
     def run(self, **kwargs) -> int:

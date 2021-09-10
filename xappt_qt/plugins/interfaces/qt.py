@@ -32,6 +32,25 @@ class QtInterface(xappt.BaseInterface):
         self.on_write_stdout.add(self.ui.write_stdout)
         self.on_write_stderr.add(self.ui.write_stderr)
 
+        self._tool_geo = {}
+
+    def init_config(self):
+        self.add_config_item(key="tool_geo",
+                             saver=lambda: self._tool_geo,
+                             loader=lambda geo: self._tool_geo.update(geo),
+                             default=dict())
+
+    def load_window_geo(self, tool_key: str):
+        geo = self._tool_geo.get(tool_key, {})
+        self.ui.saved_size = tuple(geo.get('size', (-1, -1)))
+        self.ui.saved_position = tuple(geo.get('pos', (-1, -1)))
+
+    def save_window_geo(self, tool_key: str):
+        self._tool_geo[tool_key] = {
+            'size': (self.ui.width(), self.ui.height()),
+            'pos': (self.ui.geometry().x(), self.ui.geometry().y()),
+        }
+
     @classmethod
     def name(cls) -> str:
         return APP_INTERFACE_NAME
@@ -122,18 +141,6 @@ class QtInterface(xappt.BaseInterface):
             self.ui.btnNext.setText("Run")
         else:
             self.ui.btnNext.setText("Next")
-
-    def load_window_geo(self, tool_key: str):
-        geo = self.data(f"{tool_key}.size")
-        if geo is not None:
-            self.ui.saved_size = tuple(geo)
-        pos = self.data(f"{tool_key}.pos")
-        if pos is not None:
-            self.ui.saved_position = tuple(pos)
-
-    def save_window_geo(self, tool_key: str):
-        self.set_data(f"{tool_key}.size", (self.ui.width(), self.ui.height()))
-        self.set_data(f"{tool_key}.pos", (self.ui.geometry().x(), self.ui.geometry().y()))
 
     def close_event(self, event: QtGui.QCloseEvent):
         if self.command_runner.running:

@@ -57,6 +57,13 @@ class QtInterface(xappt.BaseInterface):
 
     def on_execute_tool(self):
         tool = self.ui.current_tool
+
+        try:
+            tool.validate()
+        except xappt.ParameterValidationError as err:
+            self.error(str(err))
+            return
+
         self.on_tool_completed(self.invoke(tool, **self.tool_data))
 
     def invoke(self, plugin: xappt.BaseTool, **kwargs) -> int:

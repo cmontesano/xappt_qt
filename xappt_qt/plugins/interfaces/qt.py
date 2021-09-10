@@ -1,9 +1,10 @@
+import base64
 import os
 import sys
 
 from typing import Optional
 
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 import xappt
 
@@ -41,15 +42,17 @@ class QtInterface(xappt.BaseInterface):
                              default=dict())
 
     def load_window_geo(self, tool_key: str):
-        geo = self._tool_geo.get(tool_key, {})
-        self.ui.saved_size = tuple(geo.get('size', (-1, -1)))
-        self.ui.saved_position = tuple(geo.get('pos', (-1, -1)))
+        self.load_config()
+        geo = self._tool_geo.get(tool_key)
+        try:
+            self.ui.saved_geo = QtCore.QByteArray(base64.b64decode(geo))
+        except TypeError:
+            pass
 
     def save_window_geo(self, tool_key: str):
-        self._tool_geo[tool_key] = {
-            'size': (self.ui.width(), self.ui.height()),
-            'pos': (self.ui.geometry().x(), self.ui.geometry().y()),
-        }
+        geo = bytes(self.ui.saveGeometry())
+        self._tool_geo[tool_key] = base64.b64encode(geo).decode('utf8')
+        self.save_config()
 
     @classmethod
     def name(cls) -> str:

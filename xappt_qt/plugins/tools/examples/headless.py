@@ -21,13 +21,13 @@ class HeadlessExecution(xappt.BaseTool):
     def collection(cls) -> str:
         return "Examples"
 
-    def execute(self, *, interface: xappt.BaseInterface, **kwargs) -> int:
-        interface.progress_start()
+    def execute(self, **kwargs) -> int:
+        self.interface.progress_start()
         for i in range(10):
-            interface.progress_update(f"Working...", (i + 1) / 10)
+            self.interface.progress_update(f"Working...", (i + 1) / 10)
             time.sleep(0.5)
-        interface.progress_end()
+        self.interface.progress_end()
 
-        interface.message("Complete")
+        self.interface.message("Complete")
 
         return 0

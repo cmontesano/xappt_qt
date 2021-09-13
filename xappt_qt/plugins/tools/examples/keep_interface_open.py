@@ -20,22 +20,22 @@ class KeepInterfaceOpen(xappt.BaseTool):
     def collection(cls) -> str:
         return "Examples"
 
-    def execute(self, *, interface: xappt.BaseInterface, **kwargs) -> int:
-        interface.progress_start()
+    def execute(self, **kwargs) -> int:
+        self.interface.progress_start()
         iterations = self.iterations.value
         for i in range(iterations):
             progress = (i + 1) / iterations
-            interface.progress_update(f"Iteration: {i + 1}/{iterations}", progress)
+            self.interface.progress_update(f"Iteration: {i + 1}/{iterations}", progress)
             time.sleep(0.05)
-        interface.progress_end()
+        self.interface.progress_end()
 
-        interface.message("Complete")
+        self.interface.message("Complete")
 
         if iterations > 0:
             # queue another instance of this class
-            interface.add_tool(self.__class__)
+            self.interface.add_tool(self.__class__)
 
             # make sure the next instance is initialized with the same iterations as this instance
-            interface.tool_data['iterations'] = iterations
+            self.interface.tool_data['iterations'] = iterations
 
         return 0

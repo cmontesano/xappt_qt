@@ -97,27 +97,25 @@ class ConvertX265(xappt.BaseTool):
                 self.interface.progress_update(f"encoding {self.current_file} {progress * 100.0:.2f}%...", progress)
 
     @contextmanager
-    def progress_callbacks(self, interface: xappt.BaseInterface):
+    def progress_callbacks(self):
         """ This context manager is simply to ensure that the progress handler callbacks
         are removed when we are done with them. This way we don't have to worry about tools
         that have not yet been garbage collected modifying the progress bars
         unintentionally. """
-        self.interface = interface
-        interface.progress_start()
-        interface.on_write_stdout.add(self.handle_progress)
-        interface.on_write_stderr.add(self.handle_progress)
+        self.interface.progress_start()
+        self.interface.on_write_stdout.add(self.handle_progress)
+        self.interface.on_write_stderr.add(self.handle_progress)
         try:
             yield
         finally:
-            interface.on_write_stderr.remove(self.handle_progress)
-            interface.on_write_stdout.remove(self.handle_progress)
-            interface.progress_end()
-            self.interface = None
+            self.interface.on_write_stderr.remove(self.handle_progress)
+            self.interface.on_write_stdout.remove(self.handle_progress)
+            self.interface.progress_end()
 
-    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
+    def execute(self, **kwargs) -> int:
         ffmpeg_bin = shutil.which('ffmpeg')
         if ffmpeg_bin is None:
-            interface.error("ffmpeg binary not found")
+            self.interface.error("ffmpeg binary not found")
             return 1
 
         self.save_config()
@@ -128,14 +126,14 @@ class ConvertX265(xappt.BaseTool):
         self.current_file = source_path.stem
 
         command = (ffmpeg_bin,) + build_ffmpeg_command(source_path, self.crf.value, self.preset.value)
-        interface.write_stdout(xappt.CommandRunner.command_sequence_to_string(command))
+        self.interface.write_stdout(xappt.CommandRunner.command_sequence_to_string(command))
 
-        with self.progress_callbacks(interface):
-            result = interface.run_subprocess(command)
+        with self.progress_callbacks():
+            result = self.interface.run_subprocess(command)
 
         if result == 0:
-            interface.message("Complete")
+            self.interface.message("Complete")
         else:
-            interface.error(f"Error: process finished with error code {result}")
+            self.interface.error(f"Error: process finished with error code {result}")
 
         return result

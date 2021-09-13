@@ -1,3 +1,4 @@
-include xappt_qt/resources/icons/appicon.icns
-include xappt_qt/resources/icons/appicon.ico
-include xappt_qt/resources/icons/appicon.png
+include xappt_qt/resources/icons/*.png
+include xappt_qt/resources/icons/*.svg
+include xappt_qt/resources/icons/*.ico
+include xappt_qt/resources/icons/*.icns

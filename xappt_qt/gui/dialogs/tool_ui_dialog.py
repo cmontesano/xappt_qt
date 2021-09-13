@@ -16,7 +16,6 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         super().__init__(*args, **kwargs)
 
         self.current_tool: Optional[xappt.BaseTool] = None
-        self.saved_geo: Optional[QtCore.QByteArray] = None
 
         self.setupUi(self)
         self.set_window_attributes()
@@ -25,13 +24,6 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.setup_console()
 
         self.btnClose.clicked.connect(self.close)
-
-    def showEvent(self, event: QtGui.QShowEvent):
-        super().showEvent(event)
-        try:
-            self.restoreGeometry(self.saved_geo)
-        except TypeError:
-            pass
 
     @contextmanager
     def tool_executing(self):

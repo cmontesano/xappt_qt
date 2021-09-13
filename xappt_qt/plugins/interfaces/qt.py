@@ -45,7 +45,7 @@ class QtInterface(xappt.BaseInterface):
         self.load_config()
         geo = self._tool_geo.get(tool_key)
         try:
-            self.ui.saved_geo = QtCore.QByteArray(base64.b64decode(geo))
+            self.ui.restoreGeometry(QtCore.QByteArray(base64.b64decode(geo)))
         except TypeError:
             pass
 

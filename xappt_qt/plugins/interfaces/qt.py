@@ -11,7 +11,6 @@ import xappt
 from xappt_qt.constants import *
 from xappt_qt.gui.dialogs.tool_ui_dialog import ToolUI
 from xappt_qt.plugins.interfaces.headless import HeadlessInterface
-from xappt_qt.gui.resources import icons  # noqa
 from xappt_qt.gui.utilities.dark_palette import apply_palette
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"

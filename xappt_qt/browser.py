@@ -17,9 +17,6 @@ from xappt_qt.gui.utilities.tray_icon import TrayIcon
 from xappt_qt.constants import *
 from xappt_qt.gui.tab_pages import ToolsTabPage, OptionsTabPage, AboutTabPage
 
-# noinspection PyUnresolvedReferences
-from xappt_qt.gui.resources import icons
-
 from xappt_qt.utilities import singleton
 
 DISABLE_TRAY_ICON = platform.system() == "Darwin"

@@ -70,11 +70,6 @@
        <property name="text">
         <string>...</string>
        </property>
-       <property name="icon">
-        <iconset>
-         <normalon>:/svg/copy</normalon>
-        </iconset>
-       </property>
        <property name="iconSize">
         <size>
          <width>24</width>
@@ -90,11 +85,6 @@
       <widget class="QToolButton" name="btnWordWrap">
        <property name="text">
         <string>...</string>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normalon>:/svg/word-wrap</normalon>
-        </iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -114,11 +104,6 @@
       <widget class="QToolButton" name="btnScrollDown">
        <property name="text">
         <string>...</string>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normalon>:/svg/scroll-down</normalon>
-        </iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -141,11 +126,6 @@
       <widget class="QToolButton" name="btnTrash">
        <property name="text">
         <string>...</string>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normalon>:/svg/trash</normalon>
-        </iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -175,8 +155,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../qrc/icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

@@ -1,3 +1,4 @@
+import importlib.resources
 from contextlib import contextmanager
 from itertools import chain
 from typing import Optional
@@ -6,6 +7,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 import xappt
 
+import xappt_qt.resources.icons
 from xappt_qt.gui.ui.tool_interface import Ui_ToolInterface
 from xappt_qt.gui.widgets.console import ConsoleWidget
 from xappt_qt.gui.widgets.tool_page.widget import ToolPage
@@ -40,7 +42,8 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         flags |= QtCore.Qt.WindowCloseButtonHint
         flags |= QtCore.Qt.WindowMinimizeButtonHint
         self.setWindowFlags(flags)
-        self.setWindowIcon(QtGui.QIcon(":/svg/appicon"))
+        with importlib.resources.path(xappt_qt.resources.icons, "appicon.svg") as appicon:
+            self.setWindowIcon(QtGui.QIcon(str(appicon)))
 
     def setup_console(self):
         font_size = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.GeneralFont).pointSizeF()

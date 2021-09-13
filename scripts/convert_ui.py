@@ -10,47 +10,32 @@ from typing import Pattern
 
 
 ROOT_PATH = pathlib.Path(__file__).absolute().parent.parent
+SRC_UI_PATH = ROOT_PATH.joinpath("resources", "ui")
+DST_UI_PATH = ROOT_PATH.joinpath("xappt_qt", "gui", "ui")
 
-CONVERTERS = (
-    {
-        "source": ROOT_PATH.joinpath("resources", "ui"),
-        "destination": ROOT_PATH.joinpath("xappt_qt", "gui", "ui"),
-        "extensions": [".ui"],
-        "executable": "pyuic5",
-        "replacements": (
-            ("import icons_rc", "from xappt_qt.gui.resources import icons"),
-            (re.compile(r"# Form implementation generated from reading ui file .*"), ""),
-        ),
-    },
-    {
-        "source": ROOT_PATH.joinpath("resources", "qrc"),
-        "destination": ROOT_PATH.joinpath("xappt_qt", "gui", "resources"),
-        "extensions": [".qrc"],
-        "executable": "pyrcc5",
-    },
+EXE_NAME = "pyuic5"
+REPLACEMENTS = (
+    # remove file paths to avoid triggering git changes
+    (re.compile(r"# Form implementation generated from reading ui file .*"), ""),
 )
 
 
-class ConvertPath:
-    def __init__(self, **kwargs):
-        binary_path = shutil.which(kwargs['executable'])
+class ConvertUI:
+    def __init__(self):
+        binary_path = shutil.which(EXE_NAME)
         if binary_path is None:
-            raise RuntimeError(f"{kwargs['executable']} not found")
+            raise RuntimeError(f"'{EXE_NAME}' not found")
 
         self.binary: str = binary_path
-        self.source: pathlib.Path = kwargs['source']
-        self.destination: pathlib.Path = kwargs['destination']
-        self.extensions: list[str] = kwargs['extensions']
-        self.replacements = kwargs.get("replacements")
 
     def convert(self):
-        for root, dirs, files in os.walk(self.source):
+        for root, dirs, files in os.walk(SRC_UI_PATH):
             root_path = pathlib.Path(root)
             for f in files:
                 file_path = root_path.joinpath(f)
-                if file_path.suffix.lower() not in self.extensions:
+                if file_path.suffix.lower() != ".ui":
                     continue
-                output_path = self.destination.joinpath(file_path.relative_to(self.source)).with_suffix(".py")
+                output_path = DST_UI_PATH.joinpath(file_path.relative_to(SRC_UI_PATH)).with_suffix(".py")
 
                 self.convert_file(file_path, output_path)
                 self.process_replacements(output_path)
@@ -65,8 +50,9 @@ class ConvertPath:
         if result.returncode != 0:
             raise RuntimeError(f"Command failed with exit code {result.returncode}")
 
-    def replace_line(self, line) -> str:
-        for search, replace in self.replacements:
+    @staticmethod
+    def replace_line(line) -> str:
+        for search, replace in REPLACEMENTS:
             if isinstance(search, str):
                 if line == search:
                     return replace
@@ -77,7 +63,7 @@ class ConvertPath:
         return line
 
     def process_replacements(self, target_file: pathlib.Path):
-        if not self.replacements:
+        if not REPLACEMENTS:
             return
         target_temp = target_file.with_suffix(".tmp")
         with target_file.open("r") as fp_in, target_temp.open("w") as fp_out:
@@ -89,10 +75,5 @@ class ConvertPath:
         target_temp.rename(target_file)
 
 
-def run_converters():
-    for converter in CONVERTERS:
-        ConvertPath(**converter).convert()
-
-
 if __name__ == '__main__':
-    run_converters()
+    ConvertUI().convert()

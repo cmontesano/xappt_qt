@@ -23,8 +23,6 @@ def main(argv) -> int:
     if tool_class is None:
         raise SystemExit(f"Tool {options.toolname} not found.")
 
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(argv)
-
     interface = xappt.get_interface()
     interface.add_tool(tool_class)
 

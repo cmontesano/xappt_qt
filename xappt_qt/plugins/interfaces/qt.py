@@ -71,7 +71,7 @@ class QtInterface(xappt.BaseInterface):
 
     def invoke(self, plugin: xappt.BaseTool, **kwargs) -> int:
         with self.ui.tool_executing():
-            result = plugin.execute(interface=self, **kwargs)
+            result = plugin.execute(**kwargs)
         return result
 
     def message(self, message: str):
@@ -119,7 +119,7 @@ class QtInterface(xappt.BaseInterface):
 
     def load_tool_ui(self):
         tool_class = self.get_tool(self.current_tool_index)
-        tool_instance = tool_class(**self.tool_data)
+        tool_instance = tool_class(interface=self, **self.tool_data)
         self.ui.load_tool(tool_instance)
         self.update_ui()
 

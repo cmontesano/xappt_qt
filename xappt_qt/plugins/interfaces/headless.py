@@ -31,7 +31,7 @@ class HeadlessInterface(xappt.BaseInterface):
 
     def invoke(self, plugin: xappt.BaseTool, **kwargs) -> int:
         self.progress_dialog.setWindowTitle(f"{plugin.name()} - {APP_TITLE}")
-        return plugin.execute(interface=self, **kwargs)
+        return plugin.execute(**kwargs)
 
     def message(self, message: str):
         QtWidgets.QMessageBox.information(None, APP_TITLE, message)

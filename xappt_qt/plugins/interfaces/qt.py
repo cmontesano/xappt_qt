@@ -14,7 +14,7 @@ from xappt_qt.plugins.interfaces.headless import HeadlessInterface
 from xappt_qt.gui.utilities.style import apply_style
 from xappt_qt.utilities.tool_attributes import *
 
-os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
+os.environ.setdefault('QT_STYLE_OVERRIDE', "Fusion")
 
 
 @xappt.register_plugin

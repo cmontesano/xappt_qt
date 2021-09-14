@@ -1,4 +1,1 @@
-include xappt_qt/resources/icons/*.png
-include xappt_qt/resources/icons/*.svg
-include xappt_qt/resources/icons/*.ico
-include xappt_qt/resources/icons/*.icns
+recursive-include xappt_qt/* *.png *.svg *.ico *.icns

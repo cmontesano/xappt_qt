@@ -16,7 +16,12 @@ os.chdir(PROJECT_PATH)
 
 
 def main():
-    if not setup_helpers.check_dirty(PROJECT_PATH):
+    if git_tools.is_dirty(PROJECT_PATH):
+        print("Local repository is not clean")
+        if not setup_helpers.ask("Proceed anyway?"):
+            return
+
+    if not setup_helpers.cleanup_build_files(PROJECT_PATH):
         return
 
     install_requires = list(setup_helpers.requirements(PROJECT_PATH))

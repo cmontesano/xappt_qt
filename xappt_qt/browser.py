@@ -1,3 +1,4 @@
+import base64
 import importlib.resources
 import os
 import platform
@@ -11,7 +12,6 @@ import xappt
 import xappt_qt.config
 import xappt_qt.resources.icons
 from xappt_qt.gui.ui.browser import Ui_Browser
-from xappt_qt.gui.utilities import center_widget
 from xappt_qt.gui.utilities.style import apply_style
 from xappt_qt.gui.utilities.tray_icon import TrayIcon
 from xappt_qt.constants import *
@@ -50,14 +50,10 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.init_tray_icon()
 
     def init_config(self):
-        self.add_config_item('window-size',
-                             saver=lambda: (self.width(), self.height()),
-                             loader=lambda x: self.setGeometry(0, 0, *x),
-                             default=(350, 600))
-        self.add_config_item('window-position',
-                             saver=lambda: (self.geometry().x(), self.geometry().y()),
-                             loader=lambda x: self.set_window_position(*x),
-                             default=(-1, -1))
+        self.add_config_item('window-geo',
+                             saver=self.save_window_geo,
+                             loader=self.load_window_geo,
+                             default=None)
         self.add_config_item('start-minimized',
                              saver=lambda: xappt_qt.config.start_minimized,
                              loader=lambda x: setattr(xappt_qt.config, "start_minimized", x),
@@ -71,6 +67,16 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
                                  saver=lambda: xappt_qt.config.minimize_to_tray,
                                  loader=lambda x: setattr(xappt_qt.config, "minimize_to_tray", x),
                                  default=True)
+
+    def load_window_geo(self, geo: str):
+        try:
+            self.restoreGeometry(QtCore.QByteArray(base64.b64decode(geo)))
+        except TypeError:
+            pass
+
+    def save_window_geo(self) -> str:
+        geo = bytes(self.saveGeometry())
+        return base64.b64encode(geo).decode('utf8')
 
     def init_tray_icon(self):
         if DISABLE_TRAY_ICON:
@@ -87,12 +93,6 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.tray_icon.add_menu_item("Quit", on_activate=self.on_quit)
         self.tray_icon.on_trigger = self.on_activate
         self.tray_icon.show()
-
-    def set_window_position(self, x: int, y: int):
-        if x < 0 or y < 0:
-            center_widget(self)
-        else:
-            self.move(x, y)
 
     def changeEvent(self, event: QtCore.QEvent):
         if not DISABLE_TRAY_ICON:

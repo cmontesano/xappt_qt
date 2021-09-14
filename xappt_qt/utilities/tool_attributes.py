@@ -3,6 +3,8 @@ import pathlib
 
 from typing import Type
 
+import markdown
+
 from xappt import BaseTool
 
 ICONS_MODULE = "xappt_qt.resources.icons"
@@ -30,3 +32,17 @@ def get_tool_icon(tool_class: Type[BaseTool]) -> pathlib.Path:
 
 def is_headless(tool_class: Type[BaseTool]) -> bool:
     return hasattr(tool_class, "headless") and tool_class.headless
+
+
+def help_text(tool_class: Type[BaseTool], *, process_markdown: bool = True) -> str:
+    if process_markdown:
+        md = markdown.markdown(tool_class.help())
+        style = "".join((
+            "code {background-color: #000; color: #ccc;}",
+            "ul {margin-left: -20px;}",
+        ))
+        wrap = f"<html><head><style>{style}</style></head><body>{md}</body></html>"
+        print(wrap)
+        return wrap
+    else:
+        return tool_class.help()

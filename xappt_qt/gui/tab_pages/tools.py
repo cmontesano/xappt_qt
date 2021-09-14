@@ -1,5 +1,3 @@
-import importlib.resources
-import pathlib
 import platform
 import subprocess
 import sys
@@ -7,7 +5,7 @@ import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from collections import defaultdict
-from typing import DefaultDict, List, Tuple, Type
+from typing import DefaultDict, List, Tuple
 
 import xappt
 
@@ -30,11 +28,24 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.setupUi(self)
-        self.treeTools.setItemDelegate(SimpleItemDelegate())
-        self.treeTools.setIndentation(12)
+
+        font = self.font()
+        font.setBold(True)
+        self.bold_font = font
+        self.category_bg = QtGui.QPalette().color(QtGui.QPalette.Highlight).darker(200)
+        self.category_fg = QtGui.QPalette().color(QtGui.QPalette.ButtonText)
+
+        self.set_tree_attributes()
+
         self.loaded_plugins: DefaultDict[str, List[Type[xappt.BaseTool]]] = defaultdict(list)
         self.populate_plugins()
         self.connect_signals()
+
+    def set_tree_attributes(self):
+        self.treeTools.setItemDelegate(SimpleItemDelegate())
+        self.treeTools.setRootIsDecorated(False)
+        self.treeTools.setIndentation(0)
+        self.treeTools.setAnimated(True)
 
     def populate_plugins(self):
         self.treeTools.clear()
@@ -67,12 +78,16 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         item.setText(0, collection_name)
         item.setData(0, self.ROLE_TOOL_CLASS, None)
         item.setData(0, self.ROLE_ITEM_TYPE, self.ITEM_TYPE_COLLECTION)
+
+        item.setFont(0, self.bold_font)
+        item.setBackground(0, self.category_bg)
+        item.setForeground(0, self.category_fg)
         return item
 
     def _create_tool_item(self, tool_class: Type[xappt.BaseTool]) -> QtWidgets.QTreeWidgetItem:
         item = QtWidgets.QTreeWidgetItem()
         item.setText(0, tool_class.name())
-        item.setToolTip(0, tool_class.help())
+        item.setToolTip(0, help_text(tool_class, process_markdown=True))
         item.setData(0, self.ROLE_TOOL_CLASS, tool_class)
         item.setData(0, self.ROLE_ITEM_TYPE, self.ITEM_TYPE_TOOL)
 
@@ -108,13 +123,11 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
             self.information(APP_TITLE, f"Launched {tool_name} (pid {proc.pid})")
 
     def selection_changed(self):
-        help_text = ""
         selected_items = self.treeTools.selectedItems()
         if len(selected_items):
-            tool_class = selected_items[0].data(0, self.ROLE_TOOL_CLASS)  # type: xappt.BaseTool
-            if tool_class is not None and len(tool_class.help()):
-                help_text = f"{tool_class.name()}: {tool_class.help()}"
-        self.labelHelp.setText(help_text)
+            self.labelHelp.setText(selected_items[0].toolTip(0))
+        else:
+            self.labelHelp.setText("")
 
     def _filter_key_press(self, event: QtGui.QKeyEvent):
         if event.key() == QtCore.Qt.Key_Escape:

@@ -14,7 +14,7 @@ class HeadlessExecution(xappt.BaseTool):
     @classmethod
     def help(cls) -> str:
         return ("A headless tool will run with no interface, except for a progress bar and "
-                "message dialogs. \nTo make a tool headless, simply add a class variable "
+                "message dialogs.\n\nTo make a tool headless, simply add a class variable "
                 "named `headless`, and set its value to **True**.")
 
     @classmethod

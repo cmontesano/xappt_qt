@@ -11,12 +11,11 @@ class CustomIconResource(xappt.BaseTool):
 
     @classmethod
     def help(cls) -> str:
-        return ("This tool will display a custom icon in the xappt_qt browser and the Qt interface's "
-                "dialog. Note that the tool dialog will only display the custom icon of the first "
-                "loaded tool. This plugin sets a class variable named `custom_icon` with a string "
-                "value representing a module and a file name that will be used by importlib.resources "
-                "to load an image file. This string is encoded with '::' separating the module and "
-                "file name (e.g. 'module.name::file.ext')")
+        return ("This tool will display a custom icon in the **xappt_qt browser** and the **Tool dialog**.\n "
+                "A class variable named `custom_icon` is set with a string value representing a module path "
+                "and a file name bundled with that module.\n This information will be used with "
+                "`importlib.resources` to retrieve the image's file path.\n\n"
+                "*Note that the tool dialog will only display the custom icon of the first loaded tool.*")
 
     @classmethod
     def collection(cls) -> str:

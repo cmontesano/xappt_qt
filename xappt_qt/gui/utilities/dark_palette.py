@@ -46,9 +46,11 @@ def apply_palette(app):
             color: palette(text); 
             background-color: palette(window); 
             border: 1px solid palette(highlight);
+            border-radius: 2px;
             padding: 2px 8px;
+            min-width: 300px;
         }
-        
+
         QPlainTextEdit {
             border: 1px solid palette(base);
             border-radius: 3px;

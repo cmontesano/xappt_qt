@@ -1,6 +1,7 @@
 import platform
 import subprocess
 import sys
+import webbrowser
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -169,3 +170,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
                 raise NotImplementedError
         parent.setHidden(visible_children == 0)
         return visible_children
+
+    @staticmethod
+    def on_link_activated(url: str):
+        webbrowser.open(url)

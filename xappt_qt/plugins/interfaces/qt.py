@@ -11,7 +11,7 @@ import xappt
 from xappt_qt.constants import *
 from xappt_qt.gui.dialogs.tool_ui_dialog import ToolUI
 from xappt_qt.plugins.interfaces.headless import HeadlessInterface
-from xappt_qt.gui.utilities.dark_palette import apply_palette
+from xappt_qt.gui.utilities.style import apply_style
 from xappt_qt.utilities.tool_attributes import *
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
@@ -22,7 +22,7 @@ class QtInterface(xappt.BaseInterface):
     def __init__(self):
         super().__init__()
         self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[1:])
-        apply_palette(self.app)
+        apply_style(self.app)
         self.ui = ToolUI()
 
         self.__ui_close_event_orig = self.ui.closeEvent

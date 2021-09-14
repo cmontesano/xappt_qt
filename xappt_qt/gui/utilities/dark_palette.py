@@ -43,8 +43,8 @@ def apply_palette(app):
     app.setPalette(dark_palette)
     app.setStyleSheet("""
         QToolTip { 
-            color: palette(button); 
-            background-color: palette(buttontext); 
+            color: palette(text); 
+            background-color: palette(window); 
             border: 1px solid palette(highlight);
             padding: 2px 8px;
         }

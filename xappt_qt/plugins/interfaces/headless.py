@@ -9,14 +9,14 @@ import xappt
 
 import xappt_qt.resources.icons
 from xappt_qt.constants import *
-from xappt_qt.gui.utilities.dark_palette import apply_palette
+from xappt_qt.gui.utilities.style import apply_style
 
 
 class HeadlessInterface(xappt.BaseInterface):
     def __init__(self):
         super().__init__()
         self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[1:])
-        apply_palette(self.app)
+        apply_style(self.app)
 
         self.progress_dialog = QtWidgets.QProgressDialog()
         self.setup_progress_dialog()

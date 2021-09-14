@@ -33,12 +33,15 @@
      </property>
      <item row="0" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="spacing">
+        <number>4</number>
+       </property>
        <item>
         <widget class="QLineEdit" name="txtSearch">
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>32</height>
+           <height>24</height>
           </size>
          </property>
          <property name="placeholderText">
@@ -51,11 +54,14 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>32</height>
+           <height>24</height>
           </size>
          </property>
          <property name="text">
-          <string>⌫</string>
+          <string>x</string>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -102,5 +108,22 @@
   <tabstop>treeTools</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btnClear</sender>
+   <signal>clicked()</signal>
+   <receiver>txtSearch</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>563</x>
+     <y>32</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>421</x>
+     <y>28</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

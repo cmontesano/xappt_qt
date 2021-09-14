@@ -7,7 +7,6 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 import xappt
 
-import xappt_qt.resources.icons
 from xappt_qt.gui.ui.tool_interface import Ui_ToolInterface
 from xappt_qt.gui.widgets.console import ConsoleWidget
 from xappt_qt.gui.widgets.tool_page.widget import ToolPage
@@ -42,7 +41,7 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         flags |= QtCore.Qt.WindowCloseButtonHint
         flags |= QtCore.Qt.WindowMinimizeButtonHint
         self.setWindowFlags(flags)
-        with importlib.resources.path(xappt_qt.resources.icons, "appicon.svg") as appicon:
+        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
             self.setWindowIcon(QtGui.QIcon(str(appicon)))
 
     def setup_console(self):

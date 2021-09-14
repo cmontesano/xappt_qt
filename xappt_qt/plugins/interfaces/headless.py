@@ -7,7 +7,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import xappt
 
-import xappt_qt.resources.icons
 from xappt_qt.constants import *
 from xappt_qt.gui.utilities.style import apply_style
 
@@ -24,7 +23,7 @@ class HeadlessInterface(xappt.BaseInterface):
     def setup_progress_dialog(self):
         self.progress_dialog.setMinimumWidth(600)
 
-        with importlib.resources.path(xappt_qt.resources.icons, "appicon.svg") as appicon:
+        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
             self.progress_dialog.setWindowIcon(QtGui.QIcon(str(appicon)))
 
         flags = self.progress_dialog.windowFlags()

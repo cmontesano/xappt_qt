@@ -6,7 +6,6 @@ import pyperclip
 
 from PyQt5 import QtGui, QtWidgets
 
-import xappt_qt.resources.icons
 from xappt_qt import config
 from xappt_qt.gui.ui.console import Ui_Console
 
@@ -35,22 +34,22 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
         self.on_scroll_toggled(self.auto_scroll)
 
     def load_icons(self):
-        with importlib.resources.path(xappt_qt.resources.icons, "copy.svg") as copy_path:
+        with importlib.resources.path("xappt_qt.resources.icons", "copy.svg") as copy_path:
             copy_icon = QtGui.QIcon()
             copy_icon.addPixmap(QtGui.QPixmap(str(copy_path)), QtGui.QIcon.Normal, QtGui.QIcon.On)
             self.btnCopy.setIcon(copy_icon)
 
-        with importlib.resources.path(xappt_qt.resources.icons, "word-wrap.svg") as wrap_path:
+        with importlib.resources.path("xappt_qt.resources.icons", "word-wrap.svg") as wrap_path:
             wrap_icon = QtGui.QIcon()
             wrap_icon.addPixmap(QtGui.QPixmap(str(wrap_path)), QtGui.QIcon.Normal, QtGui.QIcon.On)
             self.btnWordWrap.setIcon(wrap_icon)
 
-        with importlib.resources.path(xappt_qt.resources.icons, "scroll-down.svg") as scroll_path:
+        with importlib.resources.path("xappt_qt.resources.icons", "scroll-down.svg") as scroll_path:
             scroll_icon = QtGui.QIcon()
             scroll_icon.addPixmap(QtGui.QPixmap(str(scroll_path)), QtGui.QIcon.Normal, QtGui.QIcon.On)
             self.btnScrollDown.setIcon(scroll_icon)
 
-        with importlib.resources.path(xappt_qt.resources.icons, "trash.svg") as trash_path:
+        with importlib.resources.path("xappt_qt.resources.icons", "trash.svg") as trash_path:
             trash_icon = QtGui.QIcon()
             trash_icon.addPixmap(QtGui.QPixmap(str(trash_path)), QtGui.QIcon.Normal, QtGui.QIcon.On)
             self.btnTrash.setIcon(trash_icon)

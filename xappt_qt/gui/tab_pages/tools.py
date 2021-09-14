@@ -1,3 +1,4 @@
+import importlib.resources
 import platform
 import subprocess
 import sys
@@ -37,6 +38,9 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         self.category_fg = QtGui.QPalette().color(QtGui.QPalette.ButtonText)
 
         self.set_tree_attributes()
+
+        with importlib.resources.path("xappt_qt.resources.icons", "clear.svg") as path:
+            self.btnClear.setIcon(QtGui.QIcon(str(path)))
 
         self.loaded_plugins: DefaultDict[str, List[Type[xappt.BaseTool]]] = defaultdict(list)
         self.populate_plugins()

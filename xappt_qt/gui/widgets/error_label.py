@@ -1,14 +1,13 @@
 import importlib.resources
 from PyQt5 import QtWidgets, QtCore
 
-import xappt_qt.resources.icons
 from xappt_qt.constants import *
 
 
 class ErrorLabel(QtWidgets.QLabel):
     def __new__(cls):
         instance = super().__new__(cls)
-        with importlib.resources.path(xappt_qt.resources.icons, "error.svg") as error_path:
+        with importlib.resources.path("xappt_qt.resources.icons", "error.svg") as error_path:
             error_link = f'<a href="#"><img src="{error_path}" /></a>'
         cls.error_link = error_link
         return instance

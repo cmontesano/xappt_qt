@@ -74,6 +74,8 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         self.__txtSearch_keyPressEvent_orig = self.txtSearch.keyPressEvent
         self.txtSearch.keyPressEvent = self._filter_key_press
 
+        self.labelHelp.linkActivated.connect(self.on_link_activated)
+
     def _create_collection_item(self, collection_name: str) -> QtWidgets.QTreeWidgetItem:
         item = QtWidgets.QTreeWidgetItem()
         item.setText(0, collection_name)

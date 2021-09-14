@@ -42,7 +42,6 @@ def help_text(tool_class: Type[BaseTool], *, process_markdown: bool = True) -> s
             "ul {margin-left: -20px;}",
         ))
         wrap = f"<html><head><style>{style}</style></head><body>{md}</body></html>"
-        print(wrap)
         return wrap
     else:
         return tool_class.help()

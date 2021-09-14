@@ -10,7 +10,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import xappt
 
 import xappt_qt.config
-import xappt_qt.resources.icons
 from xappt_qt.gui.ui.browser import Ui_Browser
 from xappt_qt.gui.utilities.style import apply_style
 from xappt_qt.gui.utilities.tray_icon import TrayIcon
@@ -29,7 +28,7 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.setupUi(self)
         self.setWindowTitle(APP_TITLE)
 
-        with importlib.resources.path(xappt_qt.resources.icons, "appicon.svg") as appicon:
+        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
             self.setWindowIcon(QtGui.QIcon(str(appicon)))
             self.tray_icon = TrayIcon(self, QtGui.QIcon(str(appicon)))
 

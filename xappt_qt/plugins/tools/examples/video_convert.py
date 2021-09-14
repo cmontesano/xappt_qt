@@ -44,8 +44,8 @@ class ConvertX265(xappt.BaseTool):
 
     @classmethod
     def help(cls) -> str:
-        return ("This is a fairly complex example tool that uses **FFMpeg** to convert a video "
-                "using the *x265 (HEVC)* codec.\n\nThe following techniques are demonstrated:\n\n"
+        return ("This is a fairly complex example tool that uses [FFMpeg](https://www.ffmpeg.org/) to convert "
+                "a video using the *x265 (HEVC)* codec.\n\nThe following techniques are demonstrated:\n\n"
                 "* using the interface's subprocess mechanism\n"
                 "* setting up callbacks to monitor stdout and stderr\n"
                 "* storing settings between sessions.")

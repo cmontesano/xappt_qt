@@ -1,3 +1,5 @@
+import importlib.resources
+import pathlib
 import platform
 import subprocess
 import sys
@@ -15,6 +17,7 @@ from xappt_qt.constants import APP_TITLE
 from xappt_qt.gui.ui.browser_tab_tools import Ui_tabTools
 from xappt_qt.gui.delegates import SimpleItemDelegate
 from xappt_qt.gui.tab_pages.base import BaseTabPage
+from xappt_qt.utilities.tool_attributes import *
 
 
 class ToolsTabPage(BaseTabPage, Ui_tabTools):
@@ -28,6 +31,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         super().__init__(**kwargs)
         self.setupUi(self)
         self.treeTools.setItemDelegate(SimpleItemDelegate())
+        self.treeTools.setIndentation(12)
         self.loaded_plugins: DefaultDict[str, List[Type[xappt.BaseTool]]] = defaultdict(list)
         self.populate_plugins()
         self.connect_signals()
@@ -71,6 +75,10 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         item.setToolTip(0, tool_class.help())
         item.setData(0, self.ROLE_TOOL_CLASS, tool_class)
         item.setData(0, self.ROLE_ITEM_TYPE, self.ITEM_TYPE_TOOL)
+
+        icon_path = get_tool_icon(tool_class)
+        item.setIcon(0, QtGui.QIcon(str(icon_path)))
+
         return item
 
     def item_activated(self, item: QtWidgets.QTreeWidgetItem, column: int):

@@ -12,6 +12,7 @@ from xappt_qt.constants import *
 from xappt_qt.gui.dialogs.tool_ui_dialog import ToolUI
 from xappt_qt.plugins.interfaces.headless import HeadlessInterface
 from xappt_qt.gui.utilities.dark_palette import apply_palette
+from xappt_qt.utilities.tool_attributes import *
 
 os.environ["QT_STYLE_OVERRIDE"] = "Fusion"
 
@@ -129,7 +130,10 @@ class QtInterface(xappt.BaseInterface):
         self._current_tool_index = 0
         tool_class = self.get_tool(self.current_tool_index)
 
-        if hasattr(tool_class, "headless") and tool_class.headless:
+        icon_path = get_tool_icon(tool_class)
+        self.ui.setWindowIcon(QtGui.QIcon(str(icon_path)))
+
+        if is_headless(tool_class):
             headless_interface = HeadlessInterface()
             headless_interface.add_tool(tool_class)
             return headless_interface.run(**kwargs)

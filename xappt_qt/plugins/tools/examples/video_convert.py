@@ -54,17 +54,16 @@ class ConvertX265(xappt.BaseTool):
     def collection(cls) -> str:
         return "Examples"
 
-    def __init__(self, **kwargs):
+    def __init__(self, *, interface: xappt.BaseInterface, **kwargs):
         """ We're overriding `__init__` to set up some instance variables and to call
         `load_config`. See the note in `init_config()`.
 
         Note that `init_config()` is called in `BasePlugin.__init__`, so don't forget to
         call `self.load_config()` _after_ `super().__init__()`
         """
-        super().__init__(**kwargs)
+        super().__init__(interface=interface, **kwargs)
         self.total_seconds: Optional[float] = None
         self.current_file: Optional[str] = None
-        self.interface: Optional[xappt.BaseInterface] = None
         self.load_config()
 
     def init_config(self):

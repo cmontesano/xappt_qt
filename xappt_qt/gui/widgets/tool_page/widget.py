@@ -94,13 +94,14 @@ class ToolPage(QtWidgets.QWidget):
         row, column, *_ = self.grid.getItemPosition(index)
         self.grid.takeAt(index)
         widget.deleteLater()
-        param.on_choices_changed.clear()
 
         # create a new widget to replace it
         new_widget = self._convert_parameter(param)
-        self.grid.addWidget(new_widget, row, column)
+
+        new_widget.setToolTip(param.description)
         param.metadata['widget'] = new_widget
-        param.on_choices_changed.add(self.update_tool_choices)
+        self.grid.addWidget(new_widget, row, column)
+        self.parameter_options_updated(param)
 
     def on_widget_value_changed(self, param_name: str, param_value: Any):
         parameter: xappt.Parameter = getattr(self.tool, param_name)

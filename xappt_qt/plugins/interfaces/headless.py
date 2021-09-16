@@ -17,14 +17,13 @@ class HeadlessInterface(xappt.BaseInterface):
         self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[1:])
         apply_style(self.app)
 
+        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
+            self.app.setWindowIcon(QtGui.QIcon(str(appicon)))
+
         self.progress_dialog = QtWidgets.QProgressDialog()
-        self.setup_progress_dialog()
 
     def setup_progress_dialog(self):
         self.progress_dialog.setMinimumWidth(600)
-
-        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
-            self.progress_dialog.setWindowIcon(QtGui.QIcon(str(appicon)))
 
         flags = self.progress_dialog.windowFlags()
         flags = flags & ~QtCore.Qt.WindowContextHelpButtonHint  # noqa
@@ -52,6 +51,7 @@ class HeadlessInterface(xappt.BaseInterface):
         return ask_result == QtWidgets.QMessageBox.Yes
 
     def progress_start(self):
+        self.setup_progress_dialog()
         self.progress_dialog.setValue(0)
         self.progress_dialog.setLabelText("")
         self.progress_dialog.show()
@@ -66,7 +66,8 @@ class HeadlessInterface(xappt.BaseInterface):
     def progress_end(self):
         self.progress_dialog.setValue(0)
         self.progress_dialog.setLabelText("")
-        self.progress_dialog.hide()
+        self.progress_dialog.canceled.disconnect(self.abort)
+        self.progress_dialog.close()
         self.app.processEvents()
 
     def run(self, **kwargs) -> int:

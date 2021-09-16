@@ -67,6 +67,7 @@ class ToolPage(QtWidgets.QWidget):
             param.on_choices_changed.add(self.update_tool_choices)
             param.on_value_changed.add(self.parameter_value_updated)
             param.on_options_changed.add(self.parameter_options_updated)
+            param.on_visibility_changed.add(self.parameter_visibility_updated)
 
             index += 1
 
@@ -131,21 +132,24 @@ class ToolPage(QtWidgets.QWidget):
 
     @staticmethod
     def parameter_options_updated(param: xappt.Parameter):
-        label: Optional[QtWidgets.QLabel] = param.metadata.get('label')
         widget: Optional[QtWidgets.QWidget] = param.metadata.get('widget')
-        error: Optional[ErrorLabel] = param.metadata.get('error')
-
-        visible = param.option("visible", True)
-        if label is not None:
-            label.setVisible(visible)
-        if widget is not None:
-            widget.setVisible(visible)
-        if error is not None:
-            error.setVisible(visible)
 
         enabled = param.option("enabled", True)
         if widget is not None:
             widget.setEnabled(enabled)
+
+    @staticmethod
+    def parameter_visibility_updated(param: xappt.Parameter):
+        label: Optional[QtWidgets.QLabel] = param.metadata.get('label')
+        widget: Optional[QtWidgets.QWidget] = param.metadata.get('widget')
+        error: Optional[ErrorLabel] = param.metadata.get('error')
+
+        if label is not None:
+            label.setVisible(not param.hidden)
+        if widget is not None:
+            widget.setVisible(not param.hidden)
+        if error is not None:
+            error.setVisible(not param.hidden)
 
     def disconnect(self):
         for param in self.tool.parameters():

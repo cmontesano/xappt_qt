@@ -1,4 +1,5 @@
 import base64
+import enum
 import os
 import sys
 
@@ -17,6 +18,13 @@ from xappt_qt.utilities.tool_attributes import *
 os.environ.setdefault('QT_STYLE_OVERRIDE', "Fusion")
 
 
+class ToolState(enum.Enum):
+    LOADED = 0
+    RUNNING = 1
+    ERROR = 2
+    SUCCESS = 3
+
+
 @xappt.register_plugin
 class QtInterface(xappt.BaseInterface):
     def __init__(self):
@@ -32,8 +40,10 @@ class QtInterface(xappt.BaseInterface):
         self.__ui_close_event_orig = self.ui.closeEvent
         self.ui.closeEvent = self.close_event
 
-        self.ui.btnNext.clicked.connect(self.on_execute_tool)
-        self.on_tool_chain_modified.add(self.update_ui)
+        self.ui.btnRun.clicked.connect(self.on_run_tool)
+        self.ui.btnAdvance.clicked.connect(self.on_next_tool)
+        self.ui.btnRunAndAdvance.clicked.connect(self.on_run_and_advance)
+
         self.on_write_stdout.add(self.ui.write_stdout)
         self.on_write_stderr.add(self.ui.write_stderr)
 
@@ -62,21 +72,8 @@ class QtInterface(xappt.BaseInterface):
     def name(cls) -> str:
         return APP_INTERFACE_NAME
 
-    def on_execute_tool(self):
-        tool = self.ui.current_tool
-
-        try:
-            tool.validate()
-        except xappt.ParameterValidationError as err:
-            self.error(str(err))
-            return
-
-        self.on_tool_completed(self.invoke(tool, **self.tool_data))
-
     def invoke(self, plugin: xappt.BaseTool, **kwargs) -> int:
-        with self.ui.tool_executing():
-            result = plugin.execute(**kwargs)
-        return result
+        return plugin.execute(**kwargs)
 
     def message(self, message: str):
         QtWidgets.QMessageBox.information(self.ui, APP_TITLE, message)
@@ -109,23 +106,11 @@ class QtInterface(xappt.BaseInterface):
         self.ui.progressBar.setFormat("")
         self.app.processEvents()
 
-    def on_tool_completed(self, return_code: int):
-        if return_code == 0:
-            self._current_tool_index = self.current_tool_index + 1
-            try:
-                self.load_tool_ui()
-            except IndexError:
-                pass
-            else:
-                # don't close if we have another tool
-                return
-        self.ui.close()
-
     def load_tool_ui(self):
         tool_class = self.get_tool(self.current_tool_index)
         tool_instance = tool_class(interface=self, **self.tool_data)
         self.ui.load_tool(tool_instance)
-        self.update_ui()
+        self.set_tool_state(ToolState.LOADED)
 
     def run(self, **kwargs) -> int:
         if not len(self._tool_chain):
@@ -151,14 +136,6 @@ class QtInterface(xappt.BaseInterface):
         self.save_window_geo(tool_geo_key)
         return 0
 
-    def update_ui(self):
-        tool_class = self.get_tool(self.current_tool_index)
-        self.ui.setWindowTitle(f"{tool_class.name()} - {APP_TITLE}")
-        if self.current_tool_index == self.tool_count - 1:
-            self.ui.btnNext.setText("Run")
-        else:
-            self.ui.btnNext.setText("Next")
-
     def close_event(self, event: QtGui.QCloseEvent):
         if self.command_runner.running:
             if self.ask("A process is currently running.\nDo you want to kill it?"):
@@ -167,3 +144,98 @@ class QtInterface(xappt.BaseInterface):
             event.ignore()
         else:
             self.__ui_close_event_orig(event)
+
+    def on_run_tool(self):
+        self.set_tool_state(ToolState.RUNNING)
+        tool = self.ui.current_tool
+        try:
+            tool.validate()
+        except xappt.ParameterValidationError as err:
+            self.error(str(err))
+            self.set_tool_state(ToolState.ERROR)
+        else:
+            result = self.invoke(tool, **self.tool_data)
+            if result == 0:
+                self.set_tool_state(ToolState.SUCCESS)
+            else:
+                self.set_tool_state(ToolState.ERROR)
+
+    def on_next_tool(self):
+        self._current_tool_index = self.current_tool_index + 1
+        try:
+            self.load_tool_ui()
+        except IndexError:
+            self.ui.close()
+
+    def on_run_and_advance(self):
+        self.set_tool_state(ToolState.RUNNING)
+        tool = self.ui.current_tool
+        try:
+            tool.validate()
+        except xappt.ParameterValidationError as err:
+            self.error(str(err))
+            self.set_tool_state(ToolState.ERROR)
+        else:
+            result = self.invoke(tool, **self.tool_data)
+            if result != 0:
+                self.set_tool_state(ToolState.ERROR)
+                return
+            self.on_next_tool()
+
+    def set_tool_state(self, state: ToolState):
+        tool = self.ui.current_tool
+        auto_advance = can_auto_advance(tool.__class__)
+
+        self.ui.setWindowTitle(f"{tool.name()} - {APP_TITLE}")
+
+        self.ui.btnRun.setVisible(not auto_advance)
+        self.ui.btnAdvance.setVisible(not auto_advance)
+        self.ui.btnRunAndAdvance.setVisible(auto_advance)
+        self.ui.btnRun.setEnabled(False)
+        self.ui.btnAdvance.setEnabled(False)
+        self.ui.btnRunAndAdvance.setEnabled(False)
+
+        if auto_advance:
+            self.set_tool_state_auto_advance(state)
+        else:
+            self.set_tool_state_no_advance(state)
+
+    def set_tool_state_auto_advance(self, state: ToolState):
+        last_tool = self.current_tool_index == self.tool_count - 1
+
+        if state == ToolState.LOADED:
+            self.ui.btnRunAndAdvance.setEnabled(True)
+            self.ui.set_tool_enabled(True)
+            if last_tool:
+                self.ui.btnRunAndAdvance.setText("Run")
+            else:
+                self.ui.btnRunAndAdvance.setText("Next")
+        elif state == ToolState.RUNNING:
+            self.ui.set_tool_enabled(False)
+            self.ui.btnRunAndAdvance.setEnabled(False)
+        elif state == ToolState.ERROR:
+            self.ui.set_tool_enabled(True)
+            self.ui.btnRunAndAdvance.setEnabled(True)
+        elif state == ToolState.SUCCESS:
+            pass
+
+    def set_tool_state_no_advance(self, state: ToolState):
+        last_tool = self.current_tool_index == self.tool_count - 1
+
+        if state == ToolState.LOADED:
+            self.ui.btnRun.setEnabled(True)
+            self.ui.set_tool_enabled(True)
+            self.ui.set_tool_enabled(True)
+        elif state == ToolState.RUNNING:
+            self.ui.set_tool_enabled(False)
+            self.ui.btnRun.setEnabled(False)
+            self.ui.btnAdvance.setEnabled(False)
+        elif state == ToolState.ERROR:
+            self.ui.set_tool_enabled(True)
+            self.ui.btnRun.setEnabled(True)
+            self.ui.btnAdvance.setEnabled(False)
+        elif state == ToolState.SUCCESS:
+            self.ui.btnRun.setEnabled(False)
+            self.ui.btnAdvance.setEnabled(True)
+            if last_tool:
+                self.ui.btnAdvance.setText("Close")

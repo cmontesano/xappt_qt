@@ -1,5 +1,4 @@
 import importlib.resources
-from contextlib import contextmanager
 from itertools import chain
 from typing import Optional
 
@@ -24,17 +23,8 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.console = ConsoleWidget()
         self.setup_console()
 
-        self.btnClose.clicked.connect(self.close)
-
-    @contextmanager
-    def tool_executing(self):
-        self.stackedWidget.setEnabled(False)
-        self.btnNext.setEnabled(False)
-        try:
-            yield
-        finally:
-            self.stackedWidget.setEnabled(True)
-            self.btnNext.setEnabled(True)
+    def set_tool_enabled(self, enabled: bool = True):
+        self.toolContainer.setEnabled(enabled)
 
     def set_window_attributes(self):
         flags = QtCore.Qt.Window
@@ -52,23 +42,26 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.consoleContainer.layout().addWidget(self.console)
         self.hide_console()
 
-    def clear_loaded_tools(self):
-        while self.stackedWidget.count():
-            widget = self.stackedWidget.widget(0)
-            self.stackedWidget.removeWidget(widget)
-            widget.deleteLater()
+    def clear_loaded_tool(self):
+        layout: QtWidgets.QVBoxLayout = self.toolContainer.layout()
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
 
     def load_tool(self, tool_instance: xappt.BaseTool):
-        self.clear_loaded_tools()
+        self.clear_loaded_tool()
         self.current_tool = tool_instance
         widget = ToolPage(self.current_tool)
-        self.stackedWidget.addWidget(self.wrap_widget(widget))
-        # since we're clearing widgets self.stackedWidget.count() should always be one
-        self.stackedWidget.setCurrentIndex(0)
+
+        layout: QtWidgets.QVBoxLayout = self.toolContainer.layout()
+        layout.addWidget(self.wrap_widget(widget))
+
         self.set_tab_order(widget)
 
     def set_tab_order(self, tool_widget: ToolPage):
-        ui_widgets = [self.btnNext, self.btnClose]
+        ui_widgets = [self.btnRun, self.btnAdvance, self.btnRunAndAdvance]
         first_widget: Optional[QtWidgets.QWidget] = None
         last_widget: Optional[QtWidgets.QWidget] = None
         for widget in chain(tool_widget.ordered_widgets(), self.console.ordered_widgets(), ui_widgets):

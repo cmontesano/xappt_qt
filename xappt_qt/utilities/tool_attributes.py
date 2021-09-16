@@ -31,7 +31,7 @@ def get_tool_icon(tool_class: Type[BaseTool]) -> pathlib.Path:
 
 
 def is_headless(tool_class: Type[BaseTool]) -> bool:
-    return hasattr(tool_class, "headless") and tool_class.headless
+    return getattr(tool_class, "headless", False)  # default: False
 
 
 def help_text(tool_class: Type[BaseTool], *, process_markdown: bool = True) -> str:
@@ -45,3 +45,7 @@ def help_text(tool_class: Type[BaseTool], *, process_markdown: bool = True) -> s
         return wrap
     else:
         return tool_class.help()
+
+
+def can_auto_advance(tool_class: Type[BaseTool]) -> bool:
+    return getattr(tool_class, "auto_advance", True)  # default: True

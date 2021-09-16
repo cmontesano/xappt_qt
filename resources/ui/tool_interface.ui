@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>793</width>
-    <height>612</height>
+    <width>876</width>
+    <height>624</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,13 +19,8 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="handleWidth">
-      <number>8</number>
-     </property>
-     <widget class="QStackedWidget" name="stackedWidget">
-      <property name="currentIndex">
-       <number>-1</number>
-      </property>
+     <widget class="QWidget" name="toolContainer" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2"/>
      </widget>
      <widget class="QWidget" name="consoleContainer" native="true">
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -45,6 +40,19 @@
      </widget>
     </widget>
    </item>
+   <item row="1" column="0">
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="format">
+      <string/>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -61,36 +69,27 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="btnNext">
+      <widget class="QPushButton" name="btnRun">
+       <property name="text">
+        <string>Run</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnAdvance">
        <property name="text">
         <string>Next</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnClose">
+      <widget class="QPushButton" name="btnRunAndAdvance">
        <property name="text">
-        <string>Close</string>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
+        <string>Next</string>
        </property>
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="1" column="0">
-    <widget class="QProgressBar" name="progressBar">
-     <property name="value">
-      <number>0</number>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="format">
-      <string/>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

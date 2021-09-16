@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 import xappt
 
@@ -48,6 +48,10 @@ class ParameterWidgetStr(ParameterWidgetBase):
         elif ui == "multi-line":
             w = TextEdit()
             w.editingFinished.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.text()))
+        elif ui == "label":
+            w = QtWidgets.QLabel()
+            w.setTextFormat(QtCore.Qt.RichText)
+            self.caption = ""
         else:
             w = QtWidgets.QLineEdit()
             w.editingFinished.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.text()))

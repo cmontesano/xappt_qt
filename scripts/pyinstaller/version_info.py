@@ -9,7 +9,8 @@ copyright_message = os.environ.get("XAPPT_COPYRIGHT", "")
 VERSION_RE = re.compile(r"^(\d+)\.(\d+).(\d+)-(.*)$")
 
 version_match = VERSION_RE.match(exe_version)
-assert version_match is not None
+if version_match is None:
+    raise RuntimeError("XAPPT_EXE_VERSION must be in the form of '0.0.0-abc'")
 
 major = version_match.group(1)
 minor = version_match.group(2)

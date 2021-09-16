@@ -23,6 +23,10 @@ class QtInterface(xappt.BaseInterface):
         super().__init__()
         self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[1:])
         apply_style(self.app)
+
+        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
+            self.app.setWindowIcon(QtGui.QIcon(str(appicon)))
+
         self.ui = ToolUI()
 
         self.__ui_close_event_orig = self.ui.closeEvent

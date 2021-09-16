@@ -33,12 +33,9 @@ def apply_palette(app):
 
     dark_palette.setColor(QPalette.Light, PRIMARY_COLOR)
 
-    dark_palette.setColor(QPalette.Disabled,
-                          QPalette.WindowText, DISABLED_COLOR)
-    dark_palette.setColor(QPalette.Disabled,
-                          QPalette.Text, DISABLED_COLOR)
-    dark_palette.setColor(QPalette.Disabled,
-                          QPalette.ButtonText, DISABLED_COLOR)
+    dark_palette.setColor(QPalette.Disabled, QPalette.WindowText, DISABLED_COLOR)
+    dark_palette.setColor(QPalette.Disabled, QPalette.Text, DISABLED_COLOR)
+    dark_palette.setColor(QPalette.Disabled, QPalette.ButtonText, DISABLED_COLOR)
 
     app.setPalette(dark_palette)
     app.setStyleSheet("""
@@ -57,7 +54,7 @@ def apply_palette(app):
             background-color: palette(base);
             padding: 1px;
         }
-        
+
         QPlainTextEdit:focus {
             border-color: palette(highlight);
         }

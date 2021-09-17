@@ -12,10 +12,10 @@ class ToolItemDelegate(SimpleItemDelegate):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.bg_dark = QtGui.QPalette().color(QtGui.QPalette.Highlight).darker(500)
-        self.bg_outline = QtGui.QColor(0, 0, 0)
-        self.bg_light = QtGui.QPalette().color(QtGui.QPalette.Highlight)
-        self.fg = QtGui.QPalette().color(QtGui.QPalette.ButtonText)
+        self.dark_bg_color = QtGui.QPalette().color(QtGui.QPalette.Highlight).darker(500)
+        self.light_bg_color = QtGui.QPalette().color(QtGui.QPalette.Highlight)
+        self.fg_color = QtGui.QPalette().color(QtGui.QPalette.ButtonText)
+        self.outline_color = QtGui.QColor(0, 0, 0)
 
     def draw_arrow(self, expanded: bool, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem):
         painter.save()
@@ -39,22 +39,22 @@ class ToolItemDelegate(SimpleItemDelegate):
         painter.setOpacity(0.5)
         for y in (-1, 0, 1):
             for x in (-1, 0, 1):
-                painter.fillPath(arrow.translated(x, y), self.bg_outline)
+                painter.fillPath(arrow.translated(x, y), self.outline_color)
 
         painter.setOpacity(1.0)
-        painter.fillPath(arrow, self.fg)
+        painter.fillPath(arrow, self.fg_color)
         painter.restore()
 
     def draw_bg(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem):
         painter.save()
 
         if option.state & QtWidgets.QStyle.State_Selected == QtWidgets.QStyle.State_Selected:
-            bg_color = self.bg_light
+            bg_color = self.light_bg_color
         else:
-            bg_color = self.bg_dark
+            bg_color = self.dark_bg_color
 
         painter.fillRect(option.rect, bg_color)
-        painter.setPen(self.bg_outline)
+        painter.setPen(self.outline_color)
         painter.drawRect(option.rect.adjusted(-1, 0, 1, 0))
         painter.restore()
 
@@ -69,13 +69,13 @@ class ToolItemDelegate(SimpleItemDelegate):
         font.setBold(True)
         painter.setFont(font)
 
-        painter.setPen(self.bg_outline)
+        painter.setPen(self.outline_color)
         painter.setOpacity(0.6)
         for y in (-1, 0, 1):
             for x in (-1, 0, 1):
                 painter.drawText(option.rect.translated(x, y), QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, caption)
 
-        painter.setPen(self.fg)
+        painter.setPen(self.fg_color)
         painter.setOpacity(1.0)
         painter.drawText(option.rect, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, caption)
         painter.restore()

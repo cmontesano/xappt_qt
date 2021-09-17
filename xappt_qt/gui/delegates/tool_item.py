@@ -55,7 +55,7 @@ class ToolItemDelegate(SimpleItemDelegate):
 
         painter.fillRect(option.rect, bg_color)
         painter.setPen(self.outline_color)
-        painter.drawRect(option.rect.adjusted(-1, 0, 1, 0))
+        painter.drawRect(option.rect.adjusted(0, 0, -1, -1))
         painter.restore()
 
     def draw_caption(self, caption: str, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem):
@@ -95,7 +95,4 @@ class ToolItemDelegate(SimpleItemDelegate):
             self.draw_caption(caption, painter, option)
             painter.restore()
         else:
-            if option.state & QtWidgets.QStyle.State_HasFocus == QtWidgets.QStyle.State_HasFocus:
-                option.state = option.state & ~QtWidgets.QStyle.State_HasFocus
-
             super(ToolItemDelegate, self).paint(painter, option, index)

@@ -15,27 +15,15 @@ import xappt_qt
 import xappt_qt.config
 from xappt_qt.constants import APP_TITLE
 from xappt_qt.gui.ui.browser_tab_tools import Ui_tabTools
-from xappt_qt.gui.delegates import SimpleItemDelegate
+from xappt_qt.gui.delegates import ToolItemDelegate
 from xappt_qt.gui.tab_pages.base import BaseTabPage
 from xappt_qt.utilities.tool_attributes import *
 
 
 class ToolsTabPage(BaseTabPage, Ui_tabTools):
-    ROLE_TOOL_CLASS = QtCore.Qt.UserRole + 1
-    ROLE_ITEM_TYPE = QtCore.Qt.UserRole + 2
-
-    ITEM_TYPE_COLLECTION = 0
-    ITEM_TYPE_TOOL = 1
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.setupUi(self)
-
-        font = self.font()
-        font.setBold(True)
-        self.bold_font = font
-        self.category_bg = QtGui.QPalette().color(QtGui.QPalette.Highlight).darker(200)
-        self.category_fg = QtGui.QPalette().color(QtGui.QPalette.ButtonText)
 
         self.set_tree_attributes()
 
@@ -48,10 +36,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
 
     def set_tree_attributes(self):
         self.treeTools.setIconSize(QtCore.QSize(24, 24))
-        self.treeTools.setItemDelegate(SimpleItemDelegate())
-        self.treeTools.setRootIsDecorated(False)
-        self.treeTools.setIndentation(0)
-        self.treeTools.setAnimated(True)
+        self.treeTools.setItemDelegate(ToolItemDelegate())
 
     def populate_plugins(self):
         self.treeTools.clear()
@@ -81,23 +66,21 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
 
         self.labelHelp.linkActivated.connect(self.on_link_activated)
 
-    def _create_collection_item(self, collection_name: str) -> QtWidgets.QTreeWidgetItem:
+    @staticmethod
+    def _create_collection_item(collection_name: str) -> QtWidgets.QTreeWidgetItem:
         item = QtWidgets.QTreeWidgetItem()
         item.setText(0, collection_name)
-        item.setData(0, self.ROLE_TOOL_CLASS, None)
-        item.setData(0, self.ROLE_ITEM_TYPE, self.ITEM_TYPE_COLLECTION)
-
-        item.setFont(0, self.bold_font)
-        item.setBackground(0, self.category_bg)
-        item.setForeground(0, self.category_fg)
+        item.setData(0, ToolItemDelegate.ROLE_TOOL_CLASS, None)
+        item.setData(0, ToolItemDelegate.ROLE_ITEM_TYPE, ToolItemDelegate.ITEM_TYPE_COLLECTION)
         return item
 
-    def _create_tool_item(self, tool_class: Type[xappt.BaseTool]) -> QtWidgets.QTreeWidgetItem:
+    @staticmethod
+    def _create_tool_item(tool_class: Type[xappt.BaseTool]) -> QtWidgets.QTreeWidgetItem:
         item = QtWidgets.QTreeWidgetItem()
         item.setText(0, tool_class.name())
         item.setToolTip(0, help_text(tool_class, process_markdown=True))
-        item.setData(0, self.ROLE_TOOL_CLASS, tool_class)
-        item.setData(0, self.ROLE_ITEM_TYPE, self.ITEM_TYPE_TOOL)
+        item.setData(0, ToolItemDelegate.ROLE_TOOL_CLASS, tool_class)
+        item.setData(0, ToolItemDelegate.ROLE_ITEM_TYPE, ToolItemDelegate.ITEM_TYPE_TOOL)
 
         icon_path = get_tool_icon(tool_class)
         item.setIcon(0, QtGui.QIcon(str(icon_path)))
@@ -105,10 +88,10 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         return item
 
     def item_activated(self, item: QtWidgets.QTreeWidgetItem, column: int):
-        item_type = item.data(column, self.ROLE_ITEM_TYPE)
-        if item_type != self.ITEM_TYPE_TOOL:
+        item_type = item.data(column, ToolItemDelegate.ROLE_ITEM_TYPE)
+        if item_type != ToolItemDelegate.ITEM_TYPE_TOOL:
             return
-        tool_class: Type[xappt.BaseTool] = item.data(column, self.ROLE_TOOL_CLASS)
+        tool_class: Type[xappt.BaseTool] = item.data(column, ToolItemDelegate.ROLE_TOOL_CLASS)
         self.launch_tool(tool_class)
 
     @staticmethod
@@ -158,8 +141,8 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         visible_children = 0
         for c in range(parent.childCount()):
             child = parent.child(c)
-            item_type = child.data(0, self.ROLE_ITEM_TYPE)
-            if item_type == self.ITEM_TYPE_TOOL:
+            item_type = child.data(0, ToolItemDelegate.ROLE_ITEM_TYPE)
+            if item_type == ToolItemDelegate.ITEM_TYPE_TOOL:
                 child_text = child.text(0).lower()
                 child_help = child.toolTip(0).lower()
                 visible_children += 1
@@ -171,7 +154,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
                 child.setHidden(item_hidden)
                 if item_hidden:
                     visible_children -= 1
-            elif item_type == self.ITEM_TYPE_COLLECTION:
+            elif item_type == ToolItemDelegate.ITEM_TYPE_COLLECTION:
                 visible_children += self._filter_branch(search_terms, child)
             else:
                 raise NotImplementedError

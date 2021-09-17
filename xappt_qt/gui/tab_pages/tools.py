@@ -47,6 +47,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         self.connect_signals()
 
     def set_tree_attributes(self):
+        self.treeTools.setIconSize(QtCore.QSize(24, 24))
         self.treeTools.setItemDelegate(SimpleItemDelegate())
         self.treeTools.setRootIsDecorated(False)
         self.treeTools.setIndentation(0)

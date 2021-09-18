@@ -185,7 +185,7 @@ class QtInterface(xappt.BaseInterface):
 
     def set_tool_state(self, state: ToolState):
         tool = self.ui.current_tool
-        auto_advance = can_auto_advance(tool.__class__)
+        auto_advance = can_auto_advance(tool)
 
         self.ui.setWindowTitle(f"{tool.name()} - {APP_TITLE}")
 

@@ -43,6 +43,7 @@ class QtInterface(xappt.BaseInterface):
         self.ui.btnRun.clicked.connect(self.on_run_tool)
         self.ui.btnAdvance.clicked.connect(self.on_next_tool)
         self.ui.btnRunAndAdvance.clicked.connect(self.on_run_and_advance)
+        self.ui.btnHelp.clicked.connect(self.on_show_help)
 
         self.on_write_stdout.add(self.ui.write_stdout)
         self.on_write_stderr.add(self.ui.write_stderr)
@@ -195,6 +196,8 @@ class QtInterface(xappt.BaseInterface):
         self.ui.btnAdvance.setEnabled(False)
         self.ui.btnRunAndAdvance.setEnabled(False)
 
+        self.ui.btnHelp.setEnabled(state != ToolState.RUNNING)
+
         if auto_advance:
             self.set_tool_state_auto_advance(state)
         else:
@@ -239,3 +242,9 @@ class QtInterface(xappt.BaseInterface):
             self.ui.btnAdvance.setEnabled(True)
             if last_tool:
                 self.ui.btnAdvance.setText("Close")
+
+    def on_show_help(self):
+        tool = self.ui.current_tool
+        if tool is None:
+            return
+        self.message(help_text(tool))

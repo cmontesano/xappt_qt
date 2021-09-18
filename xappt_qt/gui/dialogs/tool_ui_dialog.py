@@ -33,6 +33,8 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.setWindowFlags(flags)
         with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
             self.setWindowIcon(QtGui.QIcon(str(appicon)))
+        with importlib.resources.path("xappt_qt.resources.icons", "help.svg") as path:
+            self.btnHelp.setIcon(QtGui.QIcon(str(path)))
 
     def setup_console(self):
         font_size = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.GeneralFont).pointSizeF()
@@ -61,7 +63,7 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.set_tab_order(widget)
 
     def set_tab_order(self, tool_widget: ToolPage):
-        ui_widgets = [self.btnRun, self.btnAdvance, self.btnRunAndAdvance]
+        ui_widgets = [self.btnHelp, self.btnRun, self.btnAdvance, self.btnRunAndAdvance]
         first_widget: Optional[QtWidgets.QWidget] = None
         last_widget: Optional[QtWidgets.QWidget] = None
         for widget in chain(tool_widget.ordered_widgets(), self.console.ordered_widgets(), ui_widgets):

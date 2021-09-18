@@ -39,6 +39,11 @@ class Ui_ToolInterface(object):
         self.gridLayout.addWidget(self.progressBar, 1, 0, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
+        self.btnHelp = QtWidgets.QToolButton(ToolInterface)
+        self.btnHelp.setIconSize(QtCore.QSize(24, 24))
+        self.btnHelp.setAutoRaise(True)
+        self.btnHelp.setObjectName("btnHelp")
+        self.horizontalLayout.addWidget(self.btnHelp)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.btnRun = QtWidgets.QPushButton(ToolInterface)
@@ -58,6 +63,7 @@ class Ui_ToolInterface(object):
     def retranslateUi(self, ToolInterface):
         _translate = QtCore.QCoreApplication.translate
         ToolInterface.setWindowTitle(_translate("ToolInterface", "Dialog"))
+        self.btnHelp.setText(_translate("ToolInterface", "?"))
         self.btnRun.setText(_translate("ToolInterface", "Run"))
         self.btnAdvance.setText(_translate("ToolInterface", "Next"))
         self.btnRunAndAdvance.setText(_translate("ToolInterface", "Next"))

@@ -48,4 +48,4 @@ def help_text(tool_class: Type[BaseTool], *, process_markdown: bool = True) -> s
 
 
 def can_auto_advance(tool_class: Type[BaseTool]) -> bool:
-    return getattr(tool_class, "auto_advance", True)  # default: True
+    return getattr(tool_class, "auto_advance", False)

@@ -1,7 +1,7 @@
 import importlib.resources
 import pathlib
 
-from typing import Type
+from typing import Type, Union
 
 import markdown
 
@@ -11,13 +11,13 @@ ICONS_MODULE = "xappt_qt.resources.icons"
 TOOL_ICON = "tool.svg"
 
 
-def get_tool_icon(tool_class: Type[BaseTool]) -> pathlib.Path:
-    if hasattr(tool_class, "custom_icon") and isinstance(tool_class.custom_icon, str):
-        if tool_class.custom_icon.count("::"):
-            module_path, file_name = tool_class.custom_icon.split("::", maxsplit=1)
+def get_tool_icon(tool: Union[Type[BaseTool], BaseTool]) -> pathlib.Path:
+    if hasattr(tool, "custom_icon") and isinstance(tool.custom_icon, str):
+        if tool.custom_icon.count("::"):
+            module_path, file_name = tool.custom_icon.split("::", maxsplit=1)
         else:
-            module_path = ".".join(tool_class.__module__.split(".")[:-1])  # get module's parent
-            file_name = tool_class.custom_icon
+            module_path = ".".join(tool.__module__.split(".")[:-1])  # get module's parent
+            file_name = tool.custom_icon
         try:
             with importlib.resources.path(module_path, file_name) as path:
                 icon_path = path
@@ -30,13 +30,13 @@ def get_tool_icon(tool_class: Type[BaseTool]) -> pathlib.Path:
         return path
 
 
-def is_headless(tool_class: Type[BaseTool]) -> bool:
-    return getattr(tool_class, "headless", False)  # default: False
+def is_headless(tool: Union[Type[BaseTool], BaseTool]) -> bool:
+    return getattr(tool, "headless", False)  # default: False
 
 
-def help_text(tool_class: Type[BaseTool], *, process_markdown: bool = True) -> str:
+def help_text(tool: Union[Type[BaseTool], BaseTool], *, process_markdown: bool = True) -> str:
     if process_markdown:
-        md = markdown.markdown(tool_class.help())
+        md = markdown.markdown(tool.help())
         style = "".join((
             "code {background-color: #000; color: #ccc;}",
             "ul {margin-left: -20px;}",
@@ -44,8 +44,8 @@ def help_text(tool_class: Type[BaseTool], *, process_markdown: bool = True) -> s
         wrap = f"<html><head><style>{style}</style></head><body>{md}</body></html>"
         return wrap
     else:
-        return tool_class.help()
+        return tool.help()
 
 
-def can_auto_advance(tool_class: Type[BaseTool]) -> bool:
-    return getattr(tool_class, "auto_advance", False)
+def can_auto_advance(tool: Union[Type[BaseTool], BaseTool]) -> bool:
+    return getattr(tool, "auto_advance", False)

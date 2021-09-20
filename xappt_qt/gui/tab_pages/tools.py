@@ -58,6 +58,7 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
     def connect_signals(self):
         self.treeTools.itemActivated.connect(self.item_activated)
         self.treeTools.itemSelectionChanged.connect(self.selection_changed)
+        self.treeTools.clicked.connect(self.on_tree_item_clicked)
 
         self.txtSearch.textChanged.connect(self.on_filter_tools)
         # noinspection PyAttributeOutsideInit
@@ -65,6 +66,14 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         self.txtSearch.keyPressEvent = self._filter_key_press
 
         self.labelHelp.linkActivated.connect(self.on_link_activated)
+
+    def on_tree_item_clicked(self, index: QtCore.QModelIndex):
+        if index.data(ToolItemDelegate.ROLE_ITEM_TYPE) != ToolItemDelegate.ITEM_TYPE_COLLECTION:
+            return
+        if self.treeTools.isExpanded(index):
+            self.treeTools.collapse(index)
+        else:
+            self.treeTools.expand(index)
 
     @staticmethod
     def _create_collection_item(collection_name: str) -> QtWidgets.QTreeWidgetItem:

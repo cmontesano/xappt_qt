@@ -2,121 +2,40 @@
 # -*- coding: utf-8 -*-
 
 import os
-import shutil
+import pathlib
 
 import setuptools
 
-from typing import Generator, List
+from xappt.utilities import git_tools, setup_helpers
 
-from xappt.utilities import git_tools
+PROJECT_PATH = pathlib.Path(__file__).absolute().parent
+VERSION_PATH = PROJECT_PATH.joinpath("xappt_qt", "__version__.py")
+README_PATH = PROJECT_PATH.joinpath("README.md")
 
-REPOSITORY_PATH = os.path.dirname(os.path.abspath(__file__))
-VERSION_PATH = os.path.join(REPOSITORY_PATH, "xappt_qt", "__version__.py")
-BUILDER_PATH = os.path.join(REPOSITORY_PATH, "xappt_qt", "builder.py")
-BACKUP_EXT = ".bak"
-
-os.chdir(REPOSITORY_PATH)
-
-
-def build_package_list(base_pkg: str, *, exclude: List[str] = None) -> List[str]:
-    if exclude is None:
-        exclude = []
-    packages = [base_pkg]
-    for package in setuptools.find_packages(base_pkg):
-        pkg_name = f"{base_pkg}.{package}"
-        if pkg_name in exclude:
-            continue
-        packages.append(pkg_name)
-    print(packages)
-    return packages
-
-
-def long_description() -> str:
-    with open("README.md", "r", encoding="utf8") as fh:
-        return fh.read()
-
-
-def get_version() -> str:
-    with open(VERSION_PATH, "r") as fp:
-        version_contents = fp.read()
-
-    loc = locals()
-    exec(version_contents, {}, loc)
-    __version__ = loc['__version__']
-    assert __version__ is not None
-
-    return __version__
-
-
-def update_build(new_build: str):
-    version = get_version()
-    with open(VERSION_PATH, "w") as fp:
-        fp.write(f'__version__ = "{version}"\n')
-        fp.write(f'__build__ = "{new_build}"\n')
-
-
-def requirements(variation=None) -> Generator[str, None, None]:
-    req_file = "requirements"
-    if variation is not None:
-        req_file = f"requirements-{variation}"
-    req_path = os.path.join(os.path.dirname(__file__), f"{req_file}.txt")
-    with open(req_path, "rb") as fp:
-        for line in fp.readlines():
-            line = line.decode('utf-8').strip()
-            if len(line) == 0:
-                continue
-            if line.startswith("#"):
-                continue
-            yield line
-
-
-def patch_builder(package_list: List):
-    shutil.copy2(BUILDER_PATH, BUILDER_PATH + BACKUP_EXT)
-    with open(BUILDER_PATH, "r") as fp:
-        builder_contents = fp.readlines()
-
-    package_str = ", ".join([f"'{p}'" for p in package_list])
-
-    with open(BUILDER_PATH, "w") as fp:
-        for line in builder_contents:
-            line = line.rstrip()
-            if line.startswith('REQUIRED_PACKAGES = '):
-                line = f'REQUIRED_PACKAGES = [{package_str}]'
-            fp.write(line)
-            fp.write("\n")
-
-
-def unpatch_builder():
-    backup_path = BUILDER_PATH + BACKUP_EXT
-    assert os.path.isfile(backup_path)
-    os.unlink(BUILDER_PATH)
-    os.rename(backup_path, BUILDER_PATH)
+os.chdir(PROJECT_PATH)
 
 
 def main():
-    if git_tools.is_dirty(REPOSITORY_PATH):
+    if git_tools.is_dirty(PROJECT_PATH):
         print("Local repository is not clean")
-        while True:
-            result = input("Proceed anyway? (y|n): ").lower()
-            if result not in ("y", "n"):
-                print(f"Invalid response '{result}', please try again.")
-                continue
-            if result == "n":
-                return
-            break
+        if not setup_helpers.ask("Proceed anyway?"):
+            return
 
-    install_requires = list(requirements())
+    if not setup_helpers.cleanup_build_files(PROJECT_PATH):
+        return
+
+    install_requires = list(setup_helpers.requirements(PROJECT_PATH))
 
     setup_dict = {
         'name': 'xappt_qt',
-        'version': get_version(),
+        'version': setup_helpers.get_version(VERSION_PATH),
         'author': 'Christopher Montesano',
         'author_email': 'cmdev.00+xappt@gmail.com',
         'url': 'https://github.com/cmontesano/xappt_qt',
         'description': 'Qt/PyQt5 interface plugin for xappt.',
-        'long_description': long_description(),
+        'long_description': README_PATH.read_text("utf8"),
         'long_description_content_type': 'text/markdown',
-        'packages': build_package_list('xappt_qt'),
+        'packages': setup_helpers.build_package_list('xappt_qt'),
         'include_package_data': True,
         'zip_safe': False,
         'license': 'MIT',
@@ -141,15 +60,10 @@ def main():
         },
     }
 
-    patch_builder(install_requires)
-
-    commit_id = git_tools.commit_id(REPOSITORY_PATH, short=True)
-
-    update_build(commit_id)
+    commit_id = git_tools.commit_id(PROJECT_PATH, short=True)
+    setup_helpers.update_build(VERSION_PATH, commit_id)
     setuptools.setup(**setup_dict)
-    update_build("dev")
-
-    unpatch_builder()
+    setup_helpers.update_build(VERSION_PATH, "dev")
 
 
 if __name__ == '__main__':

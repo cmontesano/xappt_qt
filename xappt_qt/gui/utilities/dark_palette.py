@@ -15,8 +15,6 @@ DISABLED_COLOR = QColor(64, 64, 64)
 
 # noinspection PyUnresolvedReferences
 def apply_palette(app):
-    app.setStyle("Fusion")
-
     dark_palette = QPalette()
 
     dark_palette.setColor(QPalette.Window, PRIMARY_COLOR)
@@ -35,21 +33,29 @@ def apply_palette(app):
 
     dark_palette.setColor(QPalette.Light, PRIMARY_COLOR)
 
-    dark_palette.setColor(QPalette.Disabled,
-                          QPalette.WindowText, DISABLED_COLOR)
-    dark_palette.setColor(QPalette.Disabled,
-                          QPalette.Text, DISABLED_COLOR)
-    dark_palette.setColor(QPalette.Disabled,
-                          QPalette.ButtonText, DISABLED_COLOR)
+    dark_palette.setColor(QPalette.Disabled, QPalette.WindowText, DISABLED_COLOR)
+    dark_palette.setColor(QPalette.Disabled, QPalette.Text, DISABLED_COLOR)
+    dark_palette.setColor(QPalette.Disabled, QPalette.ButtonText, DISABLED_COLOR)
 
     app.setPalette(dark_palette)
     app.setStyleSheet("""
-        QToolTip {{ 
-            color: {2}; 
-            background-color: {1}; 
-            border: 1px solid {0};
+        QToolTip { 
+            color: palette(text); 
+            background-color: palette(window); 
+            border: 1px solid palette(highlight);
+            border-radius: 2px;
             padding: 2px 8px;
-        }}
-    """.format(HIGHLIGHT_COLOR.name(),
-               PRIMARY_COLOR.name(),
-               BRIGHT_COLOR.name()))
+            min-width: 300px;
+        }
+
+        QPlainTextEdit {
+            border: 1px solid palette(base);
+            border-radius: 3px;
+            background-color: palette(base);
+            padding: 1px;
+        }
+
+        QPlainTextEdit:focus {
+            border-color: palette(highlight);
+        }
+    """)

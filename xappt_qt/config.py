@@ -1,7 +1,12 @@
-launch_new_process = False
 minimize_to_tray = True
-console_line_limit = 1024
 start_minimized = False
+
+console_word_wrap = False
+console_auto_scroll = True
+
+# https://doc.qt.io/qt-5/stylesheet-reference.html#paletterole
+console_color_stdout = "palette(window-text)"
+console_color_stderr = "#f55"
 
 
 def load_settings():
@@ -14,8 +19,10 @@ def load_settings():
     except (FileNotFoundError, json.JSONDecodeError):
         pass
     else:
-        global console_line_limit
-        console_line_limit = settings_raw.get('console_line_limit', 1024)
+        global console_word_wrap
+        console_word_wrap = settings_raw.get('console_word_wrap', False)
+        global console_auto_scroll
+        console_auto_scroll = settings_raw.get('console_auto_scroll', True)
 
 
 load_settings()

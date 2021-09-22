@@ -5,6 +5,8 @@ import xappt
 class StringUi(xappt.BaseTool):
     plain_string = xappt.ParamString()
 
+    choice_string = xappt.ParamString(choices=("apple", "banana", "cantaloupe"))
+
     folder_select = xappt.ParamString(
         options={'ui': 'folder-select'},
         validators=[xappt.ValidateFolderExists])
@@ -16,8 +18,7 @@ class StringUi(xappt.BaseTool):
     file_save = xappt.ParamString(
         options={'ui': 'file-save', "accept": ('Text Files *.txt', 'All Files *')})
 
-    multi_line = xappt.ParamString(
-        options={'ui': 'multi-line'})
+    multi_line = xappt.ParamString(options={'ui': 'multi-line'})
 
     label = xappt.ParamString(
         options={'ui': 'label'},
@@ -25,7 +26,10 @@ class StringUi(xappt.BaseTool):
 
     markdown = xappt.ParamString(
         options={'ui': 'markdown'},
-        value='Strings _also_ support [Markdown](https://daringfireball.net/projects/markdown/)')
+        value='Strings _also_ support [Markdown](https://daringfireball.net/projects/markdown/).\n\n'
+              'Captions are **automatically** hidden when using the `label` or `markdown` ui.')
+
+    password = xappt.ParamString(options={'ui': 'password'})
 
     @classmethod
     def name(cls):
@@ -41,6 +45,7 @@ class StringUi(xappt.BaseTool):
             "* multi-line\n"
             "* label\n"
             "* markdown\n"
+            "* password\n"
         )
 
     @classmethod

@@ -38,6 +38,7 @@ class CheckList(QtWidgets.QWidget):
         self.list.setAlternatingRowColors(True)
         self.list.setSpacing(2)
         self.list.itemChanged.connect(self._on_item_changed)
+        self.setSizePolicy(self.list.sizePolicy())
 
     def _init_context_menu(self):
         self.list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)

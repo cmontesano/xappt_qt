@@ -30,9 +30,9 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.toolContainer.setEnabled(enabled)
 
     def set_window_attributes(self):
-        flags = QtCore.Qt.Window
-        flags |= QtCore.Qt.WindowCloseButtonHint
-        flags |= QtCore.Qt.WindowMinimizeButtonHint
+        mw = QtWidgets.QMainWindow()
+        flags = mw.windowFlags()
+        mw.deleteLater()
         self.setWindowFlags(flags)
         self.setWindowIcon(self.app.app_icon)
         with importlib.resources.path("xappt_qt.resources.icons", "help.svg") as path:

@@ -54,6 +54,8 @@ class ParameterWidgetStr(ParameterWidgetBase):
             self.caption = ""
         else:
             w = QtWidgets.QLineEdit()
+            if ui == "password":
+                w.setEchoMode(QtWidgets.QLineEdit.Password)
             w.editingFinished.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.text()))
 
         for v in (param.value, param.default):

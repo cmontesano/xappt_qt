@@ -241,4 +241,6 @@ class QtInterface(xappt.BaseInterface):
         tool = self.ui.current_tool
         if tool is None:
             return
-        self.message(help_text(tool))
+        message = help_text(tool)
+        if len(message):
+            self.message(message)

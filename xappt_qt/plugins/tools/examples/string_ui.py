@@ -16,7 +16,7 @@ class StringUi(xappt.BaseTool):
         validators=[xappt.ValidateFileExists])
 
     file_save = xappt.ParamString(
-        options={'ui': 'file-save', "accept": ('Text Files *.txt', 'All Files *')})
+        options={'ui': 'file-save', "accept": ('Text Files *.txt', 'All Files *.*')})
 
     multi_line = xappt.ParamString(options={'ui': 'multi-line'})
 

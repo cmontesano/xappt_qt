@@ -20,6 +20,8 @@ class ToolPage(QtWidgets.QWidget):
             list: ParameterWidgetList,
         }
 
+        self.vertical_expand = False
+
         self.tool = tool
         self.build_ui()
 
@@ -47,6 +49,9 @@ class ToolPage(QtWidgets.QWidget):
             if param.hidden:
                 continue
             widget_instance = self._convert_parameter(param)
+            if widget_instance.sizePolicy().verticalPolicy() == QtWidgets.QSizePolicy.Expanding:
+                self.vertical_expand = True
+
             if len(widget_instance.caption):
                 label = QtWidgets.QLabel(widget_instance.caption)
                 label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
@@ -157,4 +162,3 @@ class ToolPage(QtWidgets.QWidget):
             param.on_value_changed.clear()
             param.on_options_changed.clear()
             param.on_choices_changed.clear()
-

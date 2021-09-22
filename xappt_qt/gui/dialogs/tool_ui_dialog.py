@@ -76,7 +76,7 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
             first_widget.setFocus()
 
     @staticmethod
-    def wrap_widget(widget: QtWidgets.QWidget) -> QtWidgets.QWidget:
+    def wrap_widget(widget: ToolPage) -> QtWidgets.QWidget:
         scroller = QtWidgets.QScrollArea()
         scroller.setWidgetResizable(True)
 
@@ -84,7 +84,9 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         layout = QtWidgets.QVBoxLayout()
 
         layout.addWidget(widget)
-        layout.addItem(QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding))
+
+        if not widget.vertical_expand:
+            layout.addItem(QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding))
 
         container.setFocusPolicy(QtCore.Qt.NoFocus)
         container.setLayout(layout)

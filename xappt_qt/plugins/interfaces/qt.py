@@ -117,6 +117,7 @@ class QtInterface(xappt.BaseInterface):
 
         icon_path = get_tool_icon(tool_class)
         self.ui.setWindowIcon(QtGui.QIcon(str(icon_path)))
+        self.ui.setWindowTitle(f"{tool_class.name()} - {APP_TITLE}")
 
         if is_headless(tool_class):
             headless_interface = HeadlessInterface()
@@ -181,8 +182,6 @@ class QtInterface(xappt.BaseInterface):
     def set_tool_state(self, state: ToolState):
         tool = self.ui.current_tool
         auto_advance = can_auto_advance(tool)
-
-        self.ui.setWindowTitle(f"{tool.name()} - {APP_TITLE}")
 
         self.ui.btnRun.setVisible(not auto_advance)
         self.ui.btnAdvance.setVisible(not auto_advance)

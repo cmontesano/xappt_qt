@@ -1,7 +1,6 @@
 import base64
 import enum
 import os
-import sys
 
 from typing import Optional
 
@@ -12,7 +11,7 @@ import xappt
 from xappt_qt.constants import *
 from xappt_qt.gui.dialogs.tool_ui_dialog import ToolUI
 from xappt_qt.plugins.interfaces.headless import HeadlessInterface
-from xappt_qt.gui.utilities.style import apply_style
+from xappt_qt.gui.application import get_application
 from xappt_qt.utilities.tool_attributes import *
 
 os.environ.setdefault('QT_STYLE_OVERRIDE', "Fusion")
@@ -29,11 +28,7 @@ class ToolState(enum.Enum):
 class QtInterface(xappt.BaseInterface):
     def __init__(self):
         super().__init__()
-        self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[1:])
-        apply_style(self.app)
-
-        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
-            self.app.setWindowIcon(QtGui.QIcon(str(appicon)))
+        self.app = get_application()
 
         self.ui = ToolUI()
 

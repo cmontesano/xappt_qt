@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 import xappt
 
+from xappt_qt.gui.application import get_application
 from xappt_qt.gui.ui.tool_interface import Ui_ToolInterface
 from xappt_qt.gui.widgets.console import ConsoleWidget
 from xappt_qt.gui.widgets.tool_page.widget import ToolPage
@@ -14,6 +15,8 @@ from xappt_qt.gui.widgets.tool_page.widget import ToolPage
 class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.app = get_application()
 
         self.current_tool: Optional[xappt.BaseTool] = None
 
@@ -31,8 +34,7 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         flags |= QtCore.Qt.WindowCloseButtonHint
         flags |= QtCore.Qt.WindowMinimizeButtonHint
         self.setWindowFlags(flags)
-        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
-            self.setWindowIcon(QtGui.QIcon(str(appicon)))
+        self.setWindowIcon(self.app.app_icon)
         with importlib.resources.path("xappt_qt.resources.icons", "help.svg") as path:
             self.btnHelp.setIcon(QtGui.QIcon(str(path)))
 
@@ -108,10 +110,10 @@ class ToolUI(QtWidgets.QDialog, Ui_ToolInterface):
         self.show_console()
         for line in text.splitlines():
             self.console.write_stdout(line)
-        QtWidgets.QApplication.instance().processEvents()
+        self.app.processEvents()
 
     def write_stderr(self, text: str):
         self.show_console()
         for line in text.splitlines():
             self.console.write_stderr(line)
-        QtWidgets.QApplication.instance().processEvents()
+        self.app.processEvents()

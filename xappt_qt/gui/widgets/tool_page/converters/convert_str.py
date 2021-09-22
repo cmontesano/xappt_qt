@@ -1,3 +1,5 @@
+import webbrowser
+
 from PyQt5 import QtWidgets, QtCore
 
 import xappt
@@ -52,6 +54,7 @@ class ParameterWidgetStr(ParameterWidgetBase):
             w = QtWidgets.QLabel()
             w.setTextFormat(QtCore.Qt.RichText)
             self.caption = ""
+            w.linkActivated.connect(self.link_activated)
         else:
             w = QtWidgets.QLineEdit()
             if ui == "password":
@@ -69,3 +72,7 @@ class ParameterWidgetStr(ParameterWidgetBase):
         self._setter_fn = w.setText
 
         return w
+
+    @staticmethod
+    def link_activated(url: str):
+        webbrowser.open(url)

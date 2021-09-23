@@ -27,6 +27,8 @@ class TableEdit(QtWidgets.QTableWidget):
 
         self._editable: bool = kwargs.get("editable", False)
         self._header_row: bool = kwargs.get("header_row", False)
+        self._csv_import: bool = kwargs.get("csv_import", False)
+        self._sorting_enabled: bool = kwargs.get("sorting_enabled", True)
 
         self.setup_table()
         self._first_load = True
@@ -37,6 +39,8 @@ class TableEdit(QtWidgets.QTableWidget):
             self.setEditTriggers(self.NoEditTriggers)
         else:
             self._init_context_menu()
+
+        self.setSortingEnabled(self._sorting_enabled)
 
         self.itemChanged.connect(self.on_data_changed)
 

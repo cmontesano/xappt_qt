@@ -37,26 +37,35 @@ class TableEdit(QtWidgets.QTableWidget):
         parent: Optional[QtWidgets.QWidget] = kwargs.get("parent")
         super().__init__(parent=parent)
 
+        # attributes
         self._editable: bool = kwargs.get("editable", False)
         self._header_row: bool = kwargs.get("header_row", False)
         self._csv_import: bool = kwargs.get("csv_import", False)
         self._csv_export: bool = kwargs.get("csv_export", True)
         self._sorting_enabled: bool = kwargs.get("sorting_enabled", True)
 
-        self._acceptable_drop_suffix_list = []
-        self.setup_table()
+        # setup
+        self._init_table_attributes()
+        self._init_context_menu()
+        self._init_drag_and_drop()
 
+        # state
         self._first_load = True
         self._last_path: pathlib.Path = pathlib.Path.cwd()
         self._last_filter: str = self.CSV_FILTER
 
-    def setup_table(self):
-        self.setAlternatingRowColors(True)
+        # signals
+        self.itemChanged.connect(self.on_data_changed)
+
+    def _init_table_attributes(self):
         if not self._editable:
             self.setEditTriggers(self.NoEditTriggers)
-        self._init_context_menu()
 
+        self.setAlternatingRowColors(True)
         self.setSortingEnabled(self._sorting_enabled)
+
+    def _init_drag_and_drop(self):
+        self._acceptable_drop_suffix_list = []
         if self._csv_import:
             for suffix in self.IO_FILTERS.values():
                 if isinstance(suffix, str):
@@ -64,10 +73,7 @@ class TableEdit(QtWidgets.QTableWidget):
                 elif isinstance(suffix, Sequence):
                     for item in suffix:
                         self._acceptable_drop_suffix_list.append(item)
-            # self.setDragDropMode(self.DropOnly)
             self.setAcceptDrops(True)
-
-        self.itemChanged.connect(self.on_data_changed)
 
     def on_data_changed(self, _: QtWidgets.QTableWidgetItem):
         self.data_changed.emit()
@@ -197,20 +203,14 @@ class TableEdit(QtWidgets.QTableWidget):
             header_row = []
             for column in range(self.columnCount()):
                 item = self.horizontalHeaderItem(column)
-                if item is None:
-                    header_row.append("")
-                else:
-                    header_row.append(item.text())
+                header_row.append("" if item is None else item.text())
             rows.append(header_row)
 
         for row in range(self.rowCount()):
             this_row = []
             for column in range(self.columnCount()):
                 item = self.item(row, column)
-                if item is not None:
-                    this_row.append(item.text())
-                else:
-                    this_row.append("")
+                this_row.append("" if item is None else item.text())
             rows.append(this_row)
 
         csv_capture = CsvTextCapture()
@@ -270,6 +270,7 @@ class TableEdit(QtWidgets.QTableWidget):
         with path.open("r") as fp:
             contents = fp.read()
 
+        self._first_load = True
         self.setText(contents, header_row=header_row)
         self.data_changed.emit()
 

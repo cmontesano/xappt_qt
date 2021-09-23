@@ -54,8 +54,7 @@ class TableEdit(QtWidgets.QTableWidget):
         self.setAlternatingRowColors(True)
         if not self._editable:
             self.setEditTriggers(self.NoEditTriggers)
-        else:
-            self._init_context_menu()
+        self._init_context_menu()
 
         self.setSortingEnabled(self._sorting_enabled)
         if self._csv_import:
@@ -74,11 +73,12 @@ class TableEdit(QtWidgets.QTableWidget):
         self.data_changed.emit()
 
     def _init_context_menu(self):
-        self.horizontalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.horizontalHeader().customContextMenuRequested.connect(self._on_context_menu_header_h)
+        if self._editable:
+            self.horizontalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            self.horizontalHeader().customContextMenuRequested.connect(self._on_context_menu_header_h)
 
-        self.verticalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.verticalHeader().customContextMenuRequested.connect(self._on_context_menu_header_v)
+            self.verticalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            self.verticalHeader().customContextMenuRequested.connect(self._on_context_menu_header_v)
 
         if self._csv_import or self._csv_export:
             self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)

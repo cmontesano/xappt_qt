@@ -35,12 +35,12 @@ class StringUi(xappt.BaseTool):
         options={'ui': 'csv', 'header_row': True, 'editable': True},
         value=(
             'header1,header2,header3\n'
-            'value1,value2,value3\n'
-            'value1,value2,value3\n'
-            'value1,value2,value3\n'
-            'value1,value2,value3\n'
-            'value1,value2,value3\n'
-            'value1,value2,value3\n'
+            'value1,value6,123\n'
+            'value2,value5,12\n'
+            'value3,value4,1234\n'
+            'value4,value3,234\n'
+            'value5,value2,3456\n'
+            'value6,value1,12345\n'
         ))
 
     @classmethod

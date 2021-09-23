@@ -32,7 +32,14 @@ class StringUi(xappt.BaseTool):
     password = xappt.ParamString(options={'ui': 'password'})
 
     csv_string = xappt.ParamString(
-        options={'ui': 'csv', 'header_row': True, 'editable': True},
+        options={
+            'ui': 'csv',
+            'header_row': True,
+            'editable': True,
+            'csv_import': True,
+            'csv_export': True,
+            'sorting_enabled': True
+        },
         value=(
             'header1,header2,header3\n'
             'value1,value6,123\n'

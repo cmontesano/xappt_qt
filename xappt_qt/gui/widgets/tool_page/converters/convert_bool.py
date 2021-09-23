@@ -17,6 +17,9 @@ class ParameterWidgetBool(ParameterWidgetBase):
             self._setter_fn = lambda x: True
         else:
             w = QtWidgets.QCheckBox(parent=self)
+            w.setText(self._get_caption(param))
+            self.caption = ""
+
             for v in (param.value, param.default):
                 if v is not None:
                     w.setChecked(v)

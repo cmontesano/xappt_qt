@@ -33,7 +33,7 @@ class TableEdit(QtWidgets.QTableWidget):
 
     def setup_table(self):
         self.setAlternatingRowColors(True)
-        if not self.editable:
+        if not self._editable:
             self.setEditTriggers(self.NoEditTriggers)
         else:
             self._init_context_menu()
@@ -42,18 +42,6 @@ class TableEdit(QtWidgets.QTableWidget):
 
     def on_data_changed(self, _: QtWidgets.QTableWidgetItem):
         self.data_changed.emit()
-
-    @property
-    def editable(self):  # read only
-        return self._editable
-
-    @property
-    def value(self):
-        return self.save_csv_text()
-
-    @value.setter
-    def value(self, value):
-        self.load_csv_text(value)
 
     def _init_context_menu(self):
         self.horizontalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -115,7 +103,8 @@ class TableEdit(QtWidgets.QTableWidget):
             return
         self.data_changed.emit()
 
-    def load_csv_text(self, source: str):
+    # noinspection PyPep8Naming
+    def setText(self, source: str):
         self.blockSignals(True)
         reader = csv.reader(source.splitlines())
 
@@ -144,7 +133,7 @@ class TableEdit(QtWidgets.QTableWidget):
 
         self.blockSignals(False)
 
-    def save_csv_text(self) -> str:
+    def text(self) -> str:
         rows = []
 
         if self._header_row:

@@ -40,9 +40,7 @@ class ParameterWidgetStr(ParameterWidgetBase):
 
     def _convert_str_edit(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         ui = param.options.get("ui")
-        if ui == "csv":
-            return self._convert_str_csv(param)
-        elif ui == "folder-select":
+        if ui == "folder-select":
             w = FileEdit(mode=FileEdit.MODE_CHOOSE_DIR)
             w.onSetFile.connect(lambda x: self.onValueChanged.emit(param.name, x))
         elif ui == "file-open":
@@ -59,6 +57,12 @@ class ParameterWidgetStr(ParameterWidgetBase):
             w.setTextFormat(QtCore.Qt.RichText)
             self.caption = ""
             w.linkActivated.connect(self.link_activated)
+        elif ui == "csv":
+            w = TableEdit(header_row=param.options.get("header_row", False),
+                          editable=param.options.get("editable", False),
+                          csv_import=param.options.get("csv_import", False),
+                          sorting_enabled=param.options.get("sorting_enabled", True))
+            w.data_changed.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.text()))
         else:
             w = QtWidgets.QLineEdit()
             if ui == "password":
@@ -77,21 +81,6 @@ class ParameterWidgetStr(ParameterWidgetBase):
                 break
         else:
             self._setter_fn("")
-
-        return w
-
-    def _convert_str_csv(self, param: xappt.Parameter) -> QtWidgets.QWidget:
-        w = TableEdit(header_row=param.options.get("header_row", False),
-                      editable=param.options.get("editable", False))
-        w.data_changed.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.save_csv_text()))
-
-        for v in (param.value, param.default):
-            if v is not None:
-                w.load_csv_text(v)
-                break
-
-        self._getter_fn = w.save_csv_text
-        self._setter_fn = w.load_csv_text
 
         return w
 

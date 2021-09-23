@@ -29,6 +29,7 @@ class TableEdit(QtWidgets.QTableWidget):
         self._header_row: bool = kwargs.get("header_row", False)
 
         self.setup_table()
+        self._first_load = True
 
     def setup_table(self):
         self.setAlternatingRowColors(True)
@@ -137,7 +138,10 @@ class TableEdit(QtWidgets.QTableWidget):
                     item = QtWidgets.QTableWidgetItem(text)
                     self.setItem(r, c, item)
 
-        self.resizeColumnsToContents()
+        if self._first_load:
+            self.resizeColumnsToContents()
+            self._first_load = False
+
         self.blockSignals(False)
 
     def save_csv_text(self) -> str:

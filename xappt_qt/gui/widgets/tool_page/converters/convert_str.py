@@ -61,6 +61,7 @@ class ParameterWidgetStr(ParameterWidgetBase):
             w = TableEdit(header_row=param.options.get("header_row", False),
                           editable=param.options.get("editable", False),
                           csv_import=param.options.get("csv_import", False),
+                          csv_export=param.options.get("csv_export", True),
                           sorting_enabled=param.options.get("sorting_enabled", True))
             w.data_changed.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.text()))
         else:

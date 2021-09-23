@@ -1,8 +1,11 @@
 import csv
+import pathlib
 
-from typing import Optional
+from typing import Optional, Sequence
 
 from PyQt5 import QtWidgets, QtCore
+
+from xappt_qt.constants import APP_TITLE
 
 
 class CsvTextCapture:
@@ -21,6 +24,14 @@ class TableEdit(QtWidgets.QTableWidget):
     COMMAND_DELETE = "Delete"
     COMMAND_RENAME = "Rename"
 
+    COMMAND_IMPORT = "Import CSV..."
+    COMMAND_EXPORT = "Export CSV..."
+
+    IO_FILTERS = {  # filter text, suffix list
+        "CSV Files *.csv (*.csv)": ".csv",
+        "All Files * (*)": None,
+    }
+
     def __init__(self, **kwargs):
         parent: Optional[QtWidgets.QWidget] = kwargs.get("parent")
         super().__init__(parent=parent)
@@ -28,10 +39,14 @@ class TableEdit(QtWidgets.QTableWidget):
         self._editable: bool = kwargs.get("editable", False)
         self._header_row: bool = kwargs.get("header_row", False)
         self._csv_import: bool = kwargs.get("csv_import", False)
+        self._csv_export: bool = kwargs.get("csv_export", True)
         self._sorting_enabled: bool = kwargs.get("sorting_enabled", True)
 
         self.setup_table()
         self._first_load = True
+
+        self._last_path: pathlib.Path = pathlib.Path.cwd()
+        self._last_filter: str = list(self.IO_FILTERS.keys())[0]
 
     def setup_table(self):
         self.setAlternatingRowColors(True)
@@ -53,6 +68,10 @@ class TableEdit(QtWidgets.QTableWidget):
 
         self.verticalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.verticalHeader().customContextMenuRequested.connect(self._on_context_menu_header_v)
+
+        if self._csv_import or self._csv_export:
+            self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            self.customContextMenuRequested.connect(self._on_context_menu_table)
 
     def _on_context_menu_header_h(self, pos: QtCore.QPoint):
         column = self.columnAt(pos.x())
@@ -107,6 +126,23 @@ class TableEdit(QtWidgets.QTableWidget):
             return
         self.data_changed.emit()
 
+    def _on_context_menu_table(self, pos: QtCore.QPoint):
+        menu_table = QtWidgets.QMenu()
+
+        if self._csv_import:
+            menu_table.addAction(QtWidgets.QAction(self.COMMAND_IMPORT, self))
+
+        if self._csv_export:
+            menu_table.addAction(QtWidgets.QAction(self.COMMAND_EXPORT, self))
+
+        action = menu_table.exec_(self.viewport().mapToGlobal(pos))
+        if action is None:
+            return
+        if action.text() == self.COMMAND_IMPORT:
+            self.prompt_open_file()
+        elif action.text() == self.COMMAND_EXPORT:
+            self.export_file()
+
     # noinspection PyPep8Naming
     def setText(self, source: str):
         self.blockSignals(True)
@@ -137,10 +173,12 @@ class TableEdit(QtWidgets.QTableWidget):
 
         self.blockSignals(False)
 
-    def text(self) -> str:
+    def text(self, **kwargs) -> str:
         rows = []
 
-        if self._header_row:
+        include_headers = kwargs.get("include_headers", self._header_row)
+
+        if include_headers:
             header_row = []
             for column in range(self.columnCount()):
                 item = self.horizontalHeaderItem(column)
@@ -164,3 +202,73 @@ class TableEdit(QtWidgets.QTableWidget):
         csv.writer(csv_capture).writerows(rows)
 
         return "".join(csv_capture.rows)
+
+    def prompt_open_file(self):
+        file_name, selected_filter = QtWidgets.QFileDialog.getOpenFileName(
+            self, 'Import File', str(self._last_path), ";;".join(self.IO_FILTERS.keys()), self._last_filter)
+
+        if len(file_name) == 0:
+            return
+
+        path = pathlib.Path(file_name)
+
+        self._last_filter = selected_filter
+        self._last_path = path.parent
+
+        self._read_from_file(path)
+
+    def export_file(self):
+        file_name, selected_filter = QtWidgets.QFileDialog.getSaveFileName(
+            self, 'Export File', str(self._last_path), ";;".join(self.IO_FILTERS.keys()), self._last_filter)
+
+        if len(file_name) == 0:
+            return
+
+        include_headers = self.ask("Include headers in export?", default=True)
+
+        path = pathlib.Path(file_name)
+
+        self._last_filter = selected_filter
+        self._last_path = path.parent
+
+        suffix = self.IO_FILTERS[selected_filter]
+        if suffix is None:
+            # no action
+            pass
+        elif isinstance(suffix, str):
+            if path.suffix.lower() != suffix:
+                path = path.with_suffix(suffix)
+        elif isinstance(suffix, Sequence):
+            if path.suffix.lower() not in suffix:
+                path = path.with_suffix(suffix[0])
+
+        self._write_to_file(path, include_headers=include_headers)
+
+        self.message(f"File saved: {path}")
+
+    def _read_from_file(self, path: pathlib.Path):
+        if not path.is_file():
+            raise FileNotFoundError(f"File does not exist: {path}")
+
+        with path.open("r") as fp:
+            contents = fp.read()
+
+        self.setText(contents)
+        self.data_changed.emit()
+
+    def _write_to_file(self, path: pathlib.Path, *, include_headers: bool):
+        with path.open("w", newline="\n") as fp:
+            fp.write(self.text(include_headers=include_headers))
+
+    def message(self, message: str):
+        QtWidgets.QMessageBox.information(self, APP_TITLE, message)
+
+    def ask(self, message: str, *, default: bool = False) -> bool:
+        if default:
+            default_button = QtWidgets.QMessageBox.Yes
+        else:
+            default_button = QtWidgets.QMessageBox.No
+        buttons = QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        ask_result = QtWidgets.QMessageBox.question(self, APP_TITLE, message, buttons=buttons,
+                                                    defaultButton=default_button)
+        return ask_result == QtWidgets.QMessageBox.Yes

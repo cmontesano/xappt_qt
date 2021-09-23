@@ -7,6 +7,7 @@ import xappt
 from xappt_qt.gui.widgets.tool_page.converters.base import ParameterWidgetBase
 from xappt_qt.gui.widgets.file_edit import FileEdit
 from xappt_qt.gui.widgets.text_edit import TextEdit
+from xappt_qt.gui.widgets.table_edit import TableEdit
 from xappt_qt.utilities.text import to_markdown
 
 
@@ -39,7 +40,9 @@ class ParameterWidgetStr(ParameterWidgetBase):
 
     def _convert_str_edit(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         ui = param.options.get("ui")
-        if ui == "folder-select":
+        if ui == "csv":
+            return self._convert_str_csv(param)
+        elif ui == "folder-select":
             w = FileEdit(mode=FileEdit.MODE_CHOOSE_DIR)
             w.onSetFile.connect(lambda x: self.onValueChanged.emit(param.name, x))
         elif ui == "file-open":
@@ -74,6 +77,21 @@ class ParameterWidgetStr(ParameterWidgetBase):
                 break
         else:
             self._setter_fn("")
+
+        return w
+
+    def _convert_str_csv(self, param: xappt.Parameter) -> QtWidgets.QWidget:
+        w = TableEdit(header_row=param.options.get("header_row", False),
+                      editable=param.options.get("editable", False))
+        w.data_changed.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.save_csv_text()))
+
+        for v in (param.value, param.default):
+            if v is not None:
+                w.load_csv_text(v)
+                break
+
+        self._getter_fn = w.save_csv_text
+        self._setter_fn = w.load_csv_text
 
         return w
 

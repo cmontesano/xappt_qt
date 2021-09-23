@@ -31,6 +31,18 @@ class StringUi(xappt.BaseTool):
 
     password = xappt.ParamString(options={'ui': 'password'})
 
+    csv_string = xappt.ParamString(
+        options={'ui': 'csv', 'header_row': True, 'editable': True},
+        value=(
+            'header1,header2,header3\n'
+            'value1,value2,value3\n'
+            'value1,value2,value3\n'
+            'value1,value2,value3\n'
+            'value1,value2,value3\n'
+            'value1,value2,value3\n'
+            'value1,value2,value3\n'
+        ))
+
     @classmethod
     def name(cls):
         return "string-ui"
@@ -46,6 +58,7 @@ class StringUi(xappt.BaseTool):
             "* label\n"
             "* markdown\n"
             "* password\n"
+            "* csv\n"
         )
 
     @classmethod

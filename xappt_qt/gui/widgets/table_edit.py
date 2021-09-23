@@ -3,7 +3,7 @@ import pathlib
 
 from typing import Optional, Sequence
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from xappt_qt.constants import APP_TITLE
 
@@ -27,8 +27,9 @@ class TableEdit(QtWidgets.QTableWidget):
     COMMAND_IMPORT = "Import CSV..."
     COMMAND_EXPORT = "Export CSV..."
 
+    CSV_FILTER = "CSV Files *.csv (*.csv)"
     IO_FILTERS = {  # filter text, suffix list
-        "CSV Files *.csv (*.csv)": ".csv",
+        CSV_FILTER: ".csv",
         "All Files * (*)": None,
     }
 
@@ -42,11 +43,12 @@ class TableEdit(QtWidgets.QTableWidget):
         self._csv_export: bool = kwargs.get("csv_export", True)
         self._sorting_enabled: bool = kwargs.get("sorting_enabled", True)
 
+        self._acceptable_drop_suffix_list = []
         self.setup_table()
-        self._first_load = True
 
+        self._first_load = True
         self._last_path: pathlib.Path = pathlib.Path.cwd()
-        self._last_filter: str = list(self.IO_FILTERS.keys())[0]
+        self._last_filter: str = self.CSV_FILTER
 
     def setup_table(self):
         self.setAlternatingRowColors(True)
@@ -56,6 +58,15 @@ class TableEdit(QtWidgets.QTableWidget):
             self._init_context_menu()
 
         self.setSortingEnabled(self._sorting_enabled)
+        if self._csv_import:
+            for suffix in self.IO_FILTERS.values():
+                if isinstance(suffix, str):
+                    self._acceptable_drop_suffix_list.append(suffix)
+                elif isinstance(suffix, Sequence):
+                    for item in suffix:
+                        self._acceptable_drop_suffix_list.append(item)
+            # self.setDragDropMode(self.DropOnly)
+            self.setAcceptDrops(True)
 
         self.itemChanged.connect(self.on_data_changed)
 
@@ -144,9 +155,13 @@ class TableEdit(QtWidgets.QTableWidget):
             self.export_file()
 
     # noinspection PyPep8Naming
-    def setText(self, source: str):
+    def setText(self, source: str, **kwargs):
+        header_row = kwargs.get("header_row", self._header_row)
+
         self.blockSignals(True)
         reader = csv.reader(source.splitlines())
+
+        self.clear()
 
         rows = []
         column_count = 0
@@ -155,7 +170,7 @@ class TableEdit(QtWidgets.QTableWidget):
             column_count = max(len(row), column_count)
 
         if column_count > 0 and len(rows):
-            headers = rows.pop(0) if self._header_row else None
+            headers = rows.pop(0) if header_row else None
 
             self.setColumnCount(column_count)
             self.setRowCount(len(rows))
@@ -210,12 +225,14 @@ class TableEdit(QtWidgets.QTableWidget):
         if len(file_name) == 0:
             return
 
+        header_row = self.ask("Does this file include a header row?", default=True)
+
         path = pathlib.Path(file_name)
 
         self._last_filter = selected_filter
         self._last_path = path.parent
 
-        self._read_from_file(path)
+        self._read_from_file(path, header_row=header_row)
 
     def export_file(self):
         file_name, selected_filter = QtWidgets.QFileDialog.getSaveFileName(
@@ -246,14 +263,14 @@ class TableEdit(QtWidgets.QTableWidget):
 
         self.message(f"File saved: {path}")
 
-    def _read_from_file(self, path: pathlib.Path):
+    def _read_from_file(self, path: pathlib.Path, *, header_row: bool):
         if not path.is_file():
             raise FileNotFoundError(f"File does not exist: {path}")
 
         with path.open("r") as fp:
             contents = fp.read()
 
-        self.setText(contents)
+        self.setText(contents, header_row=header_row)
         self.data_changed.emit()
 
     def _write_to_file(self, path: pathlib.Path, *, include_headers: bool):
@@ -272,3 +289,26 @@ class TableEdit(QtWidgets.QTableWidget):
         ask_result = QtWidgets.QMessageBox.question(self, APP_TITLE, message, buttons=buttons,
                                                     defaultButton=default_button)
         return ask_result == QtWidgets.QMessageBox.Yes
+
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
+        urls = event.mimeData().urls()
+        if len(urls) == 0:
+            return
+        drag_file = pathlib.Path(urls[0].toLocalFile())
+        if not drag_file.is_file():
+            return
+        if drag_file.suffix.lower() in self._acceptable_drop_suffix_list:
+            event.accept()
+
+    def dragMoveEvent(self, event: QtGui.QDragMoveEvent):
+        pass  # seems required for dropEvent to be called
+
+    def dropEvent(self, event: QtGui.QDropEvent):
+        urls = event.mimeData().urls()
+        if len(urls) == 0:
+            return
+        drag_file = pathlib.Path(urls[0].toLocalFile())
+        if not drag_file.is_file():
+            return
+        header_row = self.ask("Does this file include a header row?", default=True)
+        self._read_from_file(drag_file, header_row=header_row)

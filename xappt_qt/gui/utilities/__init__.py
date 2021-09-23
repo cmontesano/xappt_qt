@@ -1,8 +1,10 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+from xappt_qt.gui.application import get_application
+
 
 def center_widget(widget: QtWidgets.QWidget):
-    app = QtWidgets.QApplication.instance()
+    app = get_application()
     cursor_pos = QtGui.QCursor.pos()
     screen = app.screenAt(cursor_pos)
     screen_rect = screen.availableGeometry()

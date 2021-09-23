@@ -1,3 +1,5 @@
+import webbrowser
+
 from PyQt5 import QtWidgets, QtCore
 
 import xappt
@@ -5,6 +7,8 @@ import xappt
 from xappt_qt.gui.widgets.tool_page.converters.base import ParameterWidgetBase
 from xappt_qt.gui.widgets.file_edit import FileEdit
 from xappt_qt.gui.widgets.text_edit import TextEdit
+from xappt_qt.gui.widgets.table_edit import TableEdit
+from xappt_qt.utilities.text import to_markdown
 
 
 class ParameterWidgetStr(ParameterWidgetBase):
@@ -48,22 +52,39 @@ class ParameterWidgetStr(ParameterWidgetBase):
         elif ui == "multi-line":
             w = TextEdit()
             w.editingFinished.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.text()))
-        elif ui == "label":
+        elif ui in ("label", "markdown"):
             w = QtWidgets.QLabel()
             w.setTextFormat(QtCore.Qt.RichText)
             self.caption = ""
+            w.linkActivated.connect(self.link_activated)
+        elif ui == "csv":
+            w = TableEdit(header_row=param.options.get("header_row", False),
+                          editable=param.options.get("editable", False),
+                          csv_import=param.options.get("csv_import", False),
+                          csv_export=param.options.get("csv_export", True),
+                          sorting_enabled=param.options.get("sorting_enabled", True))
+            w.data_changed.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.text()))
         else:
             w = QtWidgets.QLineEdit()
+            if ui == "password":
+                w.setEchoMode(QtWidgets.QLineEdit.Password)
             w.editingFinished.connect(lambda widget=w: self.onValueChanged.emit(param.name, widget.text()))
+
+        self._getter_fn = w.text
+        if ui == "markdown":
+            self._setter_fn = lambda t, widget=w: w.setText(to_markdown(t))
+        else:
+            self._setter_fn = w.setText
 
         for v in (param.value, param.default):
             if v is not None:
-                w.setText(v)
+                self._setter_fn(v)
                 break
         else:
-            w.setText("")
-
-        self._getter_fn = w.text
-        self._setter_fn = w.setText
+            self._setter_fn("")
 
         return w
+
+    @staticmethod
+    def link_activated(url: str):
+        webbrowser.open(url)

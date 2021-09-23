@@ -1,10 +1,11 @@
 import sys
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 import xappt
 import xappt_qt
 
+from xappt_qt.gui.application import get_application
 from xappt_qt.gui.ui.browser_tab_about import Ui_tabAbout
 from xappt_qt.gui.tab_pages.base import BaseTabPage
 from xappt_qt.constants import APP_TITLE
@@ -34,6 +35,7 @@ class AboutTabPage(BaseTabPage, Ui_tabAbout):
         super().__init__(**kwargs)
         self.setupUi(self)
         self.lblTitle.setText(APP_TITLE)
+        self.lblIcon.setPixmap(get_application().app_icon.pixmap(QtCore.QSize(48, 48)))
         self.txtAbout.setHtml(self.generate_html())
 
     @staticmethod

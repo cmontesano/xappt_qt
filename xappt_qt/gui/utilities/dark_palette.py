@@ -58,4 +58,8 @@ def apply_palette(app):
         QPlainTextEdit:focus {
             border-color: palette(highlight);
         }
+
+        QHeaderView::section {
+            padding: 8px 16px;
+        }
     """)

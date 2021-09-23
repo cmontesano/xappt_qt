@@ -3,22 +3,18 @@ import sys
 
 from typing import Optional
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 import xappt
 
 from xappt_qt.constants import *
-from xappt_qt.gui.utilities.style import apply_style
+from xappt_qt.gui.application import get_application
 
 
 class HeadlessInterface(xappt.BaseInterface):
     def __init__(self):
         super().__init__()
-        self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[1:])
-        apply_style(self.app)
-
-        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
-            self.app.setWindowIcon(QtGui.QIcon(str(appicon)))
+        self.app = get_application()
 
         self.progress_dialog = QtWidgets.QProgressDialog()
 

@@ -10,8 +10,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import xappt
 
 import xappt_qt.config
+from xappt_qt.gui.application import get_application
 from xappt_qt.gui.ui.browser import Ui_Browser
-from xappt_qt.gui.utilities.style import apply_style
 from xappt_qt.gui.utilities.tray_icon import TrayIcon
 from xappt_qt.constants import *
 from xappt_qt.gui.tab_pages import ToolsTabPage, OptionsTabPage, AboutTabPage
@@ -25,12 +25,13 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
     def __init__(self):
         super().__init__()
 
+        self.app = get_application()
+
         self.setupUi(self)
         self.setWindowTitle(APP_TITLE)
 
-        with importlib.resources.path("xappt_qt.resources.icons", "appicon.svg") as appicon:
-            self.setWindowIcon(QtGui.QIcon(str(appicon)))
-            self.tray_icon = TrayIcon(self, QtGui.QIcon(str(appicon)))
+        self.setWindowIcon(self.app.app_icon)
+        self.tray_icon = TrayIcon(self, self.app.app_icon)
 
         self.tools = ToolsTabPage(on_info=self.tray_icon.info, on_warn=self.tray_icon.warn,
                                   on_error=self.tray_icon.critical)
@@ -116,7 +117,7 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
     def on_quit(self):
         self.tray_icon.destroy()
         self.save_config()
-        QtWidgets.QApplication.instance().quit()
+        self.app.quit()
 
     def run_tool(self, **kwargs):
         plugin = kwargs.get('data')
@@ -132,8 +133,7 @@ def main(args) -> int:
     except singleton.SingleInstanceException:
         return 1
 
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(args)
-    apply_style(app)
+    app = get_application()
 
     browser = XapptBrowser()
     if xappt_qt.config.start_minimized:

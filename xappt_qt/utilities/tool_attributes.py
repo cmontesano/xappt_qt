@@ -3,9 +3,8 @@ import pathlib
 
 from typing import Type, Union
 
-import markdown
-
 from xappt import BaseTool
+from xappt_qt.utilities.text import to_markdown
 
 ICONS_MODULE = "xappt_qt.resources.icons"
 TOOL_ICON = "tool.svg"
@@ -36,13 +35,7 @@ def is_headless(tool: Union[Type[BaseTool], BaseTool]) -> bool:
 
 def help_text(tool: Union[Type[BaseTool], BaseTool], *, process_markdown: bool = True) -> str:
     if process_markdown:
-        md = markdown.markdown(tool.help())
-        style = "".join((
-            "code {background-color: #000; color: #ccc;}",
-            "ul {margin-left: -20px;}",
-        ))
-        wrap = f"<html><head><style>{style}</style></head><body>{md}</body></html>"
-        return wrap
+        return to_markdown(tool.help())
     else:
         return tool.help()
 

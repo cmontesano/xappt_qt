@@ -6,6 +6,8 @@ from xappt_qt.gui.delegates.simple_item import SimpleItemDelegate
 class ToolItemDelegate(SimpleItemDelegate):
     ROLE_TOOL_CLASS = QtCore.Qt.UserRole + 1
     ROLE_ITEM_TYPE = QtCore.Qt.UserRole + 2
+    ROLE_ITEM_LIST = QtCore.Qt.UserRole + 3
+    ROLE_ITEM_SEARCH_TEXT = QtCore.Qt.UserRole + 4
 
     ITEM_TYPE_COLLECTION = 0
     ITEM_TYPE_TOOL = 1

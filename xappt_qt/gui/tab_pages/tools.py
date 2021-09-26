@@ -8,7 +8,7 @@ import webbrowser
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from collections import defaultdict
-from typing import DefaultDict, List, Tuple
+from typing import DefaultDict, Generator, List, Tuple
 
 import xappt
 
@@ -69,23 +69,25 @@ class ToolList(QtWidgets.QListWidget):
     def add_plugin(self, tool_class: Type[xappt.BaseTool]):
         item = QtWidgets.QListWidgetItem()
         item.setText(tool_class.name())
-        item.setToolTip(help_text(tool_class, process_markdown=True))
+        item.setToolTip(help_text(tool_class, process_markdown=True, include_name=True))
         item.setData(ToolItemDelegate.ROLE_TOOL_CLASS, tool_class)
         item.setData(ToolItemDelegate.ROLE_ITEM_TYPE, ToolItemDelegate.ITEM_TYPE_TOOL)
+        item.setData(ToolItemDelegate.ROLE_ITEM_SEARCH_TEXT, f'{tool_class.name()}\n{tool_class.help()}')
         icon_path = get_tool_icon(tool_class)
         item.setIcon(QtGui.QIcon(str(icon_path)))
         self.addItem(item)
         self.recalc_size()
 
     def recalc_size(self):
-        if self.count() == 0:
+        visible_count = len(list(self.visible_items()))
+        if visible_count == 0:
             return
         item_rect = self.visualItemRect(self.item(0))
         if self.view_mode == self.VIEW_LIST:
             columns = 1
         else:
             columns = self.contentsRect().width() // (item_rect.width() + 2)
-        rows = int(math.ceil(self.count() / columns))
+        rows = int(math.ceil(visible_count / columns))
         row_size = self.sizeHintForRow(0)
         frame_size = 4
         new_height = (row_size * rows) + frame_size
@@ -98,6 +100,19 @@ class ToolList(QtWidgets.QListWidget):
     def resizeEvent(self, event: QtGui.QResizeEvent):
         super().resizeEvent(event)
         self.recalc_size()
+
+    def visible_items(self) -> Generator[QtWidgets.QListWidgetItem, None, None]:
+        for item in self.all_items():
+            if not item.isHidden():
+                yield item
+
+    def all_items(self) -> Generator[QtWidgets.QListWidgetItem, None, None]:
+        for i in range(self.count()):
+            yield self.item(i)
+
+    def unhide_all(self):
+        for item in self.all_items():
+            item.setHidden(False)
 
 
 class ToolsTabPage(BaseTabPage, Ui_tabTools):
@@ -137,9 +152,6 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
 
             collection_item.setExpanded(True)
 
-        collection_item = self._create_collection_item("test")
-        self.treeTools.insertTopLevelItem(self.treeTools.topLevelItemCount(), collection_item)
-
     def connect_signals(self):
         self.treeTools.clicked.connect(self.on_tree_item_clicked)
 
@@ -174,6 +186,8 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         list_widget.height_changed.connect(lambda: child_item.setHidden(False))
         list_widget.itemActivated.connect(self.item_activated)
         list_widget.itemSelectionChanged.connect(lambda w=list_widget: self.selection_changed(w))
+        child_item.setData(0, ToolItemDelegate.ROLE_ITEM_TYPE, ToolItemDelegate.ITEM_TYPE_TOOL)
+        child_item.setData(0, ToolItemDelegate.ROLE_ITEM_LIST, list_widget)
         return list_widget
 
     def item_activated(self, item: QtWidgets.QListWidgetItem):
@@ -221,6 +235,9 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
             while iterator.value():
                 item = iterator.value()
                 item.setHidden(False)
+                if item.data(0, ToolItemDelegate.ROLE_ITEM_TYPE) == ToolItemDelegate.ITEM_TYPE_TOOL:
+                    list_widget: ToolList = item.data(0, ToolItemDelegate.ROLE_ITEM_LIST)
+                    list_widget.unhide_all()
                 iterator += 1
             return
         search_terms = [item.lower() for item in text.split(" ") if len(item)]
@@ -232,17 +249,19 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
             child = parent.child(c)
             item_type = child.data(0, ToolItemDelegate.ROLE_ITEM_TYPE)
             if item_type == ToolItemDelegate.ITEM_TYPE_TOOL:
-                child_text = child.text(0).lower()
-                child_help = child.toolTip(0).lower()
-                visible_children += 1
-                item_hidden = False
-                for term in search_terms:
-                    if term not in child_text and term not in child_help:
-                        item_hidden = True
-                        break
-                child.setHidden(item_hidden)
-                if item_hidden:
-                    visible_children -= 1
+                list_widget: ToolList = child.data(0, ToolItemDelegate.ROLE_ITEM_LIST)
+                for item in list_widget.all_items():
+                    search_text = item.data(ToolItemDelegate.ROLE_ITEM_SEARCH_TEXT)
+                    visible_children += 1
+                    item_hidden = False
+                    for term in search_terms:
+                        if term not in search_text:
+                            item_hidden = True
+                            break
+                    item.setHidden(item_hidden)
+                    if item_hidden:
+                        visible_children -= 1
+                list_widget.recalc_size()
             elif item_type == ToolItemDelegate.ITEM_TYPE_COLLECTION:
                 visible_children += self._filter_branch(search_terms, child)
             else:

@@ -1,5 +1,4 @@
 import base64
-import importlib.resources
 import os
 import platform
 import sys
@@ -9,7 +8,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import xappt
 
-import xappt_qt.config
 from xappt_qt.gui.application import get_application
 from xappt_qt.gui.ui.browser import Ui_Browser
 from xappt_qt.gui.utilities.tray_icon import TrayIcon

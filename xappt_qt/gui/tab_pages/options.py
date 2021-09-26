@@ -6,24 +6,27 @@ import xappt_qt.config
 
 
 class OptionsTabPage(BaseTabPage, Ui_tabOptions):
+    options_changed = QtCore.pyqtSignal()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.setupUi(self)
-        self.chkMinimizeToTray.stateChanged.connect(self.on_minimize_to_tray_changed)
-        self.chkStartMinimized.stateChanged.connect(self.on_start_minimized_changed)
+        self.chkMinimizeToTray.stateChanged.connect(self.options_changed.emit)
+        self.chkStartMinimized.stateChanged.connect(self.options_changed.emit)
 
-    @staticmethod
-    def on_minimize_to_tray_changed(new_state: int):
-        xappt_qt.config.minimize_to_tray = new_state == QtCore.Qt.Checked
+    def disable_tray_icon(self):
+        self.chkMinimizeToTray.setChecked(False)
+        self.chkMinimizeToTray.setEnabled(False)
 
-    @staticmethod
-    def on_start_minimized_changed(new_state: int):
-        xappt_qt.config.start_minimized = new_state == QtCore.Qt.Checked
+    def settings(self) -> dict:
+        return {
+            'minimize_to_tray': self.chkMinimizeToTray.isChecked(),
+            'start_minimized': self.chkStartMinimized.isChecked(),
+        }
 
-    def apply_settings(self):
-        self.chkMinimizeToTray.setChecked(xappt_qt.config.minimize_to_tray)
-        self.chkStartMinimized.setChecked(xappt_qt.config.start_minimized)
-
-    def showEvent(self, event: QtGui.QShowEvent):
-        super().showEvent(event)
-        self.apply_settings()
+    def apply_settings(self, settings_dict: dict):
+        if self.chkMinimizeToTray.isEnabled():
+            self.chkMinimizeToTray.setChecked(settings_dict.get('minimize_to_tray', True))
+        else:
+            self.chkMinimizeToTray.setChecked(False)
+        self.chkStartMinimized.setChecked(settings_dict.get('start_minimized', False))

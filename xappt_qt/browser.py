@@ -43,6 +43,10 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         self.tabWidget.addTab(self.about, self.about.windowTitle())
         self.tabWidget.setCurrentIndex(0)
 
+        self.options.options_changed.connect(self.on_options_changed)
+        if DISABLE_TRAY_ICON:
+            self.options.disable_tray_icon()
+
         self.config_path = APP_CONFIG_PATH.joinpath("browser.cfg")
         self.init_config()
         self.load_config()
@@ -54,19 +58,10 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
                              saver=self.save_window_geo,
                              loader=self.load_window_geo,
                              default=None)
-        self.add_config_item('start-minimized',
-                             saver=lambda: xappt_qt.config.start_minimized,
-                             loader=lambda x: setattr(xappt_qt.config, "start_minimized", x),
-                             default=False)
-        if DISABLE_TRAY_ICON:
-            self.options.chkMinimizeToTray.setChecked(False)
-            self.options.chkMinimizeToTray.setEnabled(False)
-            xappt_qt.config.minimize_to_tray = False
-        else:
-            self.add_config_item('minimize-to-tray',
-                                 saver=lambda: xappt_qt.config.minimize_to_tray,
-                                 loader=lambda x: setattr(xappt_qt.config, "minimize_to_tray", x),
-                                 default=True)
+        self.add_config_item('settings',
+                             saver=lambda: self.options.settings(),
+                             loader=lambda x: self.options.apply_settings(x),
+                             default={})
 
     def load_window_geo(self, geo: str):
         try:
@@ -98,12 +93,12 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         if not DISABLE_TRAY_ICON:
             if event.type() == QtCore.QEvent.WindowStateChange:
                 if self.windowState() == QtCore.Qt.WindowMinimized:
-                    if xappt_qt.config.minimize_to_tray and self.tray_icon.tray_available:
+                    if self.options.settings().get('minimize_to_tray') and self.tray_icon.tray_available:
                         self.hide()
         super().changeEvent(event)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
-        if xappt_qt.config.minimize_to_tray and self.tray_icon.tray_available:
+        if self.options.settings().get('minimize_to_tray') and self.tray_icon.tray_available:
             event.ignore()
             self.hide()
         else:
@@ -126,6 +121,12 @@ class XapptBrowser(xappt.ConfigMixin, QtWidgets.QMainWindow, Ui_Browser):
         assert issubclass(plugin, xappt.BaseTool)
         self.tools.launch_tool(plugin)
 
+    def on_options_changed(self):
+        settings = self.options.settings()
+        self.tools.settings_changed(settings)
+        self.options.settings_changed(settings)
+        self.about.settings_changed(settings)
+
 
 def main(args) -> int:
     try:
@@ -136,8 +137,8 @@ def main(args) -> int:
     app = get_application()
 
     browser = XapptBrowser()
-    if xappt_qt.config.start_minimized:
-        if not xappt_qt.config.minimize_to_tray:
+    if browser.options.settings().get('start_minimized'):
+        if not browser.options.settings().get('minimize_to_tray'):
             browser.setWindowState(QtCore.Qt.WindowMinimized)
             browser.show()
     else:

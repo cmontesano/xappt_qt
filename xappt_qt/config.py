@@ -1,6 +1,3 @@
-minimize_to_tray = True
-start_minimized = False
-
 console_word_wrap = False
 console_auto_scroll = True
 

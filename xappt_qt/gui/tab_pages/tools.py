@@ -14,7 +14,7 @@ import xappt
 
 import xappt_qt
 import xappt_qt.config
-from xappt_qt.constants import APP_TITLE
+from xappt_qt.constants import APP_TITLE, ToolViewType
 from xappt_qt.gui.ui.browser_tab_tools import Ui_tabTools
 from xappt_qt.gui.delegates import SimpleItemDelegate, ToolItemDelegate
 from xappt_qt.gui.tab_pages.base import BaseTabPage
@@ -24,27 +24,22 @@ from xappt_qt.utilities.tool_attributes import *
 class ToolList(QtWidgets.QListWidget):
     height_changed = QtCore.pyqtSignal()
 
-    VIEW_LIST = 0
-    VIEW_ICONS_SMALL = 1
-    VIEW_ICONS_LARGE = 2
-    VIEW_ICONS_HUGE = 3
-
     def __init__(self):
         super().__init__()
         self.setItemDelegate(SimpleItemDelegate())
         self.setUniformItemSizes(True)
-        self._view_mode = self.VIEW_ICONS_LARGE
+        self._view_mode: ToolViewType = ToolViewType.VIEW_LIST
         self.view_mode = self._view_mode
         self._last_height = 0
 
     @property
-    def view_mode(self) -> int:
+    def view_mode(self) -> ToolViewType:
         return self._view_mode
 
     @view_mode.setter
-    def view_mode(self, new_mode: int):
+    def view_mode(self, new_mode: ToolViewType):
         self._view_mode = new_mode
-        if new_mode == self.VIEW_LIST:
+        if new_mode == ToolViewType.VIEW_LIST:
             self.setViewMode(self.ListMode)
             self.updateGeometries()
             self.updateGeometry()
@@ -59,11 +54,11 @@ class ToolList(QtWidgets.QListWidget):
             self.setWrapping(True)
             self.setResizeMode(self.Adjust)
             self.setAlternatingRowColors(False)
-            if new_mode == self.VIEW_ICONS_SMALL:
+            if new_mode == ToolViewType.VIEW_ICONS_SMALL:
                 self.setIconSize(QtCore.QSize(32, 32))
-            elif new_mode == self.VIEW_ICONS_LARGE:
+            elif new_mode == ToolViewType.VIEW_ICONS_LARGE:
                 self.setIconSize(QtCore.QSize(64, 64))
-            elif new_mode == self.VIEW_ICONS_HUGE:
+            elif new_mode == ToolViewType.VIEW_ICONS_HUGE:
                 self.setIconSize(QtCore.QSize(92, 92))
 
     def add_plugin(self, tool_class: Type[xappt.BaseTool]):
@@ -83,7 +78,7 @@ class ToolList(QtWidgets.QListWidget):
         if visible_count == 0:
             return
         item_rect = self.visualItemRect(self.item(0))
-        if self.view_mode == self.VIEW_LIST:
+        if self.view_mode == ToolViewType.VIEW_LIST:
             columns = 1
         else:
             columns = self.contentsRect().width() // (item_rect.width() + 2)

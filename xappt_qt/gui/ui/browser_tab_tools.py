@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_tabTools(object):
     def setupUi(self, tabTools):
         tabTools.setObjectName("tabTools")
-        tabTools.resize(589, 499)
+        tabTools.resize(589, 600)
         self.gridLayout_2 = QtWidgets.QGridLayout(tabTools)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.gridLayout = QtWidgets.QGridLayout()
@@ -34,6 +34,11 @@ class Ui_tabTools(object):
         self.btnClear.setObjectName("btnClear")
         self.horizontalLayout.addWidget(self.btnClear)
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
+        self.labelHelp = QtWidgets.QLabel(tabTools)
+        self.labelHelp.setText("")
+        self.labelHelp.setWordWrap(True)
+        self.labelHelp.setObjectName("labelHelp")
+        self.gridLayout.addWidget(self.labelHelp, 2, 0, 1, 1)
         self.treeTools = QtWidgets.QTreeWidget(tabTools)
         self.treeTools.setAlternatingRowColors(True)
         self.treeTools.setIndentation(0)
@@ -44,11 +49,6 @@ class Ui_tabTools(object):
         self.treeTools.headerItem().setText(0, "1")
         self.treeTools.header().setVisible(False)
         self.gridLayout.addWidget(self.treeTools, 1, 0, 1, 1)
-        self.labelHelp = QtWidgets.QLabel(tabTools)
-        self.labelHelp.setText("")
-        self.labelHelp.setWordWrap(True)
-        self.labelHelp.setObjectName("labelHelp")
-        self.gridLayout.addWidget(self.labelHelp, 2, 0, 1, 1)
         self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 1)
 
         self.retranslateUi(tabTools)

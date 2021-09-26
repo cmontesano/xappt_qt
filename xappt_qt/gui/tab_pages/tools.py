@@ -1,4 +1,5 @@
 import importlib.resources
+import math
 import platform
 import subprocess
 import sys
@@ -15,9 +16,80 @@ import xappt_qt
 import xappt_qt.config
 from xappt_qt.constants import APP_TITLE
 from xappt_qt.gui.ui.browser_tab_tools import Ui_tabTools
-from xappt_qt.gui.delegates import ToolItemDelegate
+from xappt_qt.gui.delegates import SimpleItemDelegate, ToolItemDelegate
 from xappt_qt.gui.tab_pages.base import BaseTabPage
 from xappt_qt.utilities.tool_attributes import *
+
+
+class ToolList(QtWidgets.QListWidget):
+    VIEW_LIST = 0
+    VIEW_ICONS_SMALL = 1
+    VIEW_ICONS_LARGE = 2
+    VIEW_ICONS_HUGE = 3
+
+    def __init__(self):
+        super().__init__()
+        self.setItemDelegate(SimpleItemDelegate())
+        self.setUniformItemSizes(True)
+        self._view_mode = self.VIEW_ICONS_LARGE
+        self.view_mode = self._view_mode
+
+    @property
+    def view_mode(self) -> int:
+        return self._view_mode
+
+    @view_mode.setter
+    def view_mode(self, new_mode: int):
+        self._view_mode = new_mode
+        if new_mode == self.VIEW_LIST:
+            self.setViewMode(self.ListMode)
+            self.updateGeometries()
+            self.updateGeometry()
+            self.setWrapping(False)
+            self.setResizeMode(self.Fixed)
+            self.setIconSize(QtCore.QSize(24, 24))
+            self.setAlternatingRowColors(True)
+        else:
+            self.setViewMode(self.IconMode)
+            self.updateGeometries()
+            self.updateGeometry()
+            self.setWrapping(True)
+            self.setResizeMode(self.Adjust)
+            self.setAlternatingRowColors(False)
+            if new_mode == self.VIEW_ICONS_SMALL:
+                self.setIconSize(QtCore.QSize(32, 32))
+            elif new_mode == self.VIEW_ICONS_LARGE:
+                self.setIconSize(QtCore.QSize(64, 64))
+            elif new_mode == self.VIEW_ICONS_HUGE:
+                self.setIconSize(QtCore.QSize(92, 92))
+
+    def add_plugin(self, tool_class: Type[xappt.BaseTool]):
+        item = QtWidgets.QListWidgetItem()
+        item.setText(tool_class.name())
+        item.setToolTip(help_text(tool_class, process_markdown=True))
+        item.setData(ToolItemDelegate.ROLE_TOOL_CLASS, tool_class)
+        item.setData(ToolItemDelegate.ROLE_ITEM_TYPE, ToolItemDelegate.ITEM_TYPE_TOOL)
+        icon_path = get_tool_icon(tool_class)
+        item.setIcon(QtGui.QIcon(str(icon_path)))
+        self.addItem(item)
+        self.recalc_size()
+
+    def recalc_size(self):
+        if self.count() == 0:
+            return
+        item_rect = self.visualItemRect(self.item(0))
+        if self.view_mode == self.VIEW_LIST:
+            columns = 1
+        else:
+            columns = self.contentsRect().width() // (item_rect.width() + 2)
+        rows = int(math.ceil(self.count() / columns))
+        row_size = self.sizeHintForRow(0)
+        frame_size = 4
+        self.setMinimumHeight((row_size * rows) + frame_size)
+
+    def resizeEvent(self, event: QtGui.QResizeEvent):
+        super().resizeEvent(event)
+        self.recalc_size()
 
 
 class ToolsTabPage(BaseTabPage, Ui_tabTools):
@@ -49,11 +121,20 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         for collection in sorted(plugin_list.keys(), key=lambda x: x.lower()):
             collection_item = self._create_collection_item(collection)
             self.treeTools.insertTopLevelItem(self.treeTools.topLevelItemCount(), collection_item)
+            list_widget = self._create_plugin_list(collection_item)
+
             for plugin in sorted(plugin_list[collection], key=lambda x: x.name().lower()):
-                tool_item = self._create_tool_item(plugin)
-                collection_item.addChild(tool_item)
+                list_widget.add_plugin(plugin)
                 self.loaded_plugins[collection].append(plugin)
+
+            # for plugin in sorted(plugin_list[collection], key=lambda x: x.name().lower()):
+            #     tool_item = self._create_tool_item(plugin)
+            #     collection_item.addChild(tool_item)
+            #     self.loaded_plugins[collection].append(plugin)
             collection_item.setExpanded(True)
+
+        collection_item = self._create_collection_item("test")
+        self.treeTools.insertTopLevelItem(self.treeTools.topLevelItemCount(), collection_item)
 
     def connect_signals(self):
         self.treeTools.itemActivated.connect(self.item_activated)
@@ -83,18 +164,12 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         item.setData(0, ToolItemDelegate.ROLE_ITEM_TYPE, ToolItemDelegate.ITEM_TYPE_COLLECTION)
         return item
 
-    @staticmethod
-    def _create_tool_item(tool_class: Type[xappt.BaseTool]) -> QtWidgets.QTreeWidgetItem:
-        item = QtWidgets.QTreeWidgetItem()
-        item.setText(0, tool_class.name())
-        item.setToolTip(0, help_text(tool_class, process_markdown=True))
-        item.setData(0, ToolItemDelegate.ROLE_TOOL_CLASS, tool_class)
-        item.setData(0, ToolItemDelegate.ROLE_ITEM_TYPE, ToolItemDelegate.ITEM_TYPE_TOOL)
-
-        icon_path = get_tool_icon(tool_class)
-        item.setIcon(0, QtGui.QIcon(str(icon_path)))
-
-        return item
+    def _create_plugin_list(self, parent: QtWidgets.QTreeWidgetItem) -> ToolList:
+        child_item = QtWidgets.QTreeWidgetItem()
+        parent.addChild(child_item)
+        list_widget = ToolList()
+        self.treeTools.setItemWidget(child_item, 0, list_widget)
+        return list_widget
 
     def item_activated(self, item: QtWidgets.QTreeWidgetItem, column: int):
         item_type = item.data(column, ToolItemDelegate.ROLE_ITEM_TYPE)

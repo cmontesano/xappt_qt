@@ -22,6 +22,8 @@ from xappt_qt.utilities.tool_attributes import *
 
 
 class ToolList(QtWidgets.QListWidget):
+    height_changed = QtCore.pyqtSignal()
+
     VIEW_LIST = 0
     VIEW_ICONS_SMALL = 1
     VIEW_ICONS_LARGE = 2
@@ -33,6 +35,7 @@ class ToolList(QtWidgets.QListWidget):
         self.setUniformItemSizes(True)
         self._view_mode = self.VIEW_ICONS_LARGE
         self.view_mode = self._view_mode
+        self._last_height = 0
 
     @property
     def view_mode(self) -> int:
@@ -85,7 +88,12 @@ class ToolList(QtWidgets.QListWidget):
         rows = int(math.ceil(self.count() / columns))
         row_size = self.sizeHintForRow(0)
         frame_size = 4
-        self.setMinimumHeight((row_size * rows) + frame_size)
+        new_height = (row_size * rows) + frame_size
+        if new_height == self._last_height:
+            return
+        self.setMinimumHeight(new_height)
+        self._last_height = new_height
+        self.height_changed.emit()
 
     def resizeEvent(self, event: QtGui.QResizeEvent):
         super().resizeEvent(event)
@@ -127,18 +135,12 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
                 list_widget.add_plugin(plugin)
                 self.loaded_plugins[collection].append(plugin)
 
-            # for plugin in sorted(plugin_list[collection], key=lambda x: x.name().lower()):
-            #     tool_item = self._create_tool_item(plugin)
-            #     collection_item.addChild(tool_item)
-            #     self.loaded_plugins[collection].append(plugin)
             collection_item.setExpanded(True)
 
         collection_item = self._create_collection_item("test")
         self.treeTools.insertTopLevelItem(self.treeTools.topLevelItemCount(), collection_item)
 
     def connect_signals(self):
-        self.treeTools.itemActivated.connect(self.item_activated)
-        self.treeTools.itemSelectionChanged.connect(self.selection_changed)
         self.treeTools.clicked.connect(self.on_tree_item_clicked)
 
         self.txtSearch.textChanged.connect(self.on_filter_tools)
@@ -169,13 +171,16 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
         parent.addChild(child_item)
         list_widget = ToolList()
         self.treeTools.setItemWidget(child_item, 0, list_widget)
+        list_widget.height_changed.connect(lambda: child_item.setHidden(False))
+        list_widget.itemActivated.connect(self.item_activated)
+        list_widget.itemSelectionChanged.connect(lambda w=list_widget: self.selection_changed(w))
         return list_widget
 
-    def item_activated(self, item: QtWidgets.QTreeWidgetItem, column: int):
-        item_type = item.data(column, ToolItemDelegate.ROLE_ITEM_TYPE)
+    def item_activated(self, item: QtWidgets.QListWidgetItem):
+        item_type = item.data(ToolItemDelegate.ROLE_ITEM_TYPE)
         if item_type != ToolItemDelegate.ITEM_TYPE_TOOL:
             return
-        tool_class: Type[xappt.BaseTool] = item.data(column, ToolItemDelegate.ROLE_TOOL_CLASS)
+        tool_class: Type[xappt.BaseTool] = item.data(ToolItemDelegate.ROLE_TOOL_CLASS)
         self.launch_tool(tool_class)
 
     @staticmethod
@@ -197,10 +202,10 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
                 proc = subprocess.Popen(launch_command)
             self.information(APP_TITLE, f"Launched {tool_name} (pid {proc.pid})")
 
-    def selection_changed(self):
-        selected_items = self.treeTools.selectedItems()
+    def selection_changed(self, list_widget: QtWidgets.QListWidget):
+        selected_items = list_widget.selectedItems()
         if len(selected_items):
-            self.labelHelp.setText(selected_items[0].toolTip(0))
+            self.labelHelp.setText(selected_items[0].toolTip())
         else:
             self.labelHelp.setText("")
 

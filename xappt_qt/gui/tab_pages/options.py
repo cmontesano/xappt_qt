@@ -1,8 +1,7 @@
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore
 
 from xappt_qt.gui.ui.browser_tab_options import Ui_tabOptions
 from xappt_qt.gui.tab_pages.base import BaseTabPage
-import xappt_qt.config
 
 
 class OptionsTabPage(BaseTabPage, Ui_tabOptions):

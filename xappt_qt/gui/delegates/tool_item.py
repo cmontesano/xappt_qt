@@ -1,3 +1,5 @@
+from math import ceil
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from xappt_qt.gui.delegates.simple_item import SimpleItemDelegate
@@ -8,6 +10,7 @@ class ToolItemDelegate(SimpleItemDelegate):
     ROLE_ITEM_TYPE = QtCore.Qt.UserRole + 2
     ROLE_ITEM_LIST = QtCore.Qt.UserRole + 3
     ROLE_ITEM_SEARCH_TEXT = QtCore.Qt.UserRole + 4
+    ROLE_ICON_SIZE = QtCore.Qt.UserRole + 5
 
     ITEM_TYPE_COLLECTION = 0
     ITEM_TYPE_TOOL = 1
@@ -18,6 +21,7 @@ class ToolItemDelegate(SimpleItemDelegate):
         self.light_bg_color = QtGui.QPalette().color(QtGui.QPalette.Highlight)
         self.fg_color = QtGui.QPalette().color(QtGui.QPalette.ButtonText)
         self.outline_color = QtGui.QColor(0, 0, 0)
+        self._hint_height = None
 
     def draw_arrow(self, expanded: bool, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem):
         painter.save()
@@ -98,3 +102,11 @@ class ToolItemDelegate(SimpleItemDelegate):
             painter.restore()
         else:
             super(ToolItemDelegate, self).paint(painter, option, index)
+
+    def sizeHint(self, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> QtCore.QSize:
+        hint = super().sizeHint(option, index)
+        # if self._hint_height is None:
+        icon_size = index.data(self.ROLE_ICON_SIZE)
+        if icon_size is not None:
+            hint.setHeight(icon_size.height() + 12)
+        return hint

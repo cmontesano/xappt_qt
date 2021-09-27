@@ -29,8 +29,6 @@ APP_PACKAGE_NAME = safe_file_name(APP_TITLE)
 APP_CONFIG_PATH = xappt.user_data_path().joinpath(APP_PACKAGE_NAME)
 
 
-class ToolViewType(enum.Enum):
-    VIEW_LIST = 0
-    VIEW_ICONS_SMALL = 1
-    VIEW_ICONS_LARGE = 2
-    VIEW_ICONS_HUGE = 3
+class ToolViewType(enum.IntEnum):
+    VIEW_SMALL_ICONS = 0
+    VIEW_LARGE_ICONS = 1

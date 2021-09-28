@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>876</width>
-    <height>624</height>
+    <width>775</width>
+    <height>632</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,19 +38,6 @@
        </property>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QProgressBar" name="progressBar">
-     <property name="value">
-      <number>0</number>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="format">
-      <string/>
-     </property>
     </widget>
    </item>
    <item row="2" column="0">
@@ -107,8 +94,42 @@
      </item>
     </layout>
    </item>
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>0</number>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="format">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnAbort">
+       <property name="text">
+        <string>Abort</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>btnAbort</tabstop>
+  <tabstop>btnHelp</tabstop>
+  <tabstop>btnRun</tabstop>
+  <tabstop>btnAdvance</tabstop>
+  <tabstop>btnRunAndAdvance</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

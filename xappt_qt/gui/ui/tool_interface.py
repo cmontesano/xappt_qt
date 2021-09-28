@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ToolInterface(object):
     def setupUi(self, ToolInterface):
         ToolInterface.setObjectName("ToolInterface")
-        ToolInterface.resize(876, 624)
+        ToolInterface.resize(775, 632)
         self.gridLayout = QtWidgets.QGridLayout(ToolInterface)
         self.gridLayout.setObjectName("gridLayout")
         self.splitter = QtWidgets.QSplitter(ToolInterface)
@@ -31,12 +31,6 @@ class Ui_ToolInterface(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
-        self.progressBar = QtWidgets.QProgressBar(ToolInterface)
-        self.progressBar.setProperty("value", 0)
-        self.progressBar.setAlignment(QtCore.Qt.AlignCenter)
-        self.progressBar.setFormat("")
-        self.progressBar.setObjectName("progressBar")
-        self.gridLayout.addWidget(self.progressBar, 1, 0, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.btnHelp = QtWidgets.QToolButton(ToolInterface)
@@ -56,9 +50,26 @@ class Ui_ToolInterface(object):
         self.btnRunAndAdvance.setObjectName("btnRunAndAdvance")
         self.horizontalLayout.addWidget(self.btnRunAndAdvance)
         self.gridLayout.addLayout(self.horizontalLayout, 2, 0, 1, 1)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.progressBar = QtWidgets.QProgressBar(ToolInterface)
+        self.progressBar.setProperty("value", 0)
+        self.progressBar.setAlignment(QtCore.Qt.AlignCenter)
+        self.progressBar.setFormat("")
+        self.progressBar.setObjectName("progressBar")
+        self.horizontalLayout_2.addWidget(self.progressBar)
+        self.btnAbort = QtWidgets.QPushButton(ToolInterface)
+        self.btnAbort.setAutoDefault(False)
+        self.btnAbort.setObjectName("btnAbort")
+        self.horizontalLayout_2.addWidget(self.btnAbort)
+        self.gridLayout.addLayout(self.horizontalLayout_2, 1, 0, 1, 1)
 
         self.retranslateUi(ToolInterface)
         QtCore.QMetaObject.connectSlotsByName(ToolInterface)
+        ToolInterface.setTabOrder(self.btnAbort, self.btnHelp)
+        ToolInterface.setTabOrder(self.btnHelp, self.btnRun)
+        ToolInterface.setTabOrder(self.btnRun, self.btnAdvance)
+        ToolInterface.setTabOrder(self.btnAdvance, self.btnRunAndAdvance)
 
     def retranslateUi(self, ToolInterface):
         _translate = QtCore.QCoreApplication.translate
@@ -67,3 +78,4 @@ class Ui_ToolInterface(object):
         self.btnRun.setText(_translate("ToolInterface", "Run"))
         self.btnAdvance.setText(_translate("ToolInterface", "Next"))
         self.btnRunAndAdvance.setText(_translate("ToolInterface", "Next"))
+        self.btnAbort.setText(_translate("ToolInterface", "Abort"))

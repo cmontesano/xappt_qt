@@ -55,6 +55,7 @@ class ParameterWidgetStr(ParameterWidgetBase):
         elif ui in ("label", "markdown"):
             w = QtWidgets.QLabel()
             w.setTextFormat(QtCore.Qt.RichText)
+            w.setWordWrap(True)
             self.caption = ""
             w.linkActivated.connect(self.link_activated)
         elif ui == "csv":

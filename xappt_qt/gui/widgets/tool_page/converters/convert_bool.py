@@ -9,6 +9,7 @@ class ParameterWidgetBool(ParameterWidgetBase):
     def get_widget(self, param: xappt.Parameter) -> QtWidgets.QWidget:
         if param.options.get("ui") == "button":
             w = QtWidgets.QPushButton(parent=self)
+            w.setAutoDefault(False)
             w.setText(self._get_caption(param))
             w.clicked.connect(lambda: self.onValueChanged.emit(param.name, True))
             self.caption = ""

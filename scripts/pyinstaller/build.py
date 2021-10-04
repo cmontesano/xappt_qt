@@ -1,9 +1,12 @@
+import fnmatch
 import os
 import pathlib
 import platform
 import shutil
 import subprocess
 import sys
+
+from typing import Optional
 
 import xappt
 import xappt_qt
@@ -13,18 +16,25 @@ SPEC_PATH = ROOT_PATH.joinpath("build.spec")
 DIST_PATH = ROOT_PATH.joinpath("dist")
 
 
-def clear_directory(path: pathlib.Path):
+def clear_directory(path: pathlib.Path, *, exclude: Optional[list[str]] = None):
     if not path.is_dir():
         return
     for item in path.iterdir():
-        if item.is_dir():
-            shutil.rmtree(item)
-        else:
-            item.unlink()
+        remove_item = True
+        if exclude is not None:
+            for pattern in exclude:
+                if fnmatch.fnmatch(item.name, pattern):
+                    remove_item = False
+                    break
+        if remove_item:
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
 
 
 def main() -> int:
-    clear_directory(DIST_PATH)
+    clear_directory(DIST_PATH, exclude=["xappt*.exe"])
 
     os.environ.setdefault("XAPPT_EXE_CONSOLE", "1")
     os.environ.setdefault("XAPPT_EXE_NAME", "xappt")

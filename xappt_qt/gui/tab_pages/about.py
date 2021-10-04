@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore
 
 import xappt
 import xappt_qt

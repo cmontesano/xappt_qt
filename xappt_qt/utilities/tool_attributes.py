@@ -33,11 +33,22 @@ def is_headless(tool: Union[Type[BaseTool], BaseTool]) -> bool:
     return getattr(tool, "headless", False)  # default: False
 
 
-def help_text(tool: Union[Type[BaseTool], BaseTool], *, process_markdown: bool = True) -> str:
-    if process_markdown:
-        return to_markdown(tool.help())
+def help_text(tool: Union[Type[BaseTool], BaseTool], **kwargs) -> str:
+    process_markdown: bool = kwargs.get('process_markdown', True)
+    include_name: bool = kwargs.get('include_name', False)
+
+    if include_name:
+        if process_markdown:
+            tool_help = f"## {tool.name()}\n\n{tool.help()}"
+        else:
+            tool_help = f"{tool.name()}\n\n{tool.help()}"
     else:
-        return tool.help()
+        tool_help = tool.help()
+
+    if process_markdown:
+        return to_markdown(tool_help)
+    else:
+        return tool_help
 
 
 def can_auto_advance(tool: Union[Type[BaseTool], BaseTool]) -> bool:

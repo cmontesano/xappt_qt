@@ -1,3 +1,4 @@
+import enum
 import os
 import xappt
 
@@ -12,6 +13,7 @@ __all__ = [
     'APP_PACKAGE_NAME',
     'APP_TITLE',
     'APP_CONFIG_PATH',
+    'ToolViewType',
 ]
 
 # Environment variables
@@ -25,3 +27,8 @@ APP_INTERFACE_NAME = "qt"
 APP_TITLE = os.environ.get(APP_TITLE_ENV)
 APP_PACKAGE_NAME = safe_file_name(APP_TITLE)
 APP_CONFIG_PATH = xappt.user_data_path().joinpath(APP_PACKAGE_NAME)
+
+
+class ToolViewType(enum.IntEnum):
+    VIEW_SMALL_ICONS = 0
+    VIEW_LARGE_ICONS = 1

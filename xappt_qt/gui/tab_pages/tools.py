@@ -1,4 +1,5 @@
 import importlib.resources
+import math
 import platform
 import subprocess
 import sys
@@ -7,17 +8,23 @@ import webbrowser
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from collections import defaultdict
-from typing import DefaultDict, List, Tuple
+from typing import DefaultDict, Generator, List, Tuple
 
 import xappt
 
 import xappt_qt
 import xappt_qt.config
-from xappt_qt.constants import APP_TITLE
+from xappt_qt.constants import APP_TITLE, ToolViewType
 from xappt_qt.gui.ui.browser_tab_tools import Ui_tabTools
-from xappt_qt.gui.delegates import ToolItemDelegate
+from xappt_qt.gui.delegates import SimpleItemDelegate, ToolItemDelegate
 from xappt_qt.gui.tab_pages.base import BaseTabPage
 from xappt_qt.utilities.tool_attributes import *
+
+
+ICON_SIZES = {
+    ToolViewType.VIEW_SMALL_ICONS: QtCore.QSize(24, 24),
+    ToolViewType.VIEW_LARGE_ICONS: QtCore.QSize(48, 48),
+}
 
 
 class ToolsTabPage(BaseTabPage, Ui_tabTools):
@@ -87,9 +94,10 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
     def _create_tool_item(tool_class: Type[xappt.BaseTool]) -> QtWidgets.QTreeWidgetItem:
         item = QtWidgets.QTreeWidgetItem()
         item.setText(0, tool_class.name())
-        item.setToolTip(0, help_text(tool_class, process_markdown=True))
+        item.setToolTip(0, help_text(tool_class, process_markdown=True, include_name=True))
         item.setData(0, ToolItemDelegate.ROLE_TOOL_CLASS, tool_class)
         item.setData(0, ToolItemDelegate.ROLE_ITEM_TYPE, ToolItemDelegate.ITEM_TYPE_TOOL)
+        item.setData(0, ToolItemDelegate.ROLE_ITEM_SEARCH_TEXT, f'{tool_class.name()}\n{tool_class.help()}')
 
         icon_path = get_tool_icon(tool_class)
         item.setIcon(0, QtGui.QIcon(str(icon_path)))
@@ -152,12 +160,11 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
             child = parent.child(c)
             item_type = child.data(0, ToolItemDelegate.ROLE_ITEM_TYPE)
             if item_type == ToolItemDelegate.ITEM_TYPE_TOOL:
-                child_text = child.text(0).lower()
-                child_help = child.toolTip(0).lower()
+                search_text = child.data(0, ToolItemDelegate.ROLE_ITEM_SEARCH_TEXT)
                 visible_children += 1
                 item_hidden = False
                 for term in search_terms:
-                    if term not in child_text and term not in child_help:
+                    if term not in search_text:
                         item_hidden = True
                         break
                 child.setHidden(item_hidden)
@@ -173,3 +180,17 @@ class ToolsTabPage(BaseTabPage, Ui_tabTools):
     @staticmethod
     def on_link_activated(url: str):
         webbrowser.open(url)
+
+    def settings_changed(self, settings: dict):
+        view_type = settings.get('view_type', 0)
+        self.treeTools.setIconSize(ICON_SIZES[view_type])
+
+        # noinspection PyTypeChecker
+        iterator = QtWidgets.QTreeWidgetItemIterator(self.treeTools, QtWidgets.QTreeWidgetItemIterator.All)
+        while iterator.value():
+            item = iterator.value()
+            if item.data(0, ToolItemDelegate.ROLE_ITEM_TYPE) == ToolItemDelegate.ITEM_TYPE_TOOL:
+                item.setData(0, ToolItemDelegate.ROLE_ICON_SIZE, ICON_SIZES[view_type])
+            else:
+                item.setData(0, ToolItemDelegate.ROLE_ICON_SIZE, ICON_SIZES[ToolViewType.VIEW_SMALL_ICONS])
+            iterator += 1

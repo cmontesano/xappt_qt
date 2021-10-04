@@ -111,6 +111,19 @@ class ConvertX265(xappt.BaseTool):
             self.interface.on_write_stderr.remove(self.handle_progress)
             self.interface.on_write_stdout.remove(self.handle_progress)
             self.interface.progress_end()
+            self.flush_progress_deferred_ops()
+
+    def flush_progress_deferred_ops(self):
+        """ Make sure there's a call to "invoke" to trigger callback removals. Pausing the callback
+        prevents the invoke from actually doing anything other than processing deferred operations.
+        """
+        self.interface.on_write_stderr.paused = True
+        self.interface.on_write_stderr.invoke("")
+        self.interface.on_write_stderr.paused = False
+
+        self.interface.on_write_stdout.paused = True
+        self.interface.on_write_stdout.invoke("")
+        self.interface.on_write_stdout.paused = False
 
     def execute(self, **kwargs) -> int:
         ffmpeg_bin = shutil.which('ffmpeg')

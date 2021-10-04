@@ -12,13 +12,17 @@ class ParameterWidgetFloat(ParameterWidgetBase):
         maximum = param.options.get("maximum", 999999999.0)
         w.setMinimum(minimum)
         w.setMaximum(maximum)
-        if param.default is not None:
-            w.setValue(param.default)
-        param.value = w.value()
-
-        w.valueChanged[float].connect(lambda x: self.onValueChanged.emit(param.name, x))
+        w.setStepType(QtWidgets.QDoubleSpinBox.AdaptiveDecimalStepType)
+        for v in (param.value, param.default):
+            if v is not None:
+                w.setValue(v)
+                break
+        else:
+            param.value = w.value()
 
         self._getter_fn = w.value
         self._setter_fn = w.setValue
+
+        w.valueChanged[float].connect(lambda x: self.onValueChanged.emit(param.name, x))
 
         return w

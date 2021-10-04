@@ -18,6 +18,7 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
         self.load_icons()
+        self.set_tooltips()
 
         self.output_buffer_raw = []
 
@@ -53,6 +54,12 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
             trash_icon = QtGui.QIcon()
             trash_icon.addPixmap(QtGui.QPixmap(str(trash_path)), QtGui.QIcon.Normal, QtGui.QIcon.On)
             self.btnTrash.setIcon(trash_icon)
+
+    def set_tooltips(self):
+        self.btnCopy.setToolTip("Copy to Clipboard")
+        self.btnWordWrap.setToolTip("Word Wrap")
+        self.btnScrollDown.setToolTip("Auto Scroll")
+        self.btnTrash.setToolTip("Clear Output")
 
     def connect_signals(self):
         self.btnCopy.clicked.connect(self.on_copy)

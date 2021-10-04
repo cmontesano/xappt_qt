@@ -27,3 +27,6 @@ class BaseTabPage(QtWidgets.QWidget):
             self._on_error(title, message)
         else:
             print(f"{title}: {message}")
+
+    def settings_changed(self, settings: dict):
+        pass

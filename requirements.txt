@@ -1,4 +1,4 @@
 Markdown==3.3.4
 pyperclip~=1.8.2
 PyQt5~=5.15.4
-xappt==0.9.1
+xappt==0.9.2

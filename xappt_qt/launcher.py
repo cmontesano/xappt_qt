@@ -51,8 +51,6 @@ def main(argv) -> int:
 
     options, unknowns = parser.parse_known_args(args=argv)
 
-    xappt.discover_plugins()
-
     return launch(options.toolname, unknowns)
 
 

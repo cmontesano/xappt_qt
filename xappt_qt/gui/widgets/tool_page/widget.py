@@ -46,8 +46,6 @@ class ToolPage(QtWidgets.QWidget):
     def _load_tool_parameters(self):
         index = 0
         for param in self.tool.parameters():
-            if param.hidden:
-                continue
             widget_instance = self._convert_parameter(param)
             if widget_instance.sizePolicy().verticalPolicy() == QtWidgets.QSizePolicy.Expanding:
                 self.vertical_expand = True
@@ -68,6 +66,7 @@ class ToolPage(QtWidgets.QWidget):
             self.grid.addWidget(widget_instance, index, 1)
 
             self.parameter_options_updated(param)
+            self.parameter_visibility_updated(param)
 
             param.on_choices_changed.add(self.update_tool_choices)
             param.on_value_changed.add(self.parameter_value_updated)

@@ -22,6 +22,7 @@ class ToolState(enum.Enum):
     RUNNING = 1
     ERROR = 2
     SUCCESS = 3
+    UNKNOWN = 99
 
 
 @xappt.register_plugin
@@ -45,6 +46,8 @@ class QtInterface(xappt.BaseInterface):
         self.on_write_stderr.add(self.ui.write_stderr)
 
         self._tool_geo = {}
+
+        self._tool_state: ToolState = ToolState.UNKNOWN
 
     def init_config(self):
         self.add_config_item(key="tool_geo",
@@ -135,7 +138,7 @@ class QtInterface(xappt.BaseInterface):
         return 0
 
     def close_event(self, event: QtGui.QCloseEvent):
-        if self.command_runner.running:
+        if self.command_runner.running or self.current_tool_state() == ToolState.RUNNING:
             if self.ask("A process is currently running.\nDo you want to kill it?"):
                 self.command_runner.abort()
                 self.warning("The Process has been terminated.")
@@ -180,6 +183,9 @@ class QtInterface(xappt.BaseInterface):
                 return
             self.on_next_tool()
 
+    def current_tool_state(self) -> ToolState:
+        return self._tool_state
+
     def set_tool_state(self, state: ToolState):
         tool = self.ui.current_tool
         auto_advance = can_auto_advance(tool)
@@ -199,6 +205,8 @@ class QtInterface(xappt.BaseInterface):
             self.set_tool_state_auto_advance(state)
         else:
             self.set_tool_state_no_advance(state)
+
+        self._tool_state = state
 
     def set_tool_state_auto_advance(self, state: ToolState):
         last_tool = self.current_tool_index == self.tool_count - 1

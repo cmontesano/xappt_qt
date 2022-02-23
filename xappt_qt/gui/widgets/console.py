@@ -110,7 +110,7 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
         color = config.console_color_stdout
         if stream == self.STREAM_STDERR:
             color = config.console_color_stderr
-        html = f'<span style="color: {color}">{s}</span>'
+        html = f'<span style="color: {color}; white-space: pre;">{s}</span>'
 
         self.output_buffer_raw.append(s)
         self.txtConsole.append(html)
@@ -125,3 +125,7 @@ class ConsoleWidget(QtWidgets.QWidget, Ui_Console):
         yield self.btnWordWrap
         yield self.btnScrollDown
         yield self.btnTrash
+
+    def setFont(self, new_font: QtGui.QFont):
+        super().setFont(new_font)
+        self.txtConsole.setFont(new_font)

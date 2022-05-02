@@ -125,6 +125,7 @@ class QtInterface(xappt.BaseInterface):
 
         if is_headless(tool_class):
             headless_interface = HeadlessInterface()
+            headless_interface.tool_data.update(self.tool_data.copy())
             headless_interface.add_tool(tool_class)
             return headless_interface.run(**kwargs)
 

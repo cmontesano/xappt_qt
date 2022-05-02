@@ -7,6 +7,8 @@ import xappt
 class HeadlessExecution(xappt.BaseTool):
     headless = True
 
+    parameter1 = xappt.ParamString()
+
     @classmethod
     def name(cls) -> str:
         return "headless"
@@ -22,6 +24,8 @@ class HeadlessExecution(xappt.BaseTool):
         return "Examples"
 
     def execute(self, **kwargs) -> int:
+        self.interface.message(self.parameter1.value)
+
         self.interface.progress_start()
         for i in range(10):
             self.interface.progress_update(f"Working...", (i + 1) / 10)
